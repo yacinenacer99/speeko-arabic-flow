@@ -1,17 +1,17 @@
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
-import HowItWorks from "@/components/HowItWorks";
 import ProgressionPath from "@/components/ProgressionPath";
 import FinalCTA from "@/components/FinalCTA";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
     <div className="min-h-screen">
       <Navbar />
       <HeroSection />
-      <HowItWorks />
       <ProgressionPath />
       <FinalCTA />
+      <Footer />
     </div>
   );
 };

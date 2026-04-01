@@ -83,7 +83,6 @@
   padding: 5px;
   border-radius: 50%;
   background: conic-gradient(#FF9DC4, #C4A8FF, #6C63FF, #A8C4FF, #FF9DC4);
-  animation: rotateBorder 5s linear infinite;
   display: inline-block;
 }
 

@@ -80,7 +80,7 @@
 }
 
 .hero-stroke-wrapper {
-  padding: 5px;
+  padding: 2px;
   border-radius: 50%;
   background: conic-gradient(#FF9DC4, #C4A8FF, #6C63FF, #A8C4FF, #FF9DC4);
   display: inline-block;

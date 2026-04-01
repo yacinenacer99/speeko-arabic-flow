@@ -42,7 +42,22 @@ const Navbar = () => {
   const inactiveColor = "#9090A8";
 
   return (
-    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[1000]" ref={wrapperRef}>
+    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-3" ref={wrapperRef}>
+      {/* Hamburger — outside pill, to the left */}
+      <button
+        onClick={() => setMenuOpen(!menuOpen)}
+        className="flex items-center justify-center transition-colors duration-200 text-white"
+        style={{
+          background: "#0F0F14",
+          border: "1px solid #2A2A3E",
+          borderRadius: "50%",
+          width: 38,
+          height: 38,
+        }}
+      >
+        <Menu size={18} />
+      </button>
+
       {/* Pill */}
       <div
         className="flex items-center gap-4 rounded-full transition-colors duration-300"
@@ -124,17 +139,6 @@ const Navbar = () => {
           style={{ color: inactiveColor }}
         >
           المدونة
-        </button>
-
-        {/* Divider before hamburger — hidden on mobile when المدونة is hidden */}
-        <div className="hidden md:block w-px h-4" style={{ background: "#2A2A3E" }} />
-
-        {/* Hamburger */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="flex items-center justify-center transition-colors duration-200 text-white"
-        >
-          <Menu size={18} />
         </button>
       </div>
 

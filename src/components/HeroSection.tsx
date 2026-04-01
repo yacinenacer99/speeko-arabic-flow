@@ -148,8 +148,7 @@ const HeroSection = () => {
 
   const isLanding = state === "landing";
   const isDark = state !== "landing";
-  // Use same layout phase for sport AND topic — circle is already in final position
-  const isUpper = state === "sport" || state === "topic" || state === "recording";
+  const isSmall = !isLanding && state !== "results";
   const showTopic = state === "topic" || state === "recording";
   const isResults = state === "results";
   const isRecording = state === "recording";
@@ -175,13 +174,12 @@ const HeroSection = () => {
       className="relative flex flex-col items-center overflow-hidden"
       style={{
         height: "100vh",
-        justifyContent: isLanding ? "center" : "flex-start",
-        paddingTop: isLanding ? 0 : 100,
+        paddingTop: 70,
         paddingLeft: 24,
         paddingRight: 24,
         paddingBottom: 0,
         backgroundColor: isDark ? "#0F0F14" : "hsl(var(--background))",
-        transition: `padding-top 0.7s ${EASE}, justify-content 0s, background-color 0.7s ease`,
+        transition: `background-color 0.7s ease`,
         direction: "rtl",
       }}
     >
@@ -214,16 +212,16 @@ const HeroSection = () => {
 
       {/* Main content area */}
       <div
-        className="relative z-10 flex flex-col items-center"
-        style={{ width: "100%", maxWidth: 400 }}
+        className="relative z-10 flex flex-col items-center justify-center"
+        style={{ flex: 1, width: "100%", maxWidth: 400 }}
       >
         {/* Hero text */}
         <div
           style={{
             opacity: isLanding ? 1 : 0,
-            height: isLanding ? "auto" : 0,
+            maxHeight: isLanding ? 200 : 0,
             overflow: "hidden",
-            transition: `opacity 0.4s ease`,
+            transition: `opacity 0.5s ease, max-height 0.7s ${EASE}`,
             pointerEvents: isLanding ? "auto" : "none",
           }}
         >
@@ -246,24 +244,26 @@ const HeroSection = () => {
           className={isLanding ? "hero-float" : ""}
           style={{
             display: "inline-block",
+            marginTop: isSmall ? -20 : 0,
+            marginBottom: isSmall ? 16 : 0,
             opacity: isResults ? 0 : 1,
             transform: isResults ? "scale(0.8)" : "scale(1)",
-            transition: `opacity 0.5s ease, transform 0.5s ease`,
+            transition: `margin-top 0.7s ${EASE}, margin-bottom 0.7s ${EASE}, opacity 0.5s ease, transform 0.5s ease`,
             pointerEvents: isResults ? "none" : "auto",
           }}
         >
           <div
             className="hero-stroke-wrapper"
             style={{
-              padding: isUpper ? 4 : 5,
+              padding: isSmall ? 4 : 5,
               transition: `padding 0.7s ${EASE}`,
             }}
           >
             <div
               className="hero-circle"
               style={{
-                width: isUpper ? 160 : 260,
-                height: isUpper ? 160 : 260,
+                width: isSmall ? 160 : 260,
+                height: isSmall ? 160 : 260,
                 cursor: "pointer",
                 transition: `width 0.7s ${EASE}, height 0.7s ${EASE}`,
                 animationDuration: isRecording ? "2s" : "3s",
@@ -369,10 +369,9 @@ const HeroSection = () => {
           style={{
             opacity: showTopic ? 1 : 0,
             transform: showTopic ? "translateY(0)" : "translateY(12px)",
-            transition: "opacity 0.5s ease 0.1s, transform 0.5s ease 0.1s",
+            transition: "opacity 0.5s ease, transform 0.5s ease",
             maxWidth: 320,
             pointerEvents: showTopic ? "auto" : "none",
-            marginTop: 28,
             maxHeight: showTopic ? 400 : 0,
             overflow: "hidden",
           }}

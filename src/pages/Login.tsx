@@ -43,6 +43,7 @@ const Login = () => {
           </p>
 
           <button
+            onClick={() => navigate("/home")}
             className="font-cairo font-bold w-full flex items-center justify-center gap-2"
             style={{ border: "1px solid #E8E6F0", background: "white", borderRadius: 999, padding: 14, fontSize: 15, color: "#1A1A2E", cursor: "pointer" }}
           >
@@ -66,6 +67,7 @@ const Login = () => {
             </div>
 
             <button
+              onClick={() => navigate("/home")}
               className="font-cairo font-bold text-white w-full"
               style={{ background: "#6C63FF", border: "none", borderRadius: 999, padding: "14px 0", fontSize: 16, cursor: "pointer", marginTop: 8 }}
             >

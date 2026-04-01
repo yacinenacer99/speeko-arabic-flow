@@ -9,8 +9,7 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [tooltip, setTooltip] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const hamburgerRef = useRef<HTMLButtonElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -20,10 +19,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      if (
-        menuRef.current && !menuRef.current.contains(e.target as Node) &&
-        hamburgerRef.current && !hamburgerRef.current.contains(e.target as Node)
-      ) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
       }
     };
@@ -46,16 +42,12 @@ const Navbar = () => {
   const inactiveColor = "#9090A8";
 
   return (
-    <>
-      {/* Hamburger circle — outside pill, to the left */}
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2" ref={wrapperRef}>
+      {/* Hamburger circle — left of pill (visually left in LTR positioning) */}
       <button
-        ref={hamburgerRef}
         onClick={() => setMenuOpen(!menuOpen)}
-        className="fixed z-[1001] flex items-center justify-center"
+        className="flex-shrink-0 flex items-center justify-center"
         style={{
-          top: 16,
-          left: "calc(50% - var(--pill-offset))",
-          transform: "translateX(-100%)",
           width: 40,
           height: 40,
           borderRadius: "50%",
@@ -63,21 +55,15 @@ const Navbar = () => {
           border: "1px solid #2A2A3E",
           boxShadow: "0 4px 32px rgba(0,0,0,0.2)",
           color: "white",
-          marginLeft: -8,
         }}
       >
         <Menu size={18} />
       </button>
 
-      {/* Pill + Dropdown wrapper */}
-      <div
-        className="fixed top-4 left-1/2 -translate-x-1/2 z-[1000]"
-        ref={menuRef}
-        style={{ ["--pill-offset" as string]: "0px" }}
-      >
+      {/* Pill + Dropdown column */}
+      <div className="relative">
         {/* Pill */}
         <div
-          id="navbar-pill"
           className="flex items-center gap-4 rounded-full transition-colors duration-300"
           style={{
             background: scrolled ? "rgba(15,15,20,0.95)" : "#0F0F14",
@@ -96,12 +82,10 @@ const Navbar = () => {
             Speeko
           </span>
 
-          {/* Divider */}
           <div className="w-px h-4" style={{ background: "#2A2A3E" }} />
 
           {/* Icon group */}
           <div className="flex items-center gap-5">
-            {/* Home */}
             <div className="relative flex items-center">
               <button
                 onClick={() => navigate("/")}
@@ -119,7 +103,6 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* Headphones */}
             <div className="relative flex items-center">
               <button
                 onClick={() => navigate("/contact")}
@@ -137,7 +120,6 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* Globe — no text label */}
             <div className="relative flex items-center">
               <button
                 onClick={() => setLang(lang === "ar" ? "en" : "ar")}
@@ -156,10 +138,8 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* Divider */}
           <div className="w-px h-4" style={{ background: "#2A2A3E" }} />
 
-          {/* المدونة — hidden on mobile */}
           <button
             onClick={() => navigate("/blog")}
             className="hidden md:block font-cairo font-light text-[13px] hover:text-white transition-colors duration-200 whitespace-nowrap"
@@ -172,11 +152,12 @@ const Navbar = () => {
         {/* Dropdown */}
         {menuOpen && (
           <div
-            className="mx-auto mt-2 p-5 rounded-2xl"
+            className="absolute left-0 right-0 mt-2 mx-auto p-5 rounded-2xl"
             style={{
               background: "#0F0F14",
               border: "1px solid #2A2A3E",
               minWidth: 220,
+              width: "fit-content",
               animation: "fade-in 0.15s ease-out",
             }}
           >
@@ -205,7 +186,7 @@ const Navbar = () => {
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 };
 

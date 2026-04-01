@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import LiquidSphere from "./LiquidSphere";
 
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -22,24 +23,7 @@ const HeroSection = () => {
           تحدياتنا تعلمك كيف تسولف بدون توتر ونعطيك خطة تطورك أسبوع بعد أسبوع.
         </p>
 
-        {/* Siri-style orb button */}
-        <button
-          onClick={() => navigate("/onboarding")}
-          className="siri-orb mx-auto w-44 h-44 rounded-full bg-surface-dark flex flex-col items-center justify-center cursor-pointer transition-transform hover:scale-105 active:scale-95 relative"
-        >
-          {/* Gradient blobs */}
-          <span className="siri-blob siri-blob-violet" />
-          <span className="siri-blob siri-blob-purple" />
-          <span className="siri-blob siri-blob-pink" />
-          <span className="siri-blob siri-blob-teal" />
-
-          {/* Inner glow */}
-          <span className="absolute inset-0 rounded-full" style={{ boxShadow: "inset 0 0 30px rgba(108, 99, 255, 0.15)" }} />
-
-          {/* Text */}
-          <span className="relative z-10 text-lg font-bold font-cairo text-primary-foreground">ابدأ التحدي</span>
-          <span className="relative z-10 text-[13px] font-light font-cairo text-primary-foreground/60 mt-1">تكلم الأن</span>
-        </button>
+        <LiquidSphere onClick={() => navigate("/onboarding")} />
       </div>
     </section>
   );

@@ -1,14 +1,27 @@
 import { useNavigate } from "react-router-dom";
-import { Lock, Check, Flame, Zap } from "lucide-react";
+import { Lock, Check, Flame, Zap, Shield, Mic, Award } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
-
-const stages = [
-  { name: "مبتدئ", desc: "تكلم 30 ثانية بدون توقف", status: "completed" as const },
-  { name: "متحدث", desc: "تخلص من كلمات الحشو", status: "current" as const },
-  { name: "مؤثر", desc: "بنِ أفكارك بوضوح", status: "locked" as const },
-  { name: "خطيب", desc: "أي موضوع، أي غرفة", status: "locked" as const },
+const levels = [
+  { level: 1, badge: "مبتدئ", desc: "تكلم 30 ثانية بدون توقف", status: "completed" as const },
+  { level: 2, badge: "مبتدئ", desc: "قلل التوقفات الطويلة", status: "completed" as const },
+  { level: 3, badge: "متحدث", desc: "تخلص من كلمات الحشو", status: "current" as const },
+  { level: 4, badge: "متحدث", desc: "تكلم دقيقة كاملة بثقة", status: "locked" as const },
+  { level: 5, badge: "متحدث", desc: "نوّع نبرة صوتك", status: "locked" as const },
+  { level: 6, badge: "مؤثر", desc: "بنِ أفكارك بوضوح وتسلسل", status: "locked" as const },
+  { level: 7, badge: "خطيب", desc: "تكلم عن أي موضوع بدون تحضير", status: "locked" as const },
+  { level: 8, badge: "خطيب", desc: "أي موضوع، أي غرفة، أي جمهور", status: "locked" as const },
 ];
+
+const badgeIcon = (badge: string) => {
+  switch (badge) {
+    case "مبتدئ": return Mic;
+    case "متحدث": return Shield;
+    case "مؤثر": return Award;
+    case "خطيب": return Award;
+    default: return Mic;
+  }
+};
 
 const Home = () => {
   const navigate = useNavigate();
@@ -72,56 +85,91 @@ const Home = () => {
         </p>
       </div>
 
-      {/* Quest map */}
-      <div style={{ padding: "40px 24px 24px" }}>
-        <h2 className="font-cairo font-bold" style={{ fontSize: 22, color: "hsl(var(--foreground))", marginBottom: 24 }}>
+      {/* Learning Path */}
+      <div style={{ padding: "0 24px 120px", marginTop: -200 , position: "relative", zIndex: 2 }}>
+        <h2 className="font-cairo font-bold" style={{ fontSize: 22, color: "hsl(var(--foreground))", marginBottom: 24, textAlign: "center" }}>
           مسارك
         </h2>
 
-        <div className="relative flex flex-col items-center" style={{ gap: 32 }}>
-          {stages.map((stage, i) => (
-            <div
-              key={i}
-              className="flex items-center w-full gap-4"
-              style={{ flexDirection: i % 2 === 0 ? "row" : "row-reverse" }}
-            >
-              {/* Node */}
-              <div
-                className={`flex items-center justify-center shrink-0 ${stage.status === "current" ? "animate-pulse-glow" : ""}`}
-                style={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: "50%",
-                  background:
-                    stage.status === "completed"
-                      ? "hsl(var(--primary))"
-                      : stage.status === "current"
-                        ? "white"
-                        : "hsl(var(--surface-2))",
-                  border: stage.status === "current" ? "3px solid hsl(var(--primary))" : "none",
-                }}
-              >
-                {stage.status === "completed" && <Check size={24} color="white" />}
-                {stage.status === "locked" && <Lock size={20} color="hsl(var(--muted-foreground))" />}
-              </div>
+        <div
+          style={{
+            background: "rgba(26, 26, 40, 0.6)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: 20,
+            padding: "24px 20px",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+          }}
+        >
+          <div className="flex flex-col" style={{ gap: 0 }}>
+            {levels.map((item, i) => {
+              const Icon = badgeIcon(item.badge);
+              const isLast = i === levels.length - 1;
+              return (
+                <div key={i} className="flex gap-4" style={{ direction: "rtl" }}>
+                  {/* Timeline column */}
+                  <div className="flex flex-col items-center shrink-0">
+                    <div
+                      className={`flex items-center justify-center ${item.status === "current" ? "animate-pulse-glow" : ""}`}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: "50%",
+                        background:
+                          item.status === "completed"
+                            ? "hsl(var(--primary))"
+                            : item.status === "current"
+                              ? "rgba(108,99,255,0.15)"
+                              : "rgba(42,42,62,0.6)",
+                        border: item.status === "current" ? "2px solid hsl(var(--primary))" : "none",
+                      }}
+                    >
+                      {item.status === "completed" && <Check size={18} color="white" />}
+                      {item.status === "current" && <span className="font-cairo font-bold text-[13px]" style={{ color: "#A89CFF" }}>{item.level}</span>}
+                      {item.status === "locked" && <Lock size={16} color="#9090A8" />}
+                    </div>
+                    {!isLast && (
+                      <div style={{
+                        width: 2,
+                        flex: 1,
+                        minHeight: 24,
+                        background: item.status === "completed" ? "hsl(var(--primary))" : "rgba(42,42,62,0.6)",
+                      }} />
+                    )}
+                  </div>
 
-              {/* Label */}
-              <div>
-                <p
-                  className="font-cairo font-bold"
-                  style={{
-                    fontSize: 15,
-                    color: stage.status === "locked" ? "hsl(var(--muted-foreground))" : "hsl(var(--foreground))",
-                  }}
-                >
-                  {stage.name}
-                </p>
-                <p className="font-cairo font-light" style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>
-                  {stage.desc}
-                </p>
-              </div>
-            </div>
-          ))}
+                  {/* Content */}
+                  <div style={{ paddingBottom: isLast ? 0 : 20, paddingTop: 8 }}>
+                    <div className="flex items-center gap-2" style={{ marginBottom: 4 }}>
+                      <span className="font-cairo font-bold" style={{
+                        fontSize: 14,
+                        color: item.status === "locked" ? "#9090A8" : "hsl(var(--foreground))",
+                      }}>
+                        المستوى {item.level}
+                      </span>
+                      <span
+                        className="flex items-center gap-1 font-cairo font-light"
+                        style={{
+                          fontSize: 11,
+                          color: item.status === "locked" ? "#9090A8" : "#A89CFF",
+                          background: item.status === "locked" ? "rgba(42,42,62,0.4)" : "rgba(108,99,255,0.1)",
+                          padding: "2px 8px",
+                          borderRadius: 999,
+                        }}
+                      >
+                        <Icon size={11} />
+                        {item.badge}
+                      </span>
+                    </div>
+                    <p className="font-cairo font-light" style={{ fontSize: 12, color: "#9090A8" }}>
+                      {item.desc}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

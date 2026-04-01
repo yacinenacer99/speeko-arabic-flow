@@ -369,9 +369,10 @@ const HeroSection = () => {
           style={{
             opacity: showTopic ? 1 : 0,
             transform: showTopic ? "translateY(0)" : "translateY(12px)",
-            transition: "opacity 0.5s ease, transform 0.5s ease",
+            transition: "opacity 0.5s ease 0.1s, transform 0.5s ease 0.1s",
             maxWidth: 320,
             pointerEvents: showTopic ? "auto" : "none",
+            marginTop: 28,
             maxHeight: showTopic ? 400 : 0,
             overflow: "hidden",
           }}

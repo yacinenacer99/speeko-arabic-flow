@@ -221,9 +221,9 @@ const HeroSection = () => {
         <div
           style={{
             opacity: isLanding ? 1 : 0,
-            maxHeight: isLanding ? 200 : 0,
+            height: isLanding ? "auto" : 0,
             overflow: "hidden",
-            transition: `opacity 0.5s ease, max-height 0.7s ${EASE}`,
+            transition: `opacity 0.4s ease`,
             pointerEvents: isLanding ? "auto" : "none",
           }}
         >

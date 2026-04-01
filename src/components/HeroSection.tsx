@@ -85,6 +85,7 @@ const HeroSection = () => {
             className="font-cairo font-light text-[18px] mb-8 animate-fade-in"
             style={{ color: "#9090A8" }}
           >
+          >
             كيف كان؟
           </p>
         )}

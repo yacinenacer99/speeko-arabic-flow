@@ -38,7 +38,7 @@ const HeroSection = () => {
 
           {/* Text */}
           <span className="relative z-10 text-lg font-bold font-cairo text-primary-foreground">ابدأ التحدي</span>
-          <span className="relative z-10 text-[13px] font-light font-cairo text-primary-foreground/60 mt-1">التحدي اليوم جاهز</span>
+          <span className="relative z-10 text-[13px] font-light font-cairo text-primary-foreground/60 mt-1">تكلم الأن</span>
         </button>
       </div>
     </section>

@@ -95,8 +95,6 @@ const Badges = () => {
           </>
         )}
       </div>
-
-      <BottomNav />
     </div>
   );
 };

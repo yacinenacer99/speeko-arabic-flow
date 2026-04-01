@@ -124,8 +124,6 @@ const Home = () => {
           ))}
         </div>
       </div>
-
-      <BottomNav />
     </div>
   );
 };

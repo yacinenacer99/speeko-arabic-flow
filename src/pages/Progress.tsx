@@ -109,8 +109,6 @@ const Progress = () => {
           </div>
         </div>
       </div>
-
-      <BottomNav />
     </div>
   );
 };

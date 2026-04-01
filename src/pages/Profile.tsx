@@ -138,8 +138,6 @@ const Profile = () => {
           </button>
         </div>
       </div>
-
-      <BottomNav />
     </div>
   );
 };

@@ -52,7 +52,7 @@ const Navbar = () => {
     return !arr.some((other, j) => j < i && other.displayLabel === item.displayLabel);
   });
 
-  const isDarkPage = ["/challenge", "/results", "/levelup", "/streakLost", "/success"].some(p => location.pathname.startsWith(p));
+  const _isDarkPage = ["/challenge", "/results", "/levelup", "/streakLost", "/success"].some(p => location.pathname.startsWith(p));
 
   const activeColor = "#A89CFF";
   const inactiveColor = "#9090A8";

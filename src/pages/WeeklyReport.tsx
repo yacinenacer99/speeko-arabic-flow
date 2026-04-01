@@ -51,8 +51,6 @@ const WeeklyReport = () => {
           </div>
         </div>
       </div>
-
-      <BottomNav />
     </div>
   );
 };

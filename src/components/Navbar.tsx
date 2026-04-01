@@ -42,150 +42,138 @@ const Navbar = () => {
   const inactiveColor = "#9090A8";
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2" ref={wrapperRef}>
-      {/* Hamburger circle — left of pill (visually left in LTR positioning) */}
-      <button
-        onClick={() => setMenuOpen(!menuOpen)}
-        className="flex-shrink-0 flex items-center justify-center"
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[1000]" ref={wrapperRef}>
+      {/* Pill */}
+      <div
+        className="flex items-center gap-4 rounded-full transition-colors duration-300"
         style={{
-          width: 40,
-          height: 40,
-          borderRadius: "50%",
-          background: "#0F0F14",
+          background: scrolled ? "rgba(15,15,20,0.95)" : "#0F0F14",
           border: "1px solid #2A2A3E",
           boxShadow: "0 4px 32px rgba(0,0,0,0.2)",
-          color: "white",
+          backdropFilter: "blur(16px)",
+          width: "fit-content",
+          padding: "10px 20px",
         }}
       >
-        <Menu size={18} />
-      </button>
+        {/* Speeko wordmark */}
+        <span className="font-cairo font-bold text-[13px] text-white whitespace-nowrap cursor-pointer" onClick={() => navigate("/")}>
+          Speeko
+        </span>
 
-      {/* Pill + Dropdown column */}
-      <div className="relative">
-        {/* Pill */}
-        <div
-          className="flex items-center gap-4 rounded-full transition-colors duration-300"
-          style={{
-            background: scrolled ? "rgba(15,15,20,0.95)" : "#0F0F14",
-            border: "1px solid #2A2A3E",
-            boxShadow: "0 4px 32px rgba(0,0,0,0.2)",
-            backdropFilter: "blur(16px)",
-            width: "fit-content",
-            padding: "10px 20px",
-          }}
-        >
-          {/* Speeko wordmark */}
-          <span
-            className="font-cairo font-bold text-[13px] text-white whitespace-nowrap cursor-pointer"
-            onClick={() => navigate("/")}
-          >
-            Speeko
-          </span>
+        <div className="w-px h-4" style={{ background: "#2A2A3E" }} />
 
-          <div className="w-px h-4" style={{ background: "#2A2A3E" }} />
-
-          {/* Icon group */}
-          <div className="flex items-center gap-5">
-            <div className="relative flex items-center">
-              <button
-                onClick={() => navigate("/")}
-                onMouseEnter={() => setTooltip("home")}
-                onMouseLeave={() => setTooltip(null)}
-                className="transition-colors duration-200 hover:text-white"
-                style={{ color: isActive("/") ? activeColor : inactiveColor }}
-              >
-                <Home size={18} />
-              </button>
-              {tooltip === "home" && (
-                <span className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-lg text-[11px] font-cairo text-white whitespace-nowrap animate-fade-in" style={{ background: "#1A1A28" }}>
-                  الرئيسية
-                </span>
-              )}
-            </div>
-
-            <div className="relative flex items-center">
-              <button
-                onClick={() => navigate("/contact")}
-                onMouseEnter={() => setTooltip("contact")}
-                onMouseLeave={() => setTooltip(null)}
-                className="transition-colors duration-200 hover:text-white"
-                style={{ color: isActive("/contact") ? activeColor : inactiveColor }}
-              >
-                <Headphones size={18} />
-              </button>
-              {tooltip === "contact" && (
-                <span className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-lg text-[11px] font-cairo text-white whitespace-nowrap animate-fade-in" style={{ background: "#1A1A28" }}>
-                  تواصل معنا
-                </span>
-              )}
-            </div>
-
-            <div className="relative flex items-center">
-              <button
-                onClick={() => setLang(lang === "ar" ? "en" : "ar")}
-                onMouseEnter={() => setTooltip("lang")}
-                onMouseLeave={() => setTooltip(null)}
-                className="transition-colors duration-200 hover:text-white"
-                style={{ color: inactiveColor }}
-              >
-                <Globe size={18} />
-              </button>
-              {tooltip === "lang" && (
-                <span className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-lg text-[11px] font-cairo text-white whitespace-nowrap animate-fade-in" style={{ background: "#1A1A28" }}>
-                  {lang === "ar" ? "English" : "العربية"}
-                </span>
-              )}
-            </div>
+        {/* Icon group */}
+        <div className="flex items-center gap-5">
+          <div className="relative flex items-center">
+            <button
+              onClick={() => navigate("/")}
+              onMouseEnter={() => setTooltip("home")}
+              onMouseLeave={() => setTooltip(null)}
+              className="transition-colors duration-200 hover:text-white"
+              style={{ color: isActive("/") ? activeColor : inactiveColor }}
+            >
+              <Home size={18} />
+            </button>
+            {tooltip === "home" && (
+              <span className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-lg text-[11px] font-cairo text-white whitespace-nowrap animate-fade-in" style={{ background: "#1A1A28" }}>
+                الرئيسية
+              </span>
+            )}
           </div>
 
-          <div className="w-px h-4" style={{ background: "#2A2A3E" }} />
+          <div className="relative flex items-center">
+            <button
+              onClick={() => navigate("/contact")}
+              onMouseEnter={() => setTooltip("contact")}
+              onMouseLeave={() => setTooltip(null)}
+              className="transition-colors duration-200 hover:text-white"
+              style={{ color: isActive("/contact") ? activeColor : inactiveColor }}
+            >
+              <Headphones size={18} />
+            </button>
+            {tooltip === "contact" && (
+              <span className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-lg text-[11px] font-cairo text-white whitespace-nowrap animate-fade-in" style={{ background: "#1A1A28" }}>
+                تواصل معنا
+              </span>
+            )}
+          </div>
 
-          <button
-            onClick={() => navigate("/blog")}
-            className="hidden md:block font-cairo font-light text-[13px] hover:text-white transition-colors duration-200 whitespace-nowrap"
-            style={{ color: inactiveColor }}
-          >
-            المدونة
-          </button>
+          <div className="relative flex items-center">
+            <button
+              onClick={() => setLang(lang === "ar" ? "en" : "ar")}
+              onMouseEnter={() => setTooltip("lang")}
+              onMouseLeave={() => setTooltip(null)}
+              className="transition-colors duration-200 hover:text-white"
+              style={{ color: inactiveColor }}
+            >
+              <Globe size={18} />
+            </button>
+            {tooltip === "lang" && (
+              <span className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-lg text-[11px] font-cairo text-white whitespace-nowrap animate-fade-in" style={{ background: "#1A1A28" }}>
+                {lang === "ar" ? "English" : "العربية"}
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Dropdown */}
-        {menuOpen && (
-          <div
-            className="absolute left-0 right-0 mt-2 mx-auto p-5 rounded-2xl"
-            style={{
-              background: "#0F0F14",
-              border: "1px solid #2A2A3E",
-              minWidth: 220,
-              width: "fit-content",
-              animation: "fade-in 0.15s ease-out",
-            }}
-          >
-            {dropdownItems.map((item) => (
-              <button
-                key={item.path}
-                onClick={() => {
-                  navigate(item.path);
-                  setMenuOpen(false);
-                }}
-                className="flex items-center gap-3 w-full px-2 py-2.5 rounded-lg font-cairo font-light text-sm transition-colors duration-200"
-                style={{ direction: "rtl", color: inactiveColor }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(108,99,255,0.1)";
-                  e.currentTarget.style.color = "white";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "transparent";
-                  e.currentTarget.style.color = inactiveColor;
-                }}
-              >
-                <item.icon size={16} />
-                <span>{item.label}</span>
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="w-px h-4" style={{ background: "#2A2A3E" }} />
+
+        {/* المدونة — hidden on mobile */}
+        <button
+          onClick={() => navigate("/blog")}
+          className="hidden md:block font-cairo font-light text-[13px] hover:text-white transition-colors duration-200 whitespace-nowrap"
+          style={{ color: inactiveColor }}
+        >
+          المدونة
+        </button>
+
+        {/* Divider before hamburger — hidden on mobile when المدونة is hidden */}
+        <div className="hidden md:block w-px h-4" style={{ background: "#2A2A3E" }} />
+
+        {/* Hamburger */}
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="flex items-center justify-center transition-colors duration-200 text-white"
+        >
+          <Menu size={18} />
+        </button>
       </div>
+
+      {/* Dropdown */}
+      {menuOpen && (
+        <div
+          className="mx-auto mt-2 p-5 rounded-2xl"
+          style={{
+            background: "#0F0F14",
+            border: "1px solid #2A2A3E",
+            minWidth: 220,
+            animation: "fade-in 0.15s ease-out",
+          }}
+        >
+          {dropdownItems.map((item) => (
+            <button
+              key={item.path}
+              onClick={() => {
+                navigate(item.path);
+                setMenuOpen(false);
+              }}
+              className="flex items-center gap-3 w-full px-2 py-2.5 rounded-lg font-cairo font-light text-sm transition-colors duration-200"
+              style={{ direction: "rtl", color: inactiveColor }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(108,99,255,0.1)";
+                e.currentTarget.style.color = "white";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color = inactiveColor;
+              }}
+            >
+              <item.icon size={16} />
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import LiquidSphere from "./LiquidSphere";
+import HeroButton from "./HeroButton";
 
 const HeroSection = () => {
   const navigate = useNavigate();

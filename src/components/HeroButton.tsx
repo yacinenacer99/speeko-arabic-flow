@@ -6,7 +6,7 @@ interface HeroButtonProps {
 
 export default function HeroButton({ onClick }: HeroButtonProps) {
   const isMobile = useIsMobile();
-  const size = isMobile ? 240 : 280;
+  const size = isMobile ? 200 : 240;
 
   return (
     <div className="hero-float" style={{ display: 'inline-block' }}>

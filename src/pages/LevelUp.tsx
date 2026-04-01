@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { Star } from "lucide-react";
 
 const LevelUp = () => {
   const navigate = useNavigate();
@@ -33,20 +34,30 @@ const LevelUp = () => {
         }
       `}</style>
 
-      <span style={{ fontSize: 64 }}>⭐</span>
+      <div
+        className="flex items-center justify-center"
+        style={{
+          width: 80,
+          height: 80,
+          borderRadius: "50%",
+          background: "rgba(168,156,255,0.15)",
+        }}
+      >
+        <Star size={40} color="hsl(var(--primary-soft))" />
+      </div>
       <p className="font-cairo font-bold text-white" style={{ fontSize: 32, marginTop: 16 }}>ترقيت!</p>
-      <p className="font-cairo font-bold" style={{ fontSize: 48, color: "#A89CFF", marginTop: 8 }}>متحدث</p>
-      <p className="font-cairo font-light" style={{ fontSize: 16, color: "#9090A8", marginTop: 8 }}>وصلت للمرحلة الثانية</p>
+      <p className="font-cairo font-bold" style={{ fontSize: 48, color: "hsl(var(--primary-soft))", marginTop: 8 }}>متحدث</p>
+      <p className="font-cairo font-light" style={{ fontSize: 16, color: "hsl(var(--muted-foreground))", marginTop: 8 }}>وصلت للمرحلة الثانية</p>
 
       <div
-        className="flex flex-col items-center"
-        style={{ background: "#1A1A28", borderRadius: 16, padding: 20, marginTop: 32, width: "100%", maxWidth: 300 }}
+        className="flex flex-col items-center glass-card-dark"
+        style={{ padding: 20, marginTop: 32, width: "100%", maxWidth: 300 }}
       >
-        <span className="font-cairo font-bold" style={{ fontSize: 28, color: "#A89CFF" }}>+100 XP</span>
-        <span className="font-cairo font-light" style={{ fontSize: 12, color: "#9090A8", marginTop: 4 }}>نقاط مكتسبة</span>
+        <span className="font-cairo font-bold" style={{ fontSize: 28, color: "hsl(var(--primary-soft))" }}>+100 XP</span>
+        <span className="font-cairo font-light" style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 4 }}>نقاط مكتسبة</span>
       </div>
 
-      <p className="font-cairo font-light" style={{ fontSize: 14, color: "#9090A8", marginTop: 16 }}>
+      <p className="font-cairo font-light" style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", marginTop: 16 }}>
         فتحت: كلمات ممنوعة متعددة + تحديات أصعب
       </p>
 
@@ -54,7 +65,7 @@ const LevelUp = () => {
         onClick={() => navigate("/home")}
         className="font-cairo font-bold text-white w-full"
         style={{
-          background: "#6C63FF",
+          background: "hsl(var(--primary))",
           border: "none",
           borderRadius: 999,
           padding: "16px 0",

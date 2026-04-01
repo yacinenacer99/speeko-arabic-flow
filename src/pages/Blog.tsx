@@ -27,25 +27,22 @@ const articles = [
 
 const Blog = () => {
   return (
-    <div style={{ background: "#F5F4F0", minHeight: "100vh", direction: "rtl" }}>
+    <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100vh", direction: "rtl" }}>
       <Navbar />
+      <div className="blob blob-violet" style={{ width: 250, height: 250, top: "10%", right: "-8%" }} />
 
       <div style={{ padding: "80px 24px 40px", maxWidth: 480, margin: "0 auto" }}>
-        <h1 className="font-cairo font-bold" style={{ fontSize: 28, color: "#1A1A2E", marginBottom: 24 }}>المدونة</h1>
+        <h1 className="font-cairo font-bold" style={{ fontSize: 28, color: "hsl(var(--foreground))", marginBottom: 24 }}>المدونة</h1>
 
         <div className="flex flex-col gap-4">
           {articles.map((a, i) => (
-            <div
-              key={i}
-              className="flex flex-col cursor-pointer"
-              style={{ background: "white", borderRadius: 20, padding: 24 }}
-            >
+            <div key={i} className="flex flex-col cursor-pointer glass-card-light" style={{ padding: 24 }}>
               <span
                 className="font-cairo font-bold self-start"
                 style={{
                   fontSize: 11,
                   color: "white",
-                  background: "#6C63FF",
+                  background: "hsl(var(--primary))",
                   borderRadius: 999,
                   padding: "3px 10px",
                   marginBottom: 12,
@@ -53,12 +50,12 @@ const Blog = () => {
               >
                 {a.category}
               </span>
-              <p className="font-cairo font-bold" style={{ fontSize: 18, color: "#1A1A2E", marginBottom: 8 }}>{a.title}</p>
+              <p className="font-cairo font-bold" style={{ fontSize: 18, color: "hsl(var(--foreground))", marginBottom: 8 }}>{a.title}</p>
               <p
                 className="font-cairo font-light"
                 style={{
                   fontSize: 14,
-                  color: "#9090A8",
+                  color: "hsl(var(--muted-foreground))",
                   marginBottom: 12,
                   display: "-webkit-box",
                   WebkitLineClamp: 2,
@@ -69,10 +66,10 @@ const Blog = () => {
                 {a.excerpt}
               </p>
               <div className="flex items-center justify-between">
-                <span className="font-cairo font-light" style={{ fontSize: 12, color: "#9090A8" }}>
+                <span className="font-cairo font-light" style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>
                   {a.date} · {a.readTime}
                 </span>
-                <ArrowLeft size={16} color="#9090A8" />
+                <ArrowLeft size={16} color="hsl(var(--muted-foreground))" />
               </div>
             </div>
           ))}

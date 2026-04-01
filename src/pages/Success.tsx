@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
+import { Sparkles, BarChart3, Unlock } from "lucide-react";
 
 const items = [
-  { icon: "✨", text: "التحليل الكامل بعد كل جلسة" },
-  { icon: "📊", text: "تقريرك الأسبوعي المخصص" },
-  { icon: "🔓", text: "المراحل المتقدمة 4-6" },
+  { Icon: Sparkles, text: "التحليل الكامل بعد كل جلسة" },
+  { Icon: BarChart3, text: "تقريرك الأسبوعي المخصص" },
+  { Icon: Unlock, text: "المراحل المتقدمة 4-6" },
 ];
 
 const Success = () => {
@@ -20,12 +21,12 @@ const Success = () => {
           width: 80,
           height: 80,
           borderRadius: "50%",
-          border: "3px solid #5DBE8A",
+          border: "3px solid hsl(var(--success))",
           animation: "scaleIn 0.5s ease forwards",
           marginBottom: 24,
         }}
       >
-        <span className="font-cairo font-bold" style={{ fontSize: 40, color: "#5DBE8A" }}>✓</span>
+        <span className="font-cairo font-bold" style={{ fontSize: 40, color: "hsl(var(--success))" }}>✓</span>
       </div>
 
       <style>{`
@@ -33,8 +34,8 @@ const Success = () => {
         @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
       `}</style>
 
-      <p className="font-cairo font-bold text-white" style={{ fontSize: 28 }}>أهلاً بك في برو! 🎉</p>
-      <p className="font-cairo font-light" style={{ fontSize: 16, color: "#9090A8", marginTop: 8, marginBottom: 32 }}>اشتراكك فعّال الآن</p>
+      <p className="font-cairo font-bold text-white" style={{ fontSize: 28 }}>أهلاً بك في برو!</p>
+      <p className="font-cairo font-light" style={{ fontSize: 16, color: "hsl(var(--muted-foreground))", marginTop: 8, marginBottom: 32 }}>اشتراكك فعّال الآن</p>
 
       <div className="flex flex-col gap-4 w-full" style={{ maxWidth: 320 }}>
         {items.map((item, i) => (
@@ -43,7 +44,7 @@ const Success = () => {
             className="flex items-center gap-3"
             style={{ animation: `fadeInUp 0.5s ease ${0.3 + i * 0.2}s both` }}
           >
-            <span style={{ fontSize: 20 }}>{item.icon}</span>
+            <item.Icon size={20} color="hsl(var(--primary-soft))" />
             <span className="font-cairo font-light text-white" style={{ fontSize: 15 }}>{item.text}</span>
           </div>
         ))}

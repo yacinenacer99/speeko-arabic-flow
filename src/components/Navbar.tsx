@@ -41,8 +41,20 @@ const Navbar = () => {
   const activeColor = "#A89CFF";
   const inactiveColor = "#9090A8";
 
+  // Detect if we're on a dark page
+  const isDarkPage = ["/challenge", "/results", "/levelup", "/streakLost", "/success"].some(p => location.pathname.startsWith(p));
+
   return (
-    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[1000]" ref={wrapperRef}>
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-3" ref={wrapperRef} style={{ direction: "rtl" }}>
+      {/* Wordmark — OUTSIDE pill, RIGHT side (RTL) */}
+      <span
+        className="font-cairo font-bold text-[13px] whitespace-nowrap cursor-pointer"
+        style={{ color: isDarkPage ? "white" : "#0F0F14" }}
+        onClick={() => navigate("/")}
+      >
+        ملسون
+      </span>
+
       {/* Pill */}
       <div
         className="flex items-center gap-4 rounded-full transition-colors duration-300"
@@ -51,16 +63,9 @@ const Navbar = () => {
           border: "1px solid #2A2A3E",
           boxShadow: "0 4px 32px rgba(0,0,0,0.2)",
           backdropFilter: "blur(16px)",
-          width: "fit-content",
           padding: "10px 20px",
         }}
       >
-        <span className="font-cairo font-bold text-[14px] text-white whitespace-nowrap cursor-pointer" onClick={() => navigate("/")}>
-          ملسون
-        </span>
-
-        <div className="w-px h-4" style={{ background: "#2A2A3E" }} />
-
         {/* Icon group */}
         <div className="flex items-center gap-5">
           <div className="relative flex items-center">
@@ -117,37 +122,30 @@ const Navbar = () => {
 
         <div className="w-px h-4" style={{ background: "#2A2A3E" }} />
 
-        {/* المدونة — hidden on mobile */}
+        {/* المدونة */}
         <button
           onClick={() => navigate("/blog")}
-          className="hidden md:block font-cairo font-light text-[13px] hover:text-white transition-colors duration-200 whitespace-nowrap"
-          style={{ color: inactiveColor }}
+          className="font-cairo font-light text-[13px] hover:text-white transition-colors duration-200 whitespace-nowrap"
+          style={{ color: isActive("/blog") ? activeColor : inactiveColor }}
         >
           المدونة
         </button>
-
-        {/* Divider before hamburger — hidden on mobile when المدونة is hidden */}
-        <div className="hidden md:block w-px h-4" style={{ background: "#2A2A3E" }} />
-
-        {/* Hamburger */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="flex items-center justify-center transition-colors duration-200 text-white"
-        >
-          <Menu size={18} />
-        </button>
       </div>
+
+      {/* Hamburger — OUTSIDE pill, LEFT side (RTL) */}
+      <button
+        onClick={() => setMenuOpen(!menuOpen)}
+        className="flex items-center justify-center transition-colors duration-200"
+        style={{ color: isDarkPage ? "white" : "#0F0F14", background: "none", border: "none", cursor: "pointer" }}
+      >
+        <Menu size={18} />
+      </button>
 
       {/* Dropdown */}
       {menuOpen && (
         <div
-          className="mx-auto mt-2 p-5 rounded-2xl"
-          style={{
-            background: "#0F0F14",
-            border: "1px solid #2A2A3E",
-            minWidth: 220,
-            animation: "fade-in 0.15s ease-out",
-          }}
+          className="absolute top-full mt-2 left-1/2 -translate-x-1/2 p-5 rounded-2xl glass-card-dark"
+          style={{ minWidth: 220 }}
         >
           {dropdownItems.map((item) => (
             <button

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { CheckCircle } from "lucide-react";
 
 type State = "landing" | "sport" | "topic" | "recording" | "results";
 
@@ -34,7 +35,6 @@ const HeroSection = () => {
   const [timeLeft, setTimeLeft] = useState(60);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Recording indicators
   const [flashKey, setFlashKey] = useState(0);
   const [showFlash, setShowFlash] = useState(false);
   const [struckWords, setStruckWords] = useState<string[]>([]);
@@ -54,7 +54,6 @@ const HeroSection = () => {
     }
   }, []);
 
-  // Sport → topic auto-transition
   useEffect(() => {
     if (state === "sport") {
       const id = setTimeout(() => setState("topic"), 700);
@@ -62,7 +61,6 @@ const HeroSection = () => {
     }
   }, [state]);
 
-  // Recording timer
   useEffect(() => {
     if (state === "recording") {
       setTimeLeft(60);
@@ -79,7 +77,6 @@ const HeroSection = () => {
     }
   }, [state, clearTimer]);
 
-  // Timer hits 0
   useEffect(() => {
     if (timeLeft === 0 && state === "recording") {
       clearTimer();
@@ -89,7 +86,6 @@ const HeroSection = () => {
 
   useEffect(() => () => clearTimer(), [clearTimer]);
 
-  // Simulated filler word flash (every 8-12s)
   useEffect(() => {
     if (state !== "recording") return;
     const schedule = () => {
@@ -106,7 +102,6 @@ const HeroSection = () => {
     return () => clearTimeout(idRef);
   }, [state]);
 
-  // Simulated forbidden word strike (random every 10-18s)
   useEffect(() => {
     if (state !== "recording") return;
     const available = () =>
@@ -128,7 +123,6 @@ const HeroSection = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, currentTopic.forbidden]);
 
-  // Silence indicator
   useEffect(() => {
     if (state !== "recording") {
       setShowSilence(false);
@@ -199,6 +193,15 @@ const HeroSection = () => {
         }}
       />
 
+      {/* Atmospheric blobs — landing only */}
+      {isLanding && (
+        <>
+          <div className="blob blob-violet" style={{ width: 350, height: 350, top: "15%", right: "-10%" }} />
+          <div className="blob blob-pink" style={{ width: 300, height: 300, bottom: "20%", left: "-5%" }} />
+          <div className="blob blob-blue" style={{ width: 280, height: 280, top: "50%", left: "30%" }} />
+        </>
+      )}
+
       {/* Background glow */}
       <div
         className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full pointer-events-none"
@@ -226,16 +229,16 @@ const HeroSection = () => {
           }}
         >
           <h2
-            className="font-bold font-cairo text-foreground text-center whitespace-pre-line"
+            className="font-bold font-cairo text-foreground text-center"
             style={{ fontSize: 36, lineHeight: 1.2, marginBottom: 12, padding: "0 24px" }}
           >
-            كم فرصة ضاعت{"\n"}بسبب سكوتك؟
+            سكوتك يضيع عليك فرص.
           </h2>
           <p
             className="font-light font-cairo text-muted-foreground text-center"
             style={{ fontSize: 15, marginBottom: 44, padding: "0 24px" }}
           >
-            تحدياتنا تعلمك كيف تسولف بدون توتر ونعطيك خطة تطورك أسبوع بعد أسبوع.
+            تحدياتنا تعلمك كيف تسولف بدون توتر
           </p>
         </div>
 
@@ -312,6 +315,18 @@ const HeroSection = () => {
                 >
                   {isRecording ? formatTime(timeLeft) : "1:00"}
                 </span>
+                {/* جاهز؟ below timer in topic state */}
+                <span
+                  className="font-cairo font-light text-[13px]"
+                  style={{
+                    color: "rgba(255,255,255,0.6)",
+                    opacity: state === "topic" ? 1 : 0,
+                    position: state === "topic" ? "relative" : "absolute",
+                    transition: "opacity 0.3s ease",
+                  }}
+                >
+                  جاهز؟
+                </span>
               </div>
             </div>
           </div>
@@ -336,7 +351,7 @@ const HeroSection = () => {
               style={{
                 width: 3,
                 borderRadius: 999,
-                backgroundColor: "#6C63FF",
+                backgroundColor: "hsl(var(--primary))",
                 height: isRecording ? undefined : 4,
                 opacity: isRecording ? 1 : 0.3,
                 animation: isRecording
@@ -354,7 +369,7 @@ const HeroSection = () => {
           className="font-cairo font-light text-center"
           style={{
             fontSize: 13,
-            color: "#9090A8",
+            color: "hsl(var(--muted-foreground))",
             opacity: showSilence && isRecording ? 1 : 0,
             transition: "opacity 0.4s ease",
             marginTop: 8,
@@ -376,13 +391,13 @@ const HeroSection = () => {
             overflow: "hidden",
           }}
         >
-          <p className="font-cairo text-center" style={{ fontWeight: 300, fontSize: 12, color: "#9090A8", marginBottom: 6 }}>
+          <p className="font-cairo text-center" style={{ fontWeight: 300, fontSize: 12, color: "hsl(var(--muted-foreground))", marginBottom: 6 }}>
             تكلم عن:
           </p>
           <p className="font-cairo font-bold text-white text-center" style={{ fontSize: 22, marginBottom: 20 }}>
             {currentTopic.topic}
           </p>
-          <p className="font-cairo text-center" style={{ fontWeight: 300, fontSize: 12, color: "#9090A8", marginBottom: 10 }}>
+          <p className="font-cairo text-center" style={{ fontWeight: 300, fontSize: 12, color: "hsl(var(--muted-foreground))", marginBottom: 10 }}>
             ماتقدر تقول:
           </p>
           <div className="flex flex-wrap justify-center" style={{ gap: 8 }}>
@@ -401,11 +416,7 @@ const HeroSection = () => {
                     padding: "5px 14px",
                     color: "#FF6B6B",
                     textDecoration: isStruck ? "line-through" : "none",
-                    transform: isStruck ? "scale(1)" : undefined,
-                    animation: isStruck
-                      ? "none"
-                      : undefined,
-                    transition: "background 0.3s ease, border-color 0.3s ease, transform 0.3s ease",
+                    transition: "background 0.3s ease, border-color 0.3s ease",
                   }}
                 >
                   {isStruck ? `✕ ${word}` : word}
@@ -421,7 +432,7 @@ const HeroSection = () => {
           style={{
             fontSize: 12,
             color: "#FF6B6B",
-            opacity: isRecording ? 1 : 0,
+            opacity: isRecording ? 0.6 : 0,
             transition: "opacity 0.3s ease",
             pointerEvents: "none",
           }}
@@ -441,20 +452,14 @@ const HeroSection = () => {
             width: "100%",
           }}
         >
-          <div
-            style={{
-              background: "#1A1A28",
-              border: "1px solid #2A2A3E",
-              borderRadius: 24,
-              padding: "32px 24px",
-              maxWidth: 340,
-              width: "calc(100% - 48px)",
-            }}
-          >
-            {/* Title */}
-            <p className="font-cairo font-bold text-white text-center" style={{ fontSize: 20, marginBottom: 28 }}>
-              انتهت الجلسة ✓
-            </p>
+          <div className="glass-card-dark" style={{ padding: "32px 24px", maxWidth: 340, width: "calc(100% - 48px)" }}>
+            {/* Title with check icon */}
+            <div className="flex items-center justify-center gap-2" style={{ marginBottom: 28 }}>
+              <CheckCircle size={20} color="#5DBE8A" />
+              <p className="font-cairo font-bold text-white" style={{ fontSize: 20 }}>
+                انتهت الجلسة
+              </p>
+            </div>
 
             {/* Three stats */}
             <div className="flex justify-around" style={{ direction: "rtl" }}>
@@ -467,7 +472,7 @@ const HeroSection = () => {
                   <span className="font-cairo font-bold" style={{ fontSize: 32, color: stat.color }}>
                     {stat.value}
                   </span>
-                  <span className="font-cairo font-light" style={{ fontSize: 12, color: "#9090A8", marginTop: 4 }}>
+                  <span className="font-cairo font-light" style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 4 }}>
                     {stat.label}
                   </span>
                 </div>
@@ -475,14 +480,14 @@ const HeroSection = () => {
             </div>
 
             {/* Divider */}
-            <div style={{ height: 1, background: "#2A2A3E", margin: "24px 0" }} />
+            <div style={{ height: 1, background: "hsla(var(--glass-dark-border))", margin: "24px 0" }} />
 
             {/* Primary button */}
             <button
               onClick={() => navigate("/results")}
               className="font-cairo font-bold text-[16px] text-white w-full"
               style={{
-                background: "#6C63FF",
+                background: "hsl(var(--primary))",
                 borderRadius: 999,
                 padding: "16px 0",
                 boxShadow: "0 0 24px rgba(108,99,255,0.35)",
@@ -504,7 +509,7 @@ const HeroSection = () => {
               style={{
                 background: "none",
                 border: "none",
-                color: "#9090A8",
+                color: "hsl(var(--muted-foreground))",
                 marginTop: 16,
                 cursor: "pointer",
                 padding: 0,
@@ -513,6 +518,28 @@ const HeroSection = () => {
               تدرب مرة ثانية
             </button>
           </div>
+
+          {/* CTA below card */}
+          <button
+            onClick={() => navigate("/onboarding")}
+            className="font-cairo font-bold w-full"
+            style={{
+              background: "white",
+              color: "#0F0F14",
+              border: "none",
+              borderRadius: 999,
+              padding: "14px 0",
+              fontSize: 15,
+              cursor: "pointer",
+              marginTop: 20,
+              maxWidth: 340,
+            }}
+          >
+            ابدأ خطة التعلم
+          </button>
+          <p className="font-cairo font-light" style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", marginTop: 8 }}>
+            مجاناً — لا تحتاج حساب
+          </p>
         </div>
       </div>
     </section>

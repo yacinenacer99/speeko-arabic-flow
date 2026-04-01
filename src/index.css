@@ -46,6 +46,19 @@
     --sidebar-ring: 244 100% 68%;
 
     --surface-dark: 240 12% 5%;
+    --surface: 240 18% 13%;
+    --surface-2: 240 14% 19%;
+
+    /* Glassmorphism tokens */
+    --glass-light: 0 0% 100% / 0.45;
+    --glass-light-border: 0 0% 100% / 0.6;
+    --glass-dark: 240 18% 13% / 0.55;
+    --glass-dark-border: 0 0% 100% / 0.08;
+
+    /* Status colors */
+    --success: 148 47% 58%;
+    --warning: 38 92% 50%;
+    --danger: 0 100% 71%;
   }
 }
 
@@ -58,6 +71,37 @@
     @apply bg-background text-foreground font-cairo antialiased;
   }
 }
+
+/* Glassmorphism utility classes */
+.glass-card-light {
+  background: hsla(var(--glass-light));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid hsla(var(--glass-light-border));
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+}
+
+.glass-card-dark {
+  background: hsla(var(--glass-dark));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid hsla(var(--glass-dark-border));
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Atmospheric blobs */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+  pointer-events: none;
+}
+.blob-violet { background: hsl(var(--primary)); }
+.blob-pink { background: hsl(340 100% 81%); }
+.blob-blue { background: hsl(216 100% 83%); }
 
 /* Hero button animations */
 @keyframes rotateBorder {
@@ -158,75 +202,7 @@
   animation: pulse-glow 2.5s ease-in-out infinite;
 }
 
-/* Siri orb blob animations */
-@keyframes orb-rotate-1 {
-  0% { transform: translate(-50%, -50%) rotate(0deg) translateX(80px) rotate(0deg) scale(1); }
-  50% { transform: translate(-50%, -50%) rotate(180deg) translateX(85px) rotate(-180deg) scale(1.2); }
-  100% { transform: translate(-50%, -50%) rotate(360deg) translateX(80px) rotate(-360deg) scale(1); }
-}
-
-@keyframes orb-rotate-2 {
-  0% { transform: translate(-50%, -50%) rotate(90deg) translateX(82px) rotate(-90deg) scale(1.1); }
-  50% { transform: translate(-50%, -50%) rotate(270deg) translateX(78px) rotate(-270deg) scale(0.9); }
-  100% { transform: translate(-50%, -50%) rotate(450deg) translateX(82px) rotate(-450deg) scale(1.1); }
-}
-
-@keyframes orb-rotate-3 {
-  0% { transform: translate(-50%, -50%) rotate(200deg) translateX(76px) rotate(-200deg) scale(1); }
-  50% { transform: translate(-50%, -50%) rotate(380deg) translateX(88px) rotate(-380deg) scale(1.15); }
-  100% { transform: translate(-50%, -50%) rotate(560deg) translateX(76px) rotate(-560deg) scale(1); }
-}
-
-@keyframes orb-rotate-4 {
-  0% { transform: translate(-50%, -50%) rotate(300deg) translateX(84px) rotate(-300deg) scale(1.05); }
-  50% { transform: translate(-50%, -50%) rotate(120deg) translateX(80px) rotate(-120deg) scale(0.95); }
-  100% { transform: translate(-50%, -50%) rotate(-60deg) translateX(84px) rotate(60deg) scale(1.05); }
-}
-
-.siri-orb {
-  position: relative;
-  overflow: visible;
-}
-
-.siri-blob {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  filter: blur(40px);
-  opacity: 0.6;
-  pointer-events: none;
-  will-change: transform;
-}
-
-.siri-orb:hover .siri-blob {
-  opacity: 0.8;
-}
-
-.siri-blob-violet {
-  background: hsl(244 100% 68%);
-  animation: orb-rotate-1 3s ease-in-out infinite;
-}
-
-.siri-blob-purple {
-  background: hsl(248 100% 81%);
-  animation: orb-rotate-2 5s ease-in-out infinite;
-}
-
-.siri-blob-pink {
-  background: hsl(340 100% 81%);
-  animation: orb-rotate-3 7s ease-in-out infinite;
-}
-
-.siri-blob-teal {
-  background: hsl(166 65% 72%);
-  animation: orb-rotate-4 5s ease-in-out infinite reverse;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .siri-blob,
   .animate-pulse-glow {
     animation: none !important;
   }

@@ -86,20 +86,20 @@ const Home = () => {
       </div>
 
       {/* Learning Path */}
-      <div style={{ padding: "0 24px 120px", marginTop: -200 , position: "relative", zIndex: 2 }}>
+      <div style={{ padding: "0 24px 120px", marginTop: -80, position: "relative", zIndex: 2 }}>
         <h2 className="font-cairo font-bold" style={{ fontSize: 22, color: "hsl(var(--foreground))", marginBottom: 24, textAlign: "center" }}>
           مسارك
         </h2>
 
         <div
           style={{
-            background: "rgba(26, 26, 40, 0.6)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "rgba(255, 255, 255, 0.05)",
+            border: "1px solid rgba(255,255,255,0.1)",
             borderRadius: 20,
             padding: "24px 20px",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)",
           }}
         >
           <div className="flex flex-col" style={{ gap: 0 }}>

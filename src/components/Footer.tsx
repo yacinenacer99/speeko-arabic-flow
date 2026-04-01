@@ -41,7 +41,7 @@ const Footer = () => {
         {/* Divider + copyright */}
         <div className="border-t border-[hsl(240_12%_15%)] pt-6">
           <p className="text-center text-xs font-light font-cairo text-muted-foreground">
-            © 2025 Speeko. جميع الحقوق محفوظة.
+            © 2025 ملسون. جميع الحقوق محفوظة.
           </p>
         </div>
       </div>

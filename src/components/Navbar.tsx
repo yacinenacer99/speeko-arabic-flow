@@ -55,9 +55,8 @@ const Navbar = () => {
           padding: "10px 20px",
         }}
       >
-        {/* Speeko wordmark */}
-        <span className="font-cairo font-bold text-[13px] text-white whitespace-nowrap cursor-pointer" onClick={() => navigate("/")}>
-          Speeko
+        <span className="font-cairo font-bold text-[14px] text-white whitespace-nowrap cursor-pointer" onClick={() => navigate("/")}>
+          ملسون
         </span>
 
         <div className="w-px h-4" style={{ background: "#2A2A3E" }} />

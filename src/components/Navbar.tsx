@@ -55,7 +55,7 @@ const Navbar = () => {
   return (
     <div className="fixed top-0 left-0 right-0 z-[1000]" ref={wrapperRef} style={{ direction: "rtl" }}>
       <div
-        className="flex items-center justify-between transition-colors duration-300 px-6 md:px-10"
+        className="grid grid-cols-[auto_1fr_auto] items-center transition-colors duration-300 px-6 md:px-10"
         style={{
           background: scrolled ? "rgba(15,15,20,0.95)" : "#0F0F14",
           borderBottom: "1px solid #2A2A3E",
@@ -76,35 +76,37 @@ const Navbar = () => {
 
         {/* Center: Pill with tabs (logged-in) or desktop links */}
         {showTabs ? (
-          <div
-            className="flex items-center gap-1 rounded-full"
-            style={{
-              background: "#1A1A28",
-              border: "1px solid #2A2A3E",
-              padding: "3px 4px",
-            }}
-          >
-            {tabs.map((tab) => {
-              const active = isActive(tab.path);
-              return (
-                <button
-                  key={tab.path}
-                  onClick={() => navigate(tab.path)}
-                  className="flex items-center gap-1.5 rounded-full font-cairo font-light text-[11px] transition-all duration-200"
-                  style={{
-                    padding: "5px 12px",
-                    color: active ? "white" : inactiveColor,
-                    background: active ? "rgba(108,99,255,0.2)" : "transparent",
-                  }}
-                >
-                  <tab.icon size={13} />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
+          <div className="flex justify-center">
+            <div
+              className="flex items-center gap-1 rounded-full"
+              style={{
+                background: "#1A1A28",
+                border: "1px solid #2A2A3E",
+                padding: "3px 4px",
+              }}
+            >
+              {tabs.map((tab) => {
+                const active = isActive(tab.path);
+                return (
+                  <button
+                    key={tab.path}
+                    onClick={() => navigate(tab.path)}
+                    className="flex items-center gap-1.5 rounded-full font-cairo font-light text-[11px] transition-all duration-200"
+                    style={{
+                      padding: "5px 12px",
+                      color: active ? "white" : inactiveColor,
+                      background: active ? "rgba(108,99,255,0.2)" : "transparent",
+                    }}
+                  >
+                    <tab.icon size={13} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         ) : (
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center justify-center gap-6">
             {[
               { label: "الرئيسية", path: "/" },
               { label: "المدونة", path: "/blog" },
@@ -125,7 +127,7 @@ const Navbar = () => {
         {/* Left: Hamburger */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="flex items-center justify-center transition-colors duration-200 text-white hover:text-white/80"
+          className="flex items-center justify-center justify-self-end transition-colors duration-200 text-white hover:text-white/80"
           style={{ background: "none", border: "none", cursor: "pointer" }}
         >
           {menuOpen ? <X size={18} /> : <Menu size={18} />}

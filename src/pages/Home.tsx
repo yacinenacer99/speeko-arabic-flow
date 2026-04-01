@@ -1,14 +1,27 @@
 import { useNavigate } from "react-router-dom";
-import { Lock, Check, Flame, Zap } from "lucide-react";
+import { Lock, Check, Flame, Zap, Shield, Mic, Award } from "lucide-react";
 import Navbar from "@/components/Navbar";
 
-
-const stages = [
-  { name: "مبتدئ", desc: "تكلم 30 ثانية بدون توقف", status: "completed" as const },
-  { name: "متحدث", desc: "تخلص من كلمات الحشو", status: "current" as const },
-  { name: "مؤثر", desc: "بنِ أفكارك بوضوح", status: "locked" as const },
-  { name: "خطيب", desc: "أي موضوع، أي غرفة", status: "locked" as const },
+const levels = [
+  { level: 1, badge: "مبتدئ", desc: "تكلم 30 ثانية بدون توقف", status: "completed" as const },
+  { level: 2, badge: "مبتدئ", desc: "قلل التوقفات الطويلة", status: "completed" as const },
+  { level: 3, badge: "متحدث", desc: "تخلص من كلمات الحشو", status: "current" as const },
+  { level: 4, badge: "متحدث", desc: "تكلم دقيقة كاملة بثقة", status: "locked" as const },
+  { level: 5, badge: "متحدث", desc: "نوّع نبرة صوتك", status: "locked" as const },
+  { level: 6, badge: "مؤثر", desc: "بنِ أفكارك بوضوح وتسلسل", status: "locked" as const },
+  { level: 7, badge: "خطيب", desc: "تكلم عن أي موضوع بدون تحضير", status: "locked" as const },
+  { level: 8, badge: "خطيب", desc: "أي موضوع، أي غرفة، أي جمهور", status: "locked" as const },
 ];
+
+const badgeIcon = (badge: string) => {
+  switch (badge) {
+    case "مبتدئ": return Mic;
+    case "متحدث": return Shield;
+    case "مؤثر": return Award;
+    case "خطيب": return Award;
+    default: return Mic;
+  }
+};
 
 const Home = () => {
   const navigate = useNavigate();

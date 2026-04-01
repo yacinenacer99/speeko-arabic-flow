@@ -226,10 +226,10 @@ const HeroSection = () => {
           }}
         >
           <h2
-            className="font-bold font-cairo text-foreground text-center"
-            style={{ fontSize: 36, lineHeight: 1.5, marginBottom: 12, padding: "0 24px" }}
+            className="font-bold font-cairo text-foreground text-center whitespace-pre-line"
+            style={{ fontSize: 36, lineHeight: 1.2, marginBottom: 12, padding: "0 24px" }}
           >
-            سكوتك يضيع عليك فرص.
+            كم فرصة ضاعت{"\n"}بسبب سكوتك
           </h2>
           <p
             className="font-light font-cairo text-muted-foreground text-center"

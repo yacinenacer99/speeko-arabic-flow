@@ -15,11 +15,11 @@ const HeroSection = () => {
       />
 
       <div className="relative z-10 text-center max-w-[680px] mx-auto">
-        <h2 className="text-4xl md:text-[56px] md:leading-[1.2] font-bold font-cairo text-foreground mb-6">
-          تعرف وش تقول. تدرب على قولته.
+        <h2 className="text-4xl md:text-[56px] md:leading-[1.2] font-bold font-cairo text-foreground mt-0 mb-[33px]">
+          سكوتك يضيع عليك فرص!
         </h2>
         <p className="text-lg md:text-xl font-light font-cairo text-muted-foreground mb-16">
-          تطبيق التدريب اليومي على الكلام — تحدي، تحليل، تطور
+          تحدياتنا تعلمك كيف تسولف بدون توتر ونعطيك خطة تطورك أسبوع بعد أسبوع.
         </p>
 
         {/* Siri-style orb button */}
@@ -38,7 +38,7 @@ const HeroSection = () => {
 
           {/* Text */}
           <span className="relative z-10 text-lg font-bold font-cairo text-primary-foreground">ابدأ التحدي</span>
-          <span className="relative z-10 text-[13px] font-light font-cairo text-primary-foreground/60 mt-1">التحدي اليوم جاهز</span>
+          <span className="relative z-10 text-[13px] font-light font-cairo text-primary-foreground/60 mt-1">تكلم الأن</span>
         </button>
       </div>
     </section>

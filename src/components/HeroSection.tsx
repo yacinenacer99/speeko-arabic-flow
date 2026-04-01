@@ -429,69 +429,90 @@ const HeroSection = () => {
           اضغط للإيقاف
         </p>
 
-        {/* RESULTS content */}
+        {/* RESULTS — Session Complete Card */}
         <div
-          className="flex flex-col items-center text-center"
+          className="flex flex-col items-center justify-center"
           style={{
             opacity: isResults ? 1 : 0,
-            transform: isResults ? "translateY(0)" : "translateY(16px)",
+            transform: isResults ? "translateY(0)" : "translateY(20px)",
             pointerEvents: isResults ? "auto" : "none",
             transition: "opacity 0.6s ease, transform 0.6s ease",
             position: isResults ? "relative" : "absolute",
-            padding: "0 24px",
             width: "100%",
-            maxWidth: 400,
           }}
         >
-          <p className="font-cairo font-light text-[18px]" style={{ color: "#9090A8", marginBottom: 20 }}>
-            كيف كان؟
-          </p>
-          <div className="flex flex-col w-full" style={{ gap: 10, maxWidth: 320, margin: "0 auto" }}>
-            {[
-              { label: "كلمات الحشو", value: "يعني × 3", icon: "🔴" },
-              { label: "سرعة الكلام", value: "متوسط", icon: "🎙️" },
-              { label: "الكلمات الممنوعة", value: `استخدمت ${struckWords.length}`, icon: "🚫" },
-            ].map((card) => (
-              <div
-                key={card.label}
-                className="flex items-center justify-between rounded-2xl"
-                style={{
-                  background: "#1A1A28",
-                  border: "1px solid #2A2A3E",
-                  padding: "20px 24px",
-                  direction: "rtl",
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-lg">{card.icon}</span>
-                  <span className="font-cairo font-light text-[14px]" style={{ color: "#9090A8" }}>
-                    {card.label}
-                  </span>
-                </div>
-                <span className="font-cairo font-bold text-[14px] text-white">
-                  {card.value}
-                </span>
-              </div>
-            ))}
-          </div>
-          <button
-            onClick={() => navigate("/onboarding")}
-            className="font-cairo font-bold text-[16px]"
+          <div
             style={{
-              background: "white",
-              color: "#0F0F14",
-              borderRadius: 999,
-              padding: "18px 0",
-              marginTop: 24,
+              background: "#1A1A28",
+              border: "1px solid #2A2A3E",
+              borderRadius: 24,
+              padding: "32px 24px",
+              maxWidth: 340,
               width: "calc(100% - 48px)",
-              maxWidth: 320,
             }}
           >
-            علمني كيف أسولف
-          </button>
-          <p className="font-cairo font-light text-[11px]" style={{ color: "#9090A8", marginTop: 8 }}>
-            مجاناً — لا تحتاج حساب
-          </p>
+            {/* Title */}
+            <p className="font-cairo font-bold text-white text-center" style={{ fontSize: 20, marginBottom: 28 }}>
+              انتهت الجلسة ✓
+            </p>
+
+            {/* Three stats */}
+            <div className="flex justify-around" style={{ direction: "rtl" }}>
+              {[
+                { value: formatTime(60 - timeLeft), label: "المدة", color: "#FFFFFF" },
+                { value: "74", label: "نقاط التدفق", color: "#A89CFF" },
+                { value: "4", label: "كلمات الحشو", color: "#FFFFFF" },
+              ].map((stat) => (
+                <div key={stat.label} className="flex flex-col items-center">
+                  <span className="font-cairo font-bold" style={{ fontSize: 32, color: stat.color }}>
+                    {stat.value}
+                  </span>
+                  <span className="font-cairo font-light" style={{ fontSize: 12, color: "#9090A8", marginTop: 4 }}>
+                    {stat.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div style={{ height: 1, background: "#2A2A3E", margin: "24px 0" }} />
+
+            {/* Primary button */}
+            <button
+              onClick={() => navigate("/results")}
+              className="font-cairo font-bold text-[16px] text-white w-full"
+              style={{
+                background: "#6C63FF",
+                borderRadius: 999,
+                padding: "16px 0",
+                boxShadow: "0 0 24px rgba(108,99,255,0.35)",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              عرض التحليل الكامل
+            </button>
+
+            {/* Secondary link */}
+            <button
+              onClick={() => {
+                setState("landing");
+                setTimeLeft(60);
+                setStruckWords([]);
+              }}
+              className="font-cairo font-light text-[13px] w-full"
+              style={{
+                background: "none",
+                border: "none",
+                color: "#9090A8",
+                marginTop: 16,
+                cursor: "pointer",
+                padding: 0,
+              }}
+            >
+              تدرب مرة ثانية
+            </button>
+          </div>
         </div>
       </div>
     </section>

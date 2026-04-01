@@ -246,26 +246,24 @@ const HeroSection = () => {
           className={isLanding ? "hero-float" : ""}
           style={{
             display: "inline-block",
-            marginTop: isSmall ? -20 : 0,
-            marginBottom: isSmall ? 16 : 0,
             opacity: isResults ? 0 : 1,
             transform: isResults ? "scale(0.8)" : "scale(1)",
-            transition: `margin-top 0.7s ${EASE}, margin-bottom 0.7s ${EASE}, opacity 0.5s ease, transform 0.5s ease`,
+            transition: `opacity 0.5s ease, transform 0.5s ease`,
             pointerEvents: isResults ? "none" : "auto",
           }}
         >
           <div
             className="hero-stroke-wrapper"
             style={{
-              padding: isSmall ? 4 : 5,
+              padding: isUpper ? 4 : 5,
               transition: `padding 0.7s ${EASE}`,
             }}
           >
             <div
               className="hero-circle"
               style={{
-                width: isSmall ? 160 : 260,
-                height: isSmall ? 160 : 260,
+                width: isUpper ? 160 : 260,
+                height: isUpper ? 160 : 260,
                 cursor: "pointer",
                 transition: `width 0.7s ${EASE}, height 0.7s ${EASE}`,
                 animationDuration: isRecording ? "2s" : "3s",

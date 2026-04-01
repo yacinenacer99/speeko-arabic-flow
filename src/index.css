@@ -59,6 +59,48 @@
   }
 }
 
+/* Hero button animations */
+@keyframes rotateBorder {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes sphereFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 40px 8px rgba(108,99,255,0.3), 0 0 80px 20px rgba(108,99,255,0.12); }
+  50% { box-shadow: 0 0 60px 16px rgba(108,99,255,0.5), 0 0 120px 40px rgba(108,99,255,0.2); }
+}
+
+.hero-btn-wrapper {
+  background: conic-gradient(#6C63FF, #A89CFF, #FF9DC4, #8BE8D8, #6C63FF);
+  animation: rotateBorder 4s linear infinite, glowPulse 3s ease-in-out infinite;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.hero-btn-wrapper:hover {
+  transform: scale(1.04);
+}
+
+.hero-btn-wrapper:active {
+  transform: scale(0.97);
+}
+
+.hero-btn {
+  animation: sphereFloat 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-btn-wrapper,
+  .hero-btn {
+    animation: none !important;
+  }
+}
+
 /* Pulse glow for current node */
 @keyframes pulse-glow {
   0%, 100% {

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import LiquidSphere from "./LiquidSphere";
+import HeroButton from "./HeroButton";
 
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ const HeroSection = () => {
           تحدياتنا تعلمك كيف تسولف بدون توتر ونعطيك خطة تطورك أسبوع بعد أسبوع.
         </p>
 
-        <LiquidSphere onClick={() => navigate("/onboarding")} />
+        <HeroButton onClick={() => navigate("/onboarding")} />
       </div>
     </section>
   );

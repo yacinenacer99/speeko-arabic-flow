@@ -116,9 +116,30 @@
   pointer-events: none;
 }
 
+/* Recording indicators */
+@keyframes edgeFlash {
+  0% { opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0; }
+}
+
+@keyframes timerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes waveBar {
+  0% { height: var(--bar-min); }
+  100% { height: var(--bar-max); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-float,
   .hero-stroke-wrapper {
+    animation: none !important;
+  }
+  .recording-flash,
+  .waveform-bar {
     animation: none !important;
   }
 }

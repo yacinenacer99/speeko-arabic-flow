@@ -18,11 +18,29 @@ const formatTime = (t: number) =>
 
 const EASE = "cubic-bezier(0.4, 0, 0.2, 1)";
 
+const WAVE_BARS = [
+  { min: 8, max: 24, dur: 0.4 },
+  { min: 12, max: 32, dur: 0.6 },
+  { min: 6, max: 28, dur: 0.5 },
+  { min: 16, max: 36, dur: 0.45 },
+  { min: 8, max: 22, dur: 0.55 },
+  { min: 10, max: 30, dur: 0.5 },
+  { min: 6, max: 18, dur: 0.65 },
+];
+
 const HeroSection = () => {
   const navigate = useNavigate();
   const [state, setState] = useState<State>("landing");
   const [timeLeft, setTimeLeft] = useState(60);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Recording indicators
+  const [flashKey, setFlashKey] = useState(0);
+  const [showFlash, setShowFlash] = useState(false);
+  const [struckWords, setStruckWords] = useState<string[]>([]);
+  const [showSilence, setShowSilence] = useState(false);
+  const lastActivityRef = useRef(Date.now());
+  const recordingStartRef = useRef(0);
 
   const currentTopic = useMemo(
     () => TOPICS[Math.floor(Math.random() * TOPICS.length)],
@@ -36,6 +54,7 @@ const HeroSection = () => {
     }
   }, []);
 
+  // Sport → topic auto-transition
   useEffect(() => {
     if (state === "sport") {
       const id = setTimeout(() => setState("topic"), 700);
@@ -43,9 +62,13 @@ const HeroSection = () => {
     }
   }, [state]);
 
+  // Recording timer
   useEffect(() => {
     if (state === "recording") {
       setTimeLeft(60);
+      setStruckWords([]);
+      recordingStartRef.current = Date.now();
+      lastActivityRef.current = Date.now();
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) return 0;
@@ -56,6 +79,7 @@ const HeroSection = () => {
     }
   }, [state, clearTimer]);
 
+  // Timer hits 0
   useEffect(() => {
     if (timeLeft === 0 && state === "recording") {
       clearTimer();
@@ -65,11 +89,76 @@ const HeroSection = () => {
 
   useEffect(() => () => clearTimer(), [clearTimer]);
 
+  // Simulated filler word flash (every 8-12s)
+  useEffect(() => {
+    if (state !== "recording") return;
+    const schedule = () => {
+      const delay = 8000 + Math.random() * 4000;
+      return setTimeout(() => {
+        setShowFlash(true);
+        setFlashKey((k) => k + 1);
+        lastActivityRef.current = Date.now();
+        setTimeout(() => setShowFlash(false), 400);
+        idRef = schedule();
+      }, delay);
+    };
+    let idRef = schedule();
+    return () => clearTimeout(idRef);
+  }, [state]);
+
+  // Simulated forbidden word strike (random every 10-18s)
+  useEffect(() => {
+    if (state !== "recording") return;
+    const available = () =>
+      currentTopic.forbidden.filter((w) => !struckWords.includes(w));
+    const schedule = () => {
+      const delay = 10000 + Math.random() * 8000;
+      return setTimeout(() => {
+        const pool = available();
+        if (pool.length > 0) {
+          const word = pool[Math.floor(Math.random() * pool.length)];
+          setStruckWords((prev) => [...prev, word]);
+          lastActivityRef.current = Date.now();
+        }
+        idRef = schedule();
+      }, delay);
+    };
+    let idRef = schedule();
+    return () => clearTimeout(idRef);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, currentTopic.forbidden]);
+
+  // Silence indicator
+  useEffect(() => {
+    if (state !== "recording") {
+      setShowSilence(false);
+      return;
+    }
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - recordingStartRef.current;
+      const sinceActivity = Date.now() - lastActivityRef.current;
+      if (elapsed > 5000 && sinceActivity > 3000) {
+        setShowSilence(true);
+        setTimeout(() => setShowSilence(false), 2000);
+        lastActivityRef.current = Date.now();
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [state]);
+
   const isLanding = state === "landing";
   const isDark = state !== "landing";
   const isSmall = !isLanding && state !== "results";
   const showTopic = state === "topic" || state === "recording";
   const isResults = state === "results";
+  const isRecording = state === "recording";
+
+  const timerColor =
+    timeLeft > 30
+      ? "#FFFFFF"
+      : timeLeft > 10
+        ? "#F59E0B"
+        : "#FF4444";
 
   const handleCircleClick = () => {
     if (state === "landing") setState("sport");
@@ -94,6 +183,22 @@ const HeroSection = () => {
         direction: "rtl",
       }}
     >
+      {/* Edge flash overlay */}
+      <div
+        key={flashKey}
+        className="recording-flash"
+        style={{
+          position: "fixed",
+          inset: 0,
+          border: "6px solid #FF4444",
+          borderRadius: 0,
+          pointerEvents: "none",
+          zIndex: 999,
+          opacity: 0,
+          animation: showFlash ? "edgeFlash 0.4s ease forwards" : "none",
+        }}
+      />
+
       {/* Background glow */}
       <div
         className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full pointer-events-none"
@@ -105,12 +210,12 @@ const HeroSection = () => {
         }}
       />
 
-      {/* Main content area — always flex column centered */}
+      {/* Main content area */}
       <div
         className="relative z-10 flex flex-col items-center justify-center"
         style={{ flex: 1, width: "100%", maxWidth: 400 }}
       >
-        {/* Hero text — always in DOM, fades out */}
+        {/* Hero text */}
         <div
           style={{
             opacity: isLanding ? 1 : 0,
@@ -122,28 +227,19 @@ const HeroSection = () => {
         >
           <h2
             className="font-bold font-cairo text-foreground text-center"
-            style={{
-              fontSize: 36,
-              lineHeight: 1.5,
-              marginBottom: 12,
-              padding: "0 24px",
-            }}
+            style={{ fontSize: 36, lineHeight: 1.5, marginBottom: 12, padding: "0 24px" }}
           >
             سكوتك يضيع عليك فرص.
           </h2>
           <p
             className="font-light font-cairo text-muted-foreground text-center"
-            style={{
-              fontSize: 15,
-              marginBottom: 44,
-              padding: "0 24px",
-            }}
+            style={{ fontSize: 15, marginBottom: 44, padding: "0 24px" }}
           >
             تحدياتنا تعلمك كيف تسولف بدون توتر ونعطيك خطة تطورك أسبوع بعد أسبوع.
           </p>
         </div>
 
-        {/* Circle — ALWAYS in DOM, never unmounted */}
+        {/* Circle */}
         <div
           className={isLanding ? "hero-float" : ""}
           style={{
@@ -170,7 +266,7 @@ const HeroSection = () => {
                 height: isSmall ? 160 : 260,
                 cursor: "pointer",
                 transition: `width 0.7s ${EASE}, height 0.7s ${EASE}`,
-                animationDuration: state === "recording" ? "2s" : "3s",
+                animationDuration: isRecording ? "2s" : "3s",
               }}
               onClick={handleCircleClick}
             >
@@ -201,22 +297,74 @@ const HeroSection = () => {
 
                 {/* Timer text */}
                 <span
-                  className="font-cairo font-bold text-[32px] text-white"
+                  className="font-cairo font-bold text-[32px]"
                   style={{
                     textShadow: "0 2px 12px rgba(0,0,0,0.5)",
                     opacity: isDark && !isResults ? 1 : 0,
                     position: isDark && !isResults ? "relative" : "absolute",
-                    transition: "opacity 0.3s ease 0.3s",
+                    transition: "opacity 0.3s ease 0.3s, color 0.5s ease",
+                    color: isRecording ? timerColor : "#FFFFFF",
+                    animation:
+                      isRecording && timeLeft <= 10
+                        ? "timerPulse 0.8s ease-in-out infinite"
+                        : "none",
                   }}
                 >
-                  {state === "recording" ? formatTime(timeLeft) : "1:00"}
+                  {isRecording ? formatTime(timeLeft) : "1:00"}
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Topic info — fades in/out */}
+        {/* Waveform bars */}
+        <div
+          className="flex items-center justify-center"
+          style={{
+            gap: 4,
+            height: 40,
+            marginTop: isRecording ? 16 : 0,
+            opacity: isRecording ? 1 : 0,
+            transition: "opacity 0.4s ease, margin-top 0.4s ease",
+            pointerEvents: "none",
+          }}
+        >
+          {WAVE_BARS.map((bar, i) => (
+            <div
+              key={i}
+              className="waveform-bar"
+              style={{
+                width: 3,
+                borderRadius: 999,
+                backgroundColor: "#6C63FF",
+                height: isRecording ? undefined : 4,
+                opacity: isRecording ? 1 : 0.3,
+                animation: isRecording
+                  ? `waveBar ${bar.dur}s ease-in-out infinite alternate`
+                  : "none",
+                ["--bar-min" as string]: `${bar.min}px`,
+                ["--bar-max" as string]: `${bar.max}px`,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Silence indicator */}
+        <p
+          className="font-cairo font-light text-center"
+          style={{
+            fontSize: 13,
+            color: "#9090A8",
+            opacity: showSilence && isRecording ? 1 : 0,
+            transition: "opacity 0.4s ease",
+            marginTop: 8,
+            pointerEvents: "none",
+          }}
+        >
+          استمر...
+        </p>
+
+        {/* Topic info */}
         <div
           style={{
             opacity: showTopic ? 1 : 0,
@@ -238,21 +386,32 @@ const HeroSection = () => {
             ماتقدر تقول:
           </p>
           <div className="flex flex-wrap justify-center" style={{ gap: 8 }}>
-            {currentTopic.forbidden.map((word) => (
-              <span
-                key={word}
-                className="font-cairo font-bold text-[13px]"
-                style={{
-                  background: "rgba(255,68,68,0.08)",
-                  border: "1px solid rgba(255,107,107,0.35)",
-                  borderRadius: 999,
-                  padding: "5px 14px",
-                  color: "#FF6B6B",
-                }}
-              >
-                {word}
-              </span>
-            ))}
+            {currentTopic.forbidden.map((word) => {
+              const isStruck = struckWords.includes(word);
+              return (
+                <span
+                  key={word}
+                  className="font-cairo font-bold text-[13px]"
+                  style={{
+                    background: isStruck
+                      ? "rgba(255,68,68,0.25)"
+                      : "rgba(255,68,68,0.08)",
+                    border: `1px solid ${isStruck ? "#FF4444" : "rgba(255,107,107,0.35)"}`,
+                    borderRadius: 999,
+                    padding: "5px 14px",
+                    color: "#FF6B6B",
+                    textDecoration: isStruck ? "line-through" : "none",
+                    transform: isStruck ? "scale(1)" : undefined,
+                    animation: isStruck
+                      ? "none"
+                      : undefined,
+                    transition: "background 0.3s ease, border-color 0.3s ease, transform 0.3s ease",
+                  }}
+                >
+                  {isStruck ? `✕ ${word}` : word}
+                </span>
+              );
+            })}
           </div>
         </div>
 
@@ -262,7 +421,7 @@ const HeroSection = () => {
           style={{
             fontSize: 12,
             color: "#FF6B6B",
-            opacity: state === "recording" ? 1 : 0,
+            opacity: isRecording ? 1 : 0,
             transition: "opacity 0.3s ease",
             pointerEvents: "none",
           }}
@@ -291,7 +450,7 @@ const HeroSection = () => {
             {[
               { label: "كلمات الحشو", value: "يعني × 3", icon: "🔴" },
               { label: "سرعة الكلام", value: "متوسط", icon: "🎙️" },
-              { label: "الكلمات الممنوعة", value: "استخدمت 1", icon: "🚫" },
+              { label: "الكلمات الممنوعة", value: `استخدمت ${struckWords.length}`, icon: "🚫" },
             ].map((card) => (
               <div
                 key={card.label}

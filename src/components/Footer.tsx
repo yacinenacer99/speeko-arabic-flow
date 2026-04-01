@@ -5,7 +5,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
           {/* Logo column */}
           <div>
-            <h4 className="text-xl font-bold font-cairo text-primary-foreground mb-2">Speeko</h4>
+            <h4 className="text-xl font-bold font-cairo text-primary-foreground mb-2">ملسون</h4>
             <p className="text-sm font-light font-cairo text-muted-foreground">تدرب على صوتك كل يوم</p>
           </div>
 

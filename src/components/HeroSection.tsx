@@ -211,16 +211,6 @@ const HeroSection = () => {
                 >
                   {state === "recording" ? formatTime(timeLeft) : "1:00"}
                 </span>
-                <span
-                  className="font-cairo font-light text-[13px] text-muted-foreground"
-                  style={{
-                    opacity: state === "sport" ? 1 : 0,
-                    position: state === "sport" ? "relative" : "absolute",
-                    transition: "opacity 0.25s ease",
-                  }}
-                >
-                  جاهز؟
-                </span>
               </div>
             </div>
           </div>

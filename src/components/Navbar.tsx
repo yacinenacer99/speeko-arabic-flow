@@ -28,9 +28,19 @@ const Navbar = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  // Pages where the secondary pill nav should show
+  const loggedInPages = ["/home", "/progress", "/profile", "/badges", "/settings", "/weeklyReport", "/subscribe", "/challenge", "/results", "/levelup", "/streakLost", "/success"];
+  const showPillNav = loggedInPages.some(p => location.pathname.startsWith(p));
+
+  const pillTabs = [
+    { label: "الرئيسية", icon: Home, path: "/home" },
+    { label: "تقدمي", icon: TrendingUp, path: "/progress" },
+    { label: "ملفي", icon: User, path: "/profile" },
+  ];
+
   const menuItems = [
     { label: "الرئيسية", icon: Home, path: "/" },
-    { label: "الرئيسية", icon: Home, path: "/home", showLabel: "لوحة التحكم" },
+    { label: "لوحة التحكم", icon: Home, path: "/home" },
     { label: "تقدمي", icon: TrendingUp, path: "/progress" },
     { label: "ملفي", icon: User, path: "/profile" },
     { label: "المدونة", icon: BookOpen, path: "/blog" },
@@ -39,20 +49,6 @@ const Navbar = () => {
     { label: "سياسة الخصوصية", icon: Shield, path: "/privacy" },
     { label: "الشروط والأحكام", icon: FileText, path: "/terms" },
   ];
-
-  // Deduplicate: show "لوحة التحكم" for /home
-  const displayItems = menuItems.map(item => ({
-    ...item,
-    displayLabel: (item as any).showLabel || item.label,
-  }));
-  // Remove duplicate "الرئيسية" — keep / as landing, /home as dashboard
-  const filteredItems = displayItems.filter((item, i, arr) => {
-    if (item.path === "/home") return true;
-    if (item.path === "/" && item.label === "الرئيسية") return true;
-    return !arr.some((other, j) => j < i && other.displayLabel === item.displayLabel);
-  });
-
-  const _isDarkPage = ["/challenge", "/results", "/levelup", "/streakLost", "/success"].some(p => location.pathname.startsWith(p));
 
   const activeColor = "#A89CFF";
   const inactiveColor = "#9090A8";

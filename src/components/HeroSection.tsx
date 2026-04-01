@@ -1,8 +1,39 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 type Phase = "idle" | "recording" | "done";
+
+const topics = [
+  {
+    topic: "تكلم عن أهمية الوقت",
+    forbidden: ["مهم", "وقت", "يعني", "دائماً", "كثير"],
+  },
+  {
+    topic: "وش رأيك في التقنية؟",
+    forbidden: ["تقنية", "هاتف", "يعني", "إنترنت", "تطبيق"],
+  },
+  {
+    topic: "تكلم عن شخص أثّر فيك",
+    forbidden: ["ناس", "شخص", "يعني", "أثّر", "حياة"],
+  },
+  {
+    topic: "وش يجعل الإنسان ناجح؟",
+    forbidden: ["نجاح", "ناجح", "يعني", "إنسان", "هدف"],
+  },
+  {
+    topic: "تكلم عن شيء تحب تسويه",
+    forbidden: ["أحب", "دائماً", "يعني", "شيء", "وقت"],
+  },
+  {
+    topic: "وش رأيك في القراءة؟",
+    forbidden: ["كتاب", "قراءة", "يعني", "معلومة", "تعلم"],
+  },
+  {
+    topic: "تكلم عن مكان تحب تروحه",
+    forbidden: ["مكان", "روح", "يعني", "جميل", "أحب"],
+  },
+];
 
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -12,6 +43,11 @@ const HeroSection = () => {
   const [phase, setPhase] = useState<Phase>("idle");
   const [elapsed, setElapsed] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const currentTopic = useMemo(
+    () => topics[Math.floor(Math.random() * topics.length)],
+    []
+  );
 
   const stopRecording = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -32,14 +68,12 @@ const HeroSection = () => {
     }, 1000);
   }, []);
 
-  // Auto-stop at 60s
   useEffect(() => {
     if (elapsed >= 60 && phase === "recording") {
       stopRecording();
     }
   }, [elapsed, phase, stopRecording]);
 
-  // Cleanup
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -62,7 +96,6 @@ const HeroSection = () => {
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-6 overflow-hidden -mt-8 md:-mt-10">
-      {/* Decorative violet blob */}
       <div
         className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full pointer-events-none"
         style={{
@@ -79,7 +112,6 @@ const HeroSection = () => {
           تحدياتنا تعلمك كيف تسولف بدون توتر ونعطيك خطة تطورك أسبوع بعد أسبوع.
         </p>
 
-        {/* Post-recording: "كيف كان؟" */}
         {phase === "done" && (
           <p
             className="font-cairo font-light text-[18px] mb-8 animate-fade-in"
@@ -89,7 +121,52 @@ const HeroSection = () => {
           </p>
         )}
 
-        {/* Circle button */}
+        {/* Topic reveal during recording */}
+        {phase === "recording" && (
+          <div className="mb-8 animate-fade-in">
+            <p
+              className="font-cairo text-center mb-2"
+              style={{ fontWeight: 300, fontSize: 12, color: "#9090A8" }}
+            >
+              تكلم عن:
+            </p>
+            <p
+              className="font-cairo font-bold text-foreground text-center mb-6"
+              style={{ fontSize: 18 }}
+            >
+              {currentTopic.topic}
+            </p>
+            <p
+              className="font-cairo text-center mb-3"
+              style={{ fontWeight: 300, fontSize: 12, color: "#9090A8" }}
+            >
+              ماتقدر تقول:
+            </p>
+            <div
+              className="flex flex-wrap justify-center mx-auto"
+              style={{ gap: 8, maxWidth: 320 }}
+            >
+              {currentTopic.forbidden.map((word) => (
+                <span
+                  key={word}
+                  className="font-cairo"
+                  style={{
+                    background: "#2A0A0A",
+                    border: "1px solid #FF4444",
+                    borderRadius: 999,
+                    padding: "6px 14px",
+                    fontWeight: 700,
+                    fontSize: 13,
+                    color: "#FF6B6B",
+                  }}
+                >
+                  {word}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div
           className={phase === "recording" ? "" : "hero-float"}
           style={{ display: "inline-block" }}
@@ -165,14 +242,12 @@ const HeroSection = () => {
           </div>
         </div>
 
-        {/* Timer below circle during recording */}
         {phase === "recording" && (
           <p className="mt-4 font-cairo font-light text-[14px] text-muted-foreground animate-fade-in">
             اضغط مرة ثانية للإيقاف
           </p>
         )}
 
-        {/* Post-recording CTA button */}
         {phase === "done" && (
           <div className="mt-10 animate-fade-in">
             <button

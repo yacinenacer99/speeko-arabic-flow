@@ -16,6 +16,8 @@ const TOPICS = [
 const formatTime = (t: number) =>
   `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
 
+const EASE = "cubic-bezier(0.4, 0, 0.2, 1)";
+
 const HeroSection = () => {
   const navigate = useNavigate();
   const [state, setState] = useState<State>("landing");
@@ -65,9 +67,9 @@ const HeroSection = () => {
 
   const isLanding = state === "landing";
   const isDark = state !== "landing";
-  const showCircle = state !== "results";
+  const isSmall = !isLanding && state !== "results";
   const showTopic = state === "topic" || state === "recording";
-  const circleSize = isLanding ? 260 : 160;
+  const isResults = state === "results";
 
   const handleCircleClick = () => {
     if (state === "landing") setState("sport");
@@ -80,7 +82,7 @@ const HeroSection = () => {
 
   return (
     <section
-      className="relative flex flex-col items-center justify-center overflow-hidden"
+      className="relative flex flex-col items-center overflow-hidden"
       style={{
         height: "100vh",
         paddingTop: 70,
@@ -88,7 +90,7 @@ const HeroSection = () => {
         paddingRight: 24,
         paddingBottom: 0,
         backgroundColor: isDark ? "#0F0F14" : "hsl(var(--background))",
-        transition: "background-color 0.7s ease",
+        transition: `background-color 0.7s ease`,
         direction: "rtl",
       }}
     >
@@ -103,90 +105,117 @@ const HeroSection = () => {
         }}
       />
 
-      {/* LANDING content */}
+      {/* Main content area — always flex column centered */}
       <div
-        className="relative z-10 flex flex-col items-center text-center"
-        style={{
-          opacity: isLanding ? 1 : 0,
-          pointerEvents: isLanding ? "auto" : "none",
-          transition: "opacity 0.5s ease",
-          position: isLanding ? "relative" : "absolute",
-        }}
+        className="relative z-10 flex flex-col items-center justify-center"
+        style={{ flex: 1, width: "100%", maxWidth: 400 }}
       >
-        <h2
-          className="font-bold font-cairo text-foreground"
+        {/* Hero text — always in DOM, fades out */}
+        <div
           style={{
-            fontSize: 36,
-            lineHeight: 1.5,
-            marginBottom: 12,
-            padding: "0 24px",
+            opacity: isLanding ? 1 : 0,
+            maxHeight: isLanding ? 200 : 0,
+            overflow: "hidden",
+            transition: `opacity 0.5s ease, max-height 0.7s ${EASE}`,
+            pointerEvents: isLanding ? "auto" : "none",
           }}
         >
-          سكوتك يضيع عليك فرص.
-        </h2>
-        <p
-          className="font-light font-cairo text-muted-foreground"
-          style={{
-            fontSize: 15,
-            marginBottom: 44,
-            padding: "0 24px",
-          }}
-        >
-          تحدياتنا تعلمك كيف تسولف بدون توتر ونعطيك خطة تطورك أسبوع بعد أسبوع.
-        </p>
-        <div className={isLanding ? "hero-float" : ""} style={{ display: "inline-block" }}>
-          <div className="hero-stroke-wrapper">
-            <div
-              className="hero-circle"
-              style={{
-                width: 260,
-                height: 260,
-                cursor: "pointer",
-              }}
-              onClick={handleCircleClick}
-            >
-              <div className="hero-text-overlay">
-                <span className="font-cairo font-bold text-[20px] text-white" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.5)" }}>
-                  ابدأ التحدي
-                </span>
-                <span className="font-cairo font-light text-[13px]" style={{ color: "rgba(255,255,255,0.6)" }}>
-                  تكلم الآن
-                </span>
-              </div>
-            </div>
-          </div>
+          <h2
+            className="font-bold font-cairo text-foreground text-center"
+            style={{
+              fontSize: 36,
+              lineHeight: 1.5,
+              marginBottom: 12,
+              padding: "0 24px",
+            }}
+          >
+            سكوتك يضيع عليك فرص.
+          </h2>
+          <p
+            className="font-light font-cairo text-muted-foreground text-center"
+            style={{
+              fontSize: 15,
+              marginBottom: 44,
+              padding: "0 24px",
+            }}
+          >
+            تحدياتنا تعلمك كيف تسولف بدون توتر ونعطيك خطة تطورك أسبوع بعد أسبوع.
+          </p>
         </div>
-      </div>
 
-      {/* SPORT / TOPIC / RECORDING content */}
-      <div
-        className="relative z-10 flex flex-col items-center text-center"
-        style={{
-          opacity: (state === "sport" || state === "topic" || state === "recording") ? 1 : 0,
-          pointerEvents: (state === "sport" || state === "topic" || state === "recording") ? "auto" : "none",
-          transition: "opacity 0.5s ease",
-          position: (state === "sport" || state === "topic" || state === "recording") ? "relative" : "absolute",
-        }}
-      >
-        {/* Circle */}
-        <div style={{ marginBottom: 28 }}>
-          <div className="hero-stroke-wrapper">
+        {/* Circle — ALWAYS in DOM, never unmounted */}
+        <div
+          className={isLanding ? "hero-float" : ""}
+          style={{
+            display: "inline-block",
+            marginTop: isSmall ? -40 : 0,
+            marginBottom: isSmall ? 28 : 0,
+            opacity: isResults ? 0 : 1,
+            transform: isResults ? "scale(0.8)" : "scale(1)",
+            transition: `margin 0.7s ${EASE}, opacity 0.5s ease, transform 0.5s ease`,
+            pointerEvents: isResults ? "none" : "auto",
+          }}
+        >
+          <div
+            className="hero-stroke-wrapper"
+            style={{
+              padding: isSmall ? 4 : 5,
+              transition: `padding 0.7s ${EASE}`,
+            }}
+          >
             <div
               className="hero-circle"
               style={{
-                width: 160,
-                height: 160,
+                width: isSmall ? 160 : 260,
+                height: isSmall ? 160 : 260,
                 cursor: "pointer",
+                transition: `width 0.7s ${EASE}, height 0.7s ${EASE}`,
                 animationDuration: state === "recording" ? "2s" : "3s",
               }}
               onClick={handleCircleClick}
             >
               <div className="hero-text-overlay">
-                <span className="font-cairo font-bold text-[32px] text-white" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.5)" }}>
+                {/* Landing text */}
+                <span
+                  className="font-cairo font-bold text-[20px] text-white"
+                  style={{
+                    textShadow: "0 2px 12px rgba(0,0,0,0.5)",
+                    opacity: isLanding ? 1 : 0,
+                    position: isLanding ? "relative" : "absolute",
+                    transition: "opacity 0.3s ease",
+                  }}
+                >
+                  ابدأ التحدي
+                </span>
+                <span
+                  className="font-cairo font-light text-[13px]"
+                  style={{
+                    color: "rgba(255,255,255,0.6)",
+                    opacity: isLanding ? 1 : 0,
+                    position: isLanding ? "relative" : "absolute",
+                    transition: "opacity 0.3s ease",
+                  }}
+                >
+                  تكلم الآن
+                </span>
+
+                {/* Timer text */}
+                <span
+                  className="font-cairo font-bold text-[32px] text-white"
+                  style={{
+                    textShadow: "0 2px 12px rgba(0,0,0,0.5)",
+                    opacity: isDark && !isResults ? 1 : 0,
+                    position: isDark && !isResults ? "relative" : "absolute",
+                    transition: "opacity 0.3s ease 0.3s",
+                  }}
+                >
                   {state === "recording" ? formatTime(timeLeft) : "1:00"}
                 </span>
                 {state === "sport" && (
-                  <span className="font-cairo font-light text-[13px] text-muted-foreground">
+                  <span
+                    className="font-cairo font-light text-[13px] text-muted-foreground"
+                    style={{ transition: "opacity 0.3s ease" }}
+                  >
                     جاهز؟
                   </span>
                 )}
@@ -195,13 +224,16 @@ const HeroSection = () => {
           </div>
         </div>
 
-        {/* Topic info */}
+        {/* Topic info — fades in/out */}
         <div
           style={{
             opacity: showTopic ? 1 : 0,
             transform: showTopic ? "translateY(0)" : "translateY(12px)",
             transition: "opacity 0.5s ease, transform 0.5s ease",
             maxWidth: 320,
+            pointerEvents: showTopic ? "auto" : "none",
+            maxHeight: showTopic ? 400 : 0,
+            overflow: "hidden",
           }}
         >
           <p className="font-cairo text-center" style={{ fontWeight: 300, fontSize: 12, color: "#9090A8", marginBottom: 6 }}>
@@ -233,76 +265,83 @@ const HeroSection = () => {
         </div>
 
         {/* Recording hint */}
-        {state === "recording" && (
-          <p className="font-cairo font-light text-center mt-4" style={{ fontSize: 12, color: "#FF6B6B" }}>
-            اضغط للإيقاف
-          </p>
-        )}
-      </div>
-
-      {/* RESULTS content */}
-      <div
-        className="relative z-10 flex flex-col items-center text-center"
-        style={{
-          opacity: state === "results" ? 1 : 0,
-          transform: state === "results" ? "translateY(0)" : "translateY(16px)",
-          pointerEvents: state === "results" ? "auto" : "none",
-          transition: "opacity 0.6s ease, transform 0.6s ease",
-          position: state === "results" ? "relative" : "absolute",
-          padding: "0 24px",
-          width: "100%",
-          maxWidth: 400,
-        }}
-      >
-        <p className="font-cairo font-light text-[18px]" style={{ color: "#9090A8", marginBottom: 20 }}>
-          كيف كان؟
-        </p>
-        <div className="flex flex-col w-full" style={{ gap: 10, maxWidth: 320, margin: "0 auto" }}>
-          {[
-            { label: "كلمات الحشو", value: "يعني × 3", icon: "🔴" },
-            { label: "سرعة الكلام", value: "متوسط", icon: "🎙️" },
-            { label: "الكلمات الممنوعة", value: "استخدمت 1", icon: "🚫" },
-          ].map((card) => (
-            <div
-              key={card.label}
-              className="flex items-center justify-between rounded-2xl"
-              style={{
-                background: "#1A1A28",
-                border: "1px solid #2A2A3E",
-                padding: "20px 24px",
-                direction: "rtl",
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <span className="text-lg">{card.icon}</span>
-                <span className="font-cairo font-light text-[14px]" style={{ color: "#9090A8" }}>
-                  {card.label}
-                </span>
-              </div>
-              <span className="font-cairo font-bold text-[14px] text-white">
-                {card.value}
-              </span>
-            </div>
-          ))}
-        </div>
-        <button
-          onClick={() => navigate("/onboarding")}
-          className="font-cairo font-bold text-[16px]"
+        <p
+          className="font-cairo font-light text-center mt-4"
           style={{
-            background: "white",
-            color: "#0F0F14",
-            borderRadius: 999,
-            padding: "18px 0",
-            marginTop: 24,
-            width: "calc(100% - 48px)",
-            maxWidth: 320,
+            fontSize: 12,
+            color: "#FF6B6B",
+            opacity: state === "recording" ? 1 : 0,
+            transition: "opacity 0.3s ease",
+            pointerEvents: "none",
           }}
         >
-          علمني كيف أسولف
-        </button>
-        <p className="font-cairo font-light text-[11px]" style={{ color: "#9090A8", marginTop: 8 }}>
-          مجاناً — لا تحتاج حساب
+          اضغط للإيقاف
         </p>
+
+        {/* RESULTS content */}
+        <div
+          className="flex flex-col items-center text-center"
+          style={{
+            opacity: isResults ? 1 : 0,
+            transform: isResults ? "translateY(0)" : "translateY(16px)",
+            pointerEvents: isResults ? "auto" : "none",
+            transition: "opacity 0.6s ease, transform 0.6s ease",
+            position: isResults ? "relative" : "absolute",
+            padding: "0 24px",
+            width: "100%",
+            maxWidth: 400,
+          }}
+        >
+          <p className="font-cairo font-light text-[18px]" style={{ color: "#9090A8", marginBottom: 20 }}>
+            كيف كان؟
+          </p>
+          <div className="flex flex-col w-full" style={{ gap: 10, maxWidth: 320, margin: "0 auto" }}>
+            {[
+              { label: "كلمات الحشو", value: "يعني × 3", icon: "🔴" },
+              { label: "سرعة الكلام", value: "متوسط", icon: "🎙️" },
+              { label: "الكلمات الممنوعة", value: "استخدمت 1", icon: "🚫" },
+            ].map((card) => (
+              <div
+                key={card.label}
+                className="flex items-center justify-between rounded-2xl"
+                style={{
+                  background: "#1A1A28",
+                  border: "1px solid #2A2A3E",
+                  padding: "20px 24px",
+                  direction: "rtl",
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-lg">{card.icon}</span>
+                  <span className="font-cairo font-light text-[14px]" style={{ color: "#9090A8" }}>
+                    {card.label}
+                  </span>
+                </div>
+                <span className="font-cairo font-bold text-[14px] text-white">
+                  {card.value}
+                </span>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={() => navigate("/onboarding")}
+            className="font-cairo font-bold text-[16px]"
+            style={{
+              background: "white",
+              color: "#0F0F14",
+              borderRadius: 999,
+              padding: "18px 0",
+              marginTop: 24,
+              width: "calc(100% - 48px)",
+              maxWidth: 320,
+            }}
+          >
+            علمني كيف أسولف
+          </button>
+          <p className="font-cairo font-light text-[11px]" style={{ color: "#9090A8", marginTop: 8 }}>
+            مجاناً — لا تحتاج حساب
+          </p>
+        </div>
       </div>
     </section>
   );

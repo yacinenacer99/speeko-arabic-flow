@@ -84,15 +84,6 @@
   border-radius: 50%;
   background: conic-gradient(#FF9DC4, #C4A8FF, #6C63FF, #A8C4FF, #FF9DC4);
   display: inline-block;
-  transition: all 0.3s ease;
-}
-
-.hero-stroke-recording {
-  animation: rotateBorder 2s linear infinite;
-}
-
-.hero-circle-recording {
-  animation: glowPulse 1.5s ease-in-out infinite;
 }
 
 .hero-circle {

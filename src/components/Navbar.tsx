@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Headphones, Globe, Menu, BookOpen, Map, Shield, FileText } from "lucide-react";
+import { Home, Headphones, Globe, Menu, X, BookOpen, Map, Shield, FileText, TrendingUp, User } from "lucide-react";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -8,7 +8,6 @@ const Navbar = () => {
   const [lang, setLang] = useState<"ar" | "en">("ar");
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [tooltip, setTooltip] = useState<string | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,8 +28,11 @@ const Navbar = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const dropdownItems = [
+  const menuItems = [
     { label: "الرئيسية", icon: Home, path: "/" },
+    { label: "الرئيسية", icon: Home, path: "/home", showLabel: "لوحة التحكم" },
+    { label: "تقدمي", icon: TrendingUp, path: "/progress" },
+    { label: "ملفي", icon: User, path: "/profile" },
     { label: "المدونة", icon: BookOpen, path: "/blog" },
     { label: "تواصل معنا", icon: Headphones, path: "/contact" },
     { label: "مسار التعلم", icon: Map, path: "/learning-path" },
@@ -38,135 +40,137 @@ const Navbar = () => {
     { label: "الشروط والأحكام", icon: FileText, path: "/terms" },
   ];
 
+  // Deduplicate: show "لوحة التحكم" for /home
+  const displayItems = menuItems.map(item => ({
+    ...item,
+    displayLabel: (item as any).showLabel || item.label,
+  }));
+  // Remove duplicate "الرئيسية" — keep / as landing, /home as dashboard
+  const filteredItems = displayItems.filter((item, i, arr) => {
+    if (item.path === "/home") return true;
+    if (item.path === "/" && item.label === "الرئيسية") return true;
+    return !arr.some((other, j) => j < i && other.displayLabel === item.displayLabel);
+  });
+
+  const _isDarkPage = ["/challenge", "/results", "/levelup", "/streakLost", "/success"].some(p => location.pathname.startsWith(p));
+
   const activeColor = "#A89CFF";
   const inactiveColor = "#9090A8";
 
-  // Detect if we're on a dark page
-  const isDarkPage = ["/challenge", "/results", "/levelup", "/streakLost", "/success"].some(p => location.pathname.startsWith(p));
-
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-3" ref={wrapperRef} style={{ direction: "rtl" }}>
-      {/* Wordmark — OUTSIDE pill, RIGHT side (RTL) */}
-      <span
-        className="font-cairo font-bold text-[13px] whitespace-nowrap cursor-pointer"
-        style={{ color: isDarkPage ? "white" : "#0F0F14" }}
-        onClick={() => navigate("/")}
-      >
-        ملسون
-      </span>
-
-      {/* Pill */}
+    <div className="fixed top-0 left-0 right-0 z-[1000]" ref={wrapperRef} style={{ direction: "rtl" }}>
       <div
-        className="flex items-center gap-4 rounded-full transition-colors duration-300"
+        className="flex items-center justify-between transition-colors duration-300 px-5 md:px-8"
         style={{
           background: scrolled ? "rgba(15,15,20,0.95)" : "#0F0F14",
-          border: "1px solid #2A2A3E",
-          boxShadow: "0 4px 32px rgba(0,0,0,0.2)",
+          borderBottom: "1px solid #2A2A3E",
           backdropFilter: "blur(16px)",
-          padding: "10px 20px",
+          WebkitBackdropFilter: "blur(16px)",
+          height: 56,
         }}
       >
-        {/* Icon group */}
-        <div className="flex items-center gap-5">
-          <div className="relative flex items-center">
-            <button
-              onClick={() => navigate("/")}
-              onMouseEnter={() => setTooltip("home")}
-              onMouseLeave={() => setTooltip(null)}
-              className="transition-colors duration-200 hover:text-white"
-              style={{ color: isActive("/") ? activeColor : inactiveColor }}
-            >
-              <Home size={18} />
-            </button>
-            {tooltip === "home" && (
-              <span className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-lg text-[11px] font-cairo text-white whitespace-nowrap animate-fade-in" style={{ background: "#1A1A28" }}>
-                الرئيسية
-              </span>
-            )}
-          </div>
+        {/* Right side (RTL): Wordmark */}
+        <span
+          className="font-cairo font-bold text-[15px] whitespace-nowrap cursor-pointer text-white"
+          onClick={() => navigate("/")}
+        >
+          ملسون
+        </span>
 
-          <div className="relative flex items-center">
+        {/* Center: Desktop nav links */}
+        <div className="hidden md:flex items-center gap-6">
+          {[
+            { label: "الرئيسية", path: "/" },
+            { label: "المدونة", path: "/blog" },
+            { label: "تواصل معنا", path: "/contact" },
+          ].map(link => (
             <button
-              onClick={() => navigate("/contact")}
-              onMouseEnter={() => setTooltip("contact")}
-              onMouseLeave={() => setTooltip(null)}
-              className="transition-colors duration-200 hover:text-white"
-              style={{ color: isActive("/contact") ? activeColor : inactiveColor }}
+              key={link.path}
+              onClick={() => navigate(link.path)}
+              className="font-cairo font-light text-[13px] transition-colors duration-200 hover:text-white"
+              style={{ color: isActive(link.path) ? activeColor : inactiveColor }}
             >
-              <Headphones size={18} />
+              {link.label}
             </button>
-            {tooltip === "contact" && (
-              <span className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-lg text-[11px] font-cairo text-white whitespace-nowrap animate-fade-in" style={{ background: "#1A1A28" }}>
-                تواصل معنا
-              </span>
-            )}
-          </div>
-
-          <div className="relative flex items-center">
-            <button
-              onClick={() => setLang(lang === "ar" ? "en" : "ar")}
-              onMouseEnter={() => setTooltip("lang")}
-              onMouseLeave={() => setTooltip(null)}
-              className="transition-colors duration-200 hover:text-white"
-              style={{ color: inactiveColor }}
-            >
-              <Globe size={18} />
-            </button>
-            {tooltip === "lang" && (
-              <span className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-lg text-[11px] font-cairo text-white whitespace-nowrap animate-fade-in" style={{ background: "#1A1A28" }}>
-                {lang === "ar" ? "English" : "العربية"}
-              </span>
-            )}
-          </div>
+          ))}
         </div>
 
-        <div className="w-px h-4" style={{ background: "#2A2A3E" }} />
+        {/* Left side (RTL): Language toggle + Hamburger */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setLang(lang === "ar" ? "en" : "ar")}
+            className="hidden md:flex items-center gap-1.5 transition-colors duration-200 hover:text-white"
+            style={{ color: inactiveColor }}
+            title={lang === "ar" ? "English" : "العربية"}
+          >
+            <Globe size={16} />
+            <span className="font-cairo font-light text-[12px]">{lang === "ar" ? "EN" : "ع"}</span>
+          </button>
 
-        {/* المدونة */}
-        <button
-          onClick={() => navigate("/blog")}
-          className="font-cairo font-light text-[13px] hover:text-white transition-colors duration-200 whitespace-nowrap"
-          style={{ color: isActive("/blog") ? activeColor : inactiveColor }}
-        >
-          المدونة
-        </button>
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="flex items-center justify-center transition-colors duration-200 text-white hover:text-white/80"
+            style={{ background: "none", border: "none", cursor: "pointer" }}
+          >
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </div>
 
-      {/* Hamburger — OUTSIDE pill, LEFT side (RTL) */}
-      <button
-        onClick={() => setMenuOpen(!menuOpen)}
-        className="flex items-center justify-center transition-colors duration-200"
-        style={{ color: isDarkPage ? "white" : "#0F0F14", background: "none", border: "none", cursor: "pointer" }}
-      >
-        <Menu size={18} />
-      </button>
-
-      {/* Dropdown */}
+      {/* Dropdown Menu */}
       {menuOpen && (
         <div
-          className="absolute top-full mt-2 left-1/2 -translate-x-1/2 p-5 rounded-2xl glass-card-dark"
-          style={{ minWidth: 220 }}
+          className="absolute left-4 right-4 md:left-auto md:right-auto md:w-[280px] top-[56px] mt-1 p-4 rounded-2xl glass-card-dark md:left-4"
+          style={{
+            background: "rgba(15,15,20,0.97)",
+            border: "1px solid #2A2A3E",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            boxShadow: "0 16px 48px rgba(0,0,0,0.4)",
+          }}
         >
-          {dropdownItems.map((item) => (
+          {/* Mobile language toggle */}
+          <div className="flex items-center justify-between px-2 py-2 mb-2 md:hidden">
+            <span className="font-cairo font-light text-[13px]" style={{ color: inactiveColor }}>اللغة</span>
+            <button
+              onClick={() => setLang(lang === "ar" ? "en" : "ar")}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full transition-colors duration-200"
+              style={{ background: "rgba(108,99,255,0.1)", color: activeColor }}
+            >
+              <Globe size={14} />
+              <span className="font-cairo font-light text-[12px]">{lang === "ar" ? "English" : "العربية"}</span>
+            </button>
+          </div>
+          <div className="md:hidden w-full h-px mb-2" style={{ background: "#2A2A3E" }} />
+
+          {filteredItems.map((item) => (
             <button
               key={item.path}
               onClick={() => {
                 navigate(item.path);
                 setMenuOpen(false);
               }}
-              className="flex items-center gap-3 w-full px-2 py-2.5 rounded-lg font-cairo font-light text-sm transition-colors duration-200"
-              style={{ direction: "rtl", color: inactiveColor }}
+              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl font-cairo font-light text-sm transition-all duration-200"
+              style={{
+                direction: "rtl",
+                color: isActive(item.path) ? "white" : inactiveColor,
+                background: isActive(item.path) ? "rgba(108,99,255,0.1)" : "transparent",
+              }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(108,99,255,0.1)";
-                e.currentTarget.style.color = "white";
+                if (!isActive(item.path)) {
+                  e.currentTarget.style.background = "rgba(108,99,255,0.08)";
+                  e.currentTarget.style.color = "white";
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.color = inactiveColor;
+                if (!isActive(item.path)) {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = inactiveColor;
+                }
               }}
             >
               <item.icon size={16} />
-              <span>{item.label}</span>
+              <span>{item.displayLabel}</span>
             </button>
           ))}
         </div>

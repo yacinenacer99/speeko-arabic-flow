@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Lock, Mic, Flame, Sparkles, Award, Zap, Diamond, Crown, Trophy } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import BottomNav from "@/components/BottomNav";
+
 
 const allBadges = [
   { name: "أول جلسة", Icon: Mic, desc: "أكمل جلستك الأولى", status: "earned" as const, date: "قبل 12 يوم" },
@@ -95,8 +95,6 @@ const Badges = () => {
           </>
         )}
       </div>
-
-      <BottomNav />
     </div>
   );
 };

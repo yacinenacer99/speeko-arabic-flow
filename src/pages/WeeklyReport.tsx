@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ArrowUp, Lock } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import BottomNav from "@/components/BottomNav";
+
 import ProGateModal from "@/components/ProGateModal";
 
 const WeeklyReport = () => {
@@ -51,8 +51,6 @@ const WeeklyReport = () => {
           </div>
         </div>
       </div>
-
-      <BottomNav />
     </div>
   );
 };

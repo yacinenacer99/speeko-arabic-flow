@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Lock, Mic, Flame, Sparkles, Award, Diamond, Trophy } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import BottomNav from "@/components/BottomNav";
+
 
 const badges = [
   { name: "أول جلسة", Icon: Mic, earned: true, date: "قبل 12 يوم" },
@@ -138,8 +138,6 @@ const Profile = () => {
           </button>
         </div>
       </div>
-
-      <BottomNav />
     </div>
   );
 };

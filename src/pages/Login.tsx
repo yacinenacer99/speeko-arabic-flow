@@ -66,6 +66,7 @@ const Login = () => {
             </div>
 
             <button
+              onClick={() => navigate("/home")}
               className="font-cairo font-bold text-white w-full"
               style={{ background: "#6C63FF", border: "none", borderRadius: 999, padding: "14px 0", fontSize: 16, cursor: "pointer", marginTop: 8 }}
             >

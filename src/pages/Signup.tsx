@@ -99,6 +99,7 @@ const Signup = () => {
             </div>
 
             <button
+              onClick={() => navigate("/home")}
               className="font-cairo font-bold text-white w-full"
               style={{
                 background: "#6C63FF",

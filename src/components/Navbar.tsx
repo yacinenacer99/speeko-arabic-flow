@@ -55,7 +55,7 @@ const Navbar = () => {
   return (
     <div className="fixed top-0 left-0 right-0 z-[1000]" ref={wrapperRef} style={{ direction: "rtl" }}>
       <div
-        className="flex items-center justify-between transition-colors duration-300 px-6 md:px-10"
+        className="grid grid-cols-[auto_1fr_auto] items-center transition-colors duration-300 px-6 md:px-10"
         style={{
           background: scrolled ? "rgba(15,15,20,0.95)" : "#0F0F14",
           borderBottom: "1px solid #2A2A3E",

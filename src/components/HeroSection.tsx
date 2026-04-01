@@ -148,7 +148,8 @@ const HeroSection = () => {
 
   const isLanding = state === "landing";
   const isDark = state !== "landing";
-  const isSmall = !isLanding && state !== "results";
+  // Use same layout phase for sport AND topic — circle is already in final position
+  const isUpper = state === "sport" || state === "topic" || state === "recording";
   const showTopic = state === "topic" || state === "recording";
   const isResults = state === "results";
   const isRecording = state === "recording";

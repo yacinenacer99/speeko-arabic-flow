@@ -175,12 +175,13 @@ const HeroSection = () => {
       className="relative flex flex-col items-center overflow-hidden"
       style={{
         height: "100vh",
-        paddingTop: 70,
+        justifyContent: isLanding ? "center" : "flex-start",
+        paddingTop: isLanding ? 0 : 100,
         paddingLeft: 24,
         paddingRight: 24,
         paddingBottom: 0,
         backgroundColor: isDark ? "#0F0F14" : "hsl(var(--background))",
-        transition: `background-color 0.7s ease`,
+        transition: `padding-top 0.7s ${EASE}, justify-content 0s, background-color 0.7s ease`,
         direction: "rtl",
       }}
     >
@@ -213,8 +214,8 @@ const HeroSection = () => {
 
       {/* Main content area */}
       <div
-        className="relative z-10 flex flex-col items-center justify-center"
-        style={{ flex: 1, width: "100%", maxWidth: 400 }}
+        className="relative z-10 flex flex-col items-center"
+        style={{ width: "100%", maxWidth: 400 }}
       >
         {/* Hero text */}
         <div

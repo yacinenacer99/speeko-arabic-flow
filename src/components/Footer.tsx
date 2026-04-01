@@ -5,7 +5,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
           {/* Logo column */}
           <div>
-            <h4 className="text-xl font-bold font-cairo text-primary-foreground mb-2">Speeko</h4>
+            <h4 className="text-xl font-bold font-cairo text-primary-foreground mb-2">ملسون</h4>
             <p className="text-sm font-light font-cairo text-muted-foreground">تدرب على صوتك كل يوم</p>
           </div>
 
@@ -41,7 +41,7 @@ const Footer = () => {
         {/* Divider + copyright */}
         <div className="border-t border-[hsl(240_12%_15%)] pt-6">
           <p className="text-center text-xs font-light font-cairo text-muted-foreground">
-            © 2025 Speeko. جميع الحقوق محفوظة.
+            © 2025 ملسون. جميع الحقوق محفوظة.
           </p>
         </div>
       </div>

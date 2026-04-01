@@ -43,6 +43,7 @@ const Login = () => {
           </p>
 
           <button
+            onClick={() => navigate("/home")}
             className="font-cairo font-bold w-full flex items-center justify-center gap-2"
             style={{ border: "1px solid #E8E6F0", background: "white", borderRadius: 999, padding: 14, fontSize: 15, color: "#1A1A2E", cursor: "pointer" }}
           >

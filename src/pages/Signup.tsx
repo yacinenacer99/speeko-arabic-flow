@@ -51,6 +51,7 @@ const Signup = () => {
 
           {/* Google */}
           <button
+            onClick={() => navigate("/home")}
             className="font-cairo font-bold w-full flex items-center justify-center gap-2"
             style={{
               border: "1px solid #E8E6F0",

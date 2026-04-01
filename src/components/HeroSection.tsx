@@ -23,7 +23,7 @@ const HeroSection = () => {
           تحدياتنا تعلمك كيف تسولف بدون توتر ونعطيك خطة تطورك أسبوع بعد أسبوع.
         </p>
 
-        <LiquidSphere onClick={() => navigate("/onboarding")} />
+        <HeroButton onClick={() => navigate("/onboarding")} />
       </div>
     </section>
   );

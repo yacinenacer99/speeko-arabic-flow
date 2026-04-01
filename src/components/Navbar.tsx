@@ -42,7 +42,7 @@ const Navbar = () => {
   const inactiveColor = "#9090A8";
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[1000]" ref={wrapperRef}>
+    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[1000]" ref={wrapperRef}>
       {/* Pill */}
       <div
         className="flex items-center gap-4 rounded-full transition-colors duration-300"

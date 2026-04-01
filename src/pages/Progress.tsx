@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Lock } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import BottomNav from "@/components/BottomNav";
+
 import ProGateModal from "@/components/ProGateModal";
 
 const chartData = [62, 68, 71, 65, 74, 78, 74];

@@ -55,13 +55,15 @@ const Navbar = () => {
   return (
     <div className="fixed top-0 left-0 right-0 z-[1000]" ref={wrapperRef} style={{ direction: "rtl" }}>
       <div
-        className="flex items-center justify-between transition-colors duration-300 px-5 md:px-8"
+        className="flex items-center justify-between transition-colors duration-300 px-6 md:px-10"
         style={{
           background: scrolled ? "rgba(15,15,20,0.95)" : "#0F0F14",
           borderBottom: "1px solid #2A2A3E",
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
-          height: 44,
+          height: 56,
+          paddingTop: 6,
+          paddingBottom: 6,
         }}
       >
         {/* Right: Wordmark */}
@@ -72,19 +74,30 @@ const Navbar = () => {
           ملسون
         </span>
 
-        {/* Center: Tabs (logged-in) or desktop links */}
+        {/* Center: Pill with tabs (logged-in) or desktop links */}
         {showTabs ? (
-          <div className="flex items-center gap-5">
+          <div
+            className="flex items-center gap-1 rounded-full"
+            style={{
+              background: "#1A1A28",
+              border: "1px solid #2A2A3E",
+              padding: "3px 4px",
+            }}
+          >
             {tabs.map((tab) => {
               const active = isActive(tab.path);
               return (
                 <button
                   key={tab.path}
                   onClick={() => navigate(tab.path)}
-                  className="flex items-center gap-1 font-cairo font-light text-[11px] transition-colors duration-200"
-                  style={{ color: active ? activeColor : inactiveColor }}
+                  className="flex items-center gap-1.5 rounded-full font-cairo font-light text-[11px] transition-all duration-200"
+                  style={{
+                    padding: "5px 12px",
+                    color: active ? "white" : inactiveColor,
+                    background: active ? "rgba(108,99,255,0.2)" : "transparent",
+                  }}
                 >
-                  <tab.icon size={14} />
+                  <tab.icon size={13} />
                   <span>{tab.label}</span>
                 </button>
               );
@@ -124,7 +137,7 @@ const Navbar = () => {
         <div
           className="absolute left-4 right-4 md:left-auto md:right-auto md:w-[280px] p-4 md:left-4"
           style={{
-            top: 44,
+            top: 56,
             marginTop: 4,
             background: "rgba(15,15,20,0.97)",
             border: "1px solid #2A2A3E",

@@ -42,7 +42,7 @@ const Home = () => {
         <p className="font-cairo font-bold" style={{ fontSize: 26, color: "hsl(var(--foreground))", marginBottom: 8 }}>
           مرحباً، أحمد
         </p>
-        <div className="flex items-center gap-3" style={{ marginBottom: 64 }}>
+        <div className="flex items-center gap-3" style={{ marginBottom: 100 }}>
           <span className="font-cairo font-light flex items-center gap-1" style={{ fontSize: 14, color: "hsl(var(--muted-foreground))" }}>
             <Flame size={14} color="#FF6B6B" /> 12 يوم
           </span>

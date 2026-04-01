@@ -75,7 +75,7 @@ const HeroSection = () => {
         <h2 className="text-4xl md:text-[56px] md:leading-[1.55] font-bold font-cairo text-foreground mt-0 mb-[33px]">
           سكوتك يضيع عليك فرص.
         </h2>
-        <p className="text-lg md:text-xl font-light font-cairo text-muted-foreground mb-20">
+        <p className="text-lg md:text-xl font-light font-cairo text-muted-foreground mb-28">
           تحدياتنا تعلمك كيف تسولف بدون توتر ونعطيك خطة تطورك أسبوع بعد أسبوع.
         </p>
 

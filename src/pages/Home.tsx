@@ -23,8 +23,8 @@ const Home = () => {
 
       {/* Hero section */}
       <div
-        className="flex flex-col items-center justify-center"
-        style={{ height: "100vh", padding: "0 24px", paddingTop: 70 }}
+        className="flex flex-col items-center justify-center text-center"
+        style={{ height: "100vh", padding: "0 24px", paddingTop: 0 }}
       >
         <p className="font-cairo font-bold" style={{ fontSize: 26, color: "hsl(var(--foreground))", marginBottom: 8 }}>
           مرحباً، أحمد

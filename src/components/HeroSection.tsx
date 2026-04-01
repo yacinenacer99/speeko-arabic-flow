@@ -71,12 +71,24 @@ const HeroSection = () => {
   const isDark = state !== "landing";
   const showCircle = state !== "results";
   const showTopic = state === "topic" || state === "recording";
-  const circleSize = isLanding ? 280 : 180;
+  const circleSize = isLanding ? 260 : 160;
+  const circleDesktop = isLanding ? 280 : 160;
+
+  const handleCircleClick = () => {
+    if (state === "landing") setState("sport");
+    else if (state === "topic") setState("recording");
+    else if (state === "recording") {
+      clearTimer();
+      setState("results");
+    }
+  };
 
   return (
     <section
-      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
+      className="relative flex flex-col items-center justify-center overflow-hidden"
       style={{
+        minHeight: "100vh",
+        padding: "24px 24px 0",
         backgroundColor: isDark ? "#0F0F14" : "hsl(var(--background))",
         transition: "background-color 0.7s ease",
       }}
@@ -92,8 +104,8 @@ const HeroSection = () => {
         }}
       />
 
-      <div className="relative z-10 text-center max-w-[480px] mx-auto px-6 w-full">
-        {/* Headline + subtitle — fade out when not landing */}
+      <div className="relative z-10 text-center w-full" style={{ maxWidth: 400, margin: "0 auto" }}>
+        {/* Headline + subtitle */}
         <div
           style={{
             opacity: isLanding ? 1 : 0,
@@ -101,10 +113,25 @@ const HeroSection = () => {
             transition: "opacity 0.5s ease",
           }}
         >
-          <h2 className="text-4xl md:text-[56px] md:leading-[1.55] font-bold font-cairo text-foreground mt-12 mb-[33px]">
+          <h2
+            className="font-bold font-cairo text-foreground"
+            style={{
+              fontSize: 38,
+              lineHeight: 1.5,
+              marginBottom: 12,
+              padding: "0 16px",
+            }}
+          >
             سكوتك يضيع عليك فرص.
           </h2>
-          <p className="text-lg md:text-xl font-light font-cairo text-muted-foreground mb-28">
+          <p
+            className="font-light font-cairo text-muted-foreground"
+            style={{
+              fontSize: 15,
+              marginBottom: 40,
+              padding: "0 24px",
+            }}
+          >
             تحدياتنا تعلمك كيف تسولف بدون توتر ونعطيك خطة تطورك أسبوع بعد أسبوع.
           </p>
         </div>
@@ -115,6 +142,8 @@ const HeroSection = () => {
             opacity: showCircle ? 1 : 0,
             transform: showCircle ? "scale(1)" : "scale(0.8)",
             transition: "opacity 0.5s ease, transform 0.5s ease",
+            marginTop: isDark ? 60 : 0,
+            marginBottom: isDark ? 32 : 0,
           }}
         >
           <div className={isLanding ? "hero-float" : ""} style={{ display: "inline-block" }}>
@@ -126,10 +155,9 @@ const HeroSection = () => {
                   height: circleSize,
                   transition: "width 0.7s ease, height 0.7s ease",
                   animationDuration: state === "recording" ? "2s" : "3s",
+                  cursor: "pointer",
                 }}
-                onClick={() => {
-                  if (state === "landing") setState("sport");
-                }}
+                onClick={handleCircleClick}
               >
                 <div className="hero-text-overlay">
                   {isLanding && (
@@ -158,28 +186,41 @@ const HeroSection = () => {
               </div>
             </div>
           </div>
+
+          {/* Hint text below circle */}
+          {state === "topic" && (
+            <p className="font-cairo font-light text-center mt-3" style={{ fontSize: 12, color: "#9090A8" }}>
+              اضغط على الدائرة للبدء
+            </p>
+          )}
+          {state === "recording" && (
+            <p className="font-cairo font-light text-center mt-3" style={{ fontSize: 12, color: "#FF6B6B" }}>
+              اضغط للإيقاف
+            </p>
+          )}
         </div>
 
-        {/* Topic section — fades in for topic + recording */}
+        {/* Topic section */}
         <div
           style={{
             opacity: showTopic ? 1 : 0,
             transform: showTopic ? "translateY(0)" : "translateY(12px)",
             pointerEvents: showTopic ? "auto" : "none",
             transition: "opacity 0.5s ease, transform 0.5s ease",
-            marginTop: 32,
+            maxWidth: 320,
+            margin: "0 auto",
           }}
         >
           <p className="font-cairo text-center mb-2" style={{ fontWeight: 300, fontSize: 12, color: "#9090A8" }}>
             تكلم عن:
           </p>
-          <p className="font-cairo font-bold text-white text-center mb-6" style={{ fontSize: 22 }}>
+          <p className="font-cairo font-bold text-white text-center" style={{ fontSize: 22, marginBottom: 20 }}>
             {currentTopic.topic}
           </p>
-          <p className="font-cairo text-center mb-3" style={{ fontWeight: 300, fontSize: 12, color: "#9090A8", marginTop: 24 }}>
+          <p className="font-cairo text-center mb-3" style={{ fontWeight: 300, fontSize: 12, color: "#9090A8" }}>
             ماتقدر تقول:
           </p>
-          <div className="flex flex-wrap justify-center mx-auto" style={{ gap: 8, maxWidth: 320 }}>
+          <div className="flex flex-wrap justify-center" style={{ gap: 8 }}>
             {currentTopic.forbidden.map((word) => (
               <span
                 key={word}
@@ -241,60 +282,7 @@ const HeroSection = () => {
         </div>
       </div>
 
-      {/* Fixed bottom buttons */}
-      {/* Topic state: start button */}
-      <div
-        className="fixed bottom-10 left-1/2 -translate-x-1/2 text-center"
-        style={{
-          opacity: state === "topic" ? 1 : 0,
-          pointerEvents: state === "topic" ? "auto" : "none",
-          transition: "opacity 0.4s ease",
-          zIndex: 50,
-        }}
-      >
-        <button
-          onClick={() => setState("recording")}
-          className="font-cairo font-bold text-[16px] text-white"
-          style={{
-            background: "#6C63FF",
-            borderRadius: 999,
-            padding: "16px 56px",
-            boxShadow: "0 0 24px rgba(108,99,255,0.4)",
-          }}
-        >
-          ابدأ الكلام
-        </button>
-      </div>
-
-      {/* Recording state: stop button */}
-      <div
-        className="fixed bottom-10 left-1/2 -translate-x-1/2 text-center"
-        style={{
-          opacity: state === "recording" ? 1 : 0,
-          pointerEvents: state === "recording" ? "auto" : "none",
-          transition: "opacity 0.4s ease",
-          zIndex: 50,
-        }}
-      >
-        <button
-          onClick={() => {
-            clearTimer();
-            setState("results");
-          }}
-          className="font-cairo font-bold text-[14px]"
-          style={{
-            background: "transparent",
-            border: "1px solid #FF6B6B",
-            color: "#FF6B6B",
-            borderRadius: 999,
-            padding: "12px 40px",
-          }}
-        >
-          ■ إيقاف
-        </button>
-      </div>
-
-      {/* Results state: CTA button */}
+      {/* Fixed bottom — recording stop */}
       <div
         className="fixed bottom-10 left-1/2 -translate-x-1/2 text-center"
         style={{

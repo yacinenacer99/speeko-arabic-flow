@@ -244,11 +244,11 @@ const HeroSection = () => {
           className={isLanding ? "hero-float" : ""}
           style={{
             display: "inline-block",
-            marginTop: isSmall ? -40 : 0,
-            marginBottom: isSmall ? 28 : 0,
+            marginTop: isSmall ? -20 : 0,
+            marginBottom: isSmall ? 16 : 0,
             opacity: isResults ? 0 : 1,
             transform: isResults ? "scale(0.8)" : "scale(1)",
-            transition: `margin 0.7s ${EASE}, opacity 0.5s ease, transform 0.5s ease`,
+            transition: `margin-top 0.7s ${EASE}, margin-bottom 0.7s ${EASE}, opacity 0.5s ease, transform 0.5s ease`,
             pointerEvents: isResults ? "none" : "auto",
           }}
         >

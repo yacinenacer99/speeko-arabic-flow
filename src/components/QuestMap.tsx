@@ -146,7 +146,7 @@ const SpineNode = ({ status, icon: Icon }: { status: Stage["status"]; icon: Reac
       </div>
     );
   }
-  // locked or pro-locked
+  // locked or pro-locked — show Lock icon
   return (
     <div
       style={{
@@ -159,7 +159,7 @@ const SpineNode = ({ status, icon: Icon }: { status: Stage["status"]; icon: Reac
         opacity: 0.6,
       }}
     >
-      <Icon size={20} color="#9090A8" />
+      <Lock size={20} color="#9090A8" />
     </div>
   );
 };

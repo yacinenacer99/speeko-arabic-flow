@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index.tsx";
 import Onboarding from "./pages/Onboarding.tsx";
 import Signup from "./pages/Signup.tsx";
@@ -31,28 +33,30 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/challenge" element={<Challenge />} />
-          <Route path="/results" element={<Results />} />
-          <Route path="/progress" element={<Progress />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/badges" element={<Badges />} />
-          <Route path="/levelup" element={<LevelUp />} />
-          <Route path="/streakLost" element={<StreakLost />} />
-          <Route path="/weeklyReport" element={<WeeklyReport />} />
-          <Route path="/subscribe" element={<Subscribe />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/success" element={<Success />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/contact" element={<Contact />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+            <Route path="/challenge" element={<ProtectedRoute><Challenge /></ProtectedRoute>} />
+            <Route path="/results" element={<Results />} />
+            <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/badges" element={<ProtectedRoute><Badges /></ProtectedRoute>} />
+            <Route path="/levelup" element={<ProtectedRoute><LevelUp /></ProtectedRoute>} />
+            <Route path="/streakLost" element={<ProtectedRoute><StreakLost /></ProtectedRoute>} />
+            <Route path="/weeklyReport" element={<ProtectedRoute><WeeklyReport /></ProtectedRoute>} />
+            <Route path="/subscribe" element={<Subscribe />} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/success" element={<Success />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/contact" element={<Contact />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

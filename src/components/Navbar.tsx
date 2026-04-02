@@ -1,15 +1,13 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Home, TrendingUp, User, Globe } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [lang, setLang] = useState<"ar" | "en">("ar");
-
-  // TODO: Replace with real Supabase auth check when auth is connected
-  // e.g., const { data: { session } } = await supabase.auth.getSession()
-  const isLoggedIn = false;
+  const { isLoggedIn } = useAuth();
 
   const darkPages = ["/challenge"];
   const isDark = darkPages.some(p => location.pathname === p);

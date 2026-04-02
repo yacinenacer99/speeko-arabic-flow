@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
@@ -48,7 +50,7 @@ const Signup = () => {
 
           {/* Google */}
           <button
-            onClick={() => navigate("/home")}
+            onClick={() => { login(); navigate("/home"); }}
             className="font-cairo font-bold w-full flex items-center justify-center gap-2 glass-card-light"
             style={{ borderRadius: 999, padding: 14, fontSize: 15, color: "hsl(var(--foreground))", cursor: "pointer" }}
           >
@@ -72,7 +74,7 @@ const Signup = () => {
               </button>
             </div>
             <button
-              onClick={() => navigate("/home")}
+              onClick={() => { login(); navigate("/home"); }}
               className="font-cairo font-bold text-white w-full"
               style={{ background: "hsl(var(--primary))", border: "none", borderRadius: 999, padding: "14px 0", fontSize: 16, cursor: "pointer", marginTop: 8 }}
             >

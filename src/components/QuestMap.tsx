@@ -281,9 +281,9 @@ const StageCard = ({ stage, side, icon: Icon }: { stage: Stage; side: "left" | "
             style={{
               background: "rgba(108,99,255,0.06)",
               borderTop: "1px solid rgba(108,99,255,0.15)",
-              borderRadius: "0 0 20px 20px",
-              padding: "8px 16px",
-              margin: "0 -24px",
+              borderRadius: "0 0 16px 16px",
+              padding: "6px 12px",
+              margin: "0 -16px",
               textAlign: "center",
             }}
           >

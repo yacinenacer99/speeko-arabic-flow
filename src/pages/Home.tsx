@@ -69,7 +69,7 @@ const Home = () => {
           {/* Stage Progress Card — below circle */}
           <div
             style={{
-              marginTop: 32,
+              marginTop: 48,
               maxWidth: 300,
               width: "100%",
               background: "rgba(255,255,255,0.5)",

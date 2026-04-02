@@ -81,7 +81,7 @@ const QuestMap = () => {
                       <div style={{ width: 2, flex: 1, minHeight: 28, background: `linear-gradient(${spineColor}, ${nextSpineColor})` }} />
                     )}
                   </div>
-                  <div style={{ width: 16, height: 2, background: spineColor, marginTop: 23, flexShrink: 0 }} />
+                  <div style={{ width: 12, height: 2, background: spineColor, marginTop: 17, flexShrink: 0 }} />
                   <div style={{ flex: 1, paddingBottom: isLast ? 0 : 16 }}>
                     <StageCard stage={stage} side="right" icon={StageIcon} />
                   </div>

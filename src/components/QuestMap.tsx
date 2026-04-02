@@ -136,13 +136,13 @@ const SpineNode = ({ status, icon: Icon }: { status: Stage["status"]; icon: Reac
       <div
         className="animate-quest-glow"
         style={{
-          width: 48, height: 48, borderRadius: "50%",
+          width: 36, height: 36, borderRadius: "50%",
           background: "#0F0F14",
           border: "2.5px solid #6C63FF",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}
       >
-        <Icon size={20} color="#6C63FF" />
+        <Icon size={16} color="#6C63FF" />
       </div>
     );
   }

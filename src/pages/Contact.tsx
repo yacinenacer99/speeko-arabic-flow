@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Check } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const Contact = () => {
   const [sent, setSent] = useState(false);

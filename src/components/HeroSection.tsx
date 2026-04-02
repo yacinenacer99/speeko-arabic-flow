@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
+import AnalysisLoading from "@/components/AnalysisLoading";
 
-type State = "landing" | "sport" | "topic" | "recording" | "results";
+type State = "landing" | "sport" | "topic" | "recording" | "results" | "loading";
 
 const TOPICS = [
   { topic: "تكلم عن أهمية الوقت", forbidden: ["مهم", "وقت", "يعني", "دائماً", "كثير"] },

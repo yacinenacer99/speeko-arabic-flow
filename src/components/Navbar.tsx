@@ -73,7 +73,7 @@ const Navbar = () => {
           </button>
         </div>
       ) : (
-        <div className="flex items-center" style={{ padding: "8px 24px", gap: 0 }}>
+        <div className="flex items-center px-[4px] py-[10px]" style={{ gap: 0 }}>
           <span
             className="font-cairo font-bold cursor-pointer"
             style={{ fontSize: 14, color: "#FFFFFF", padding: "0 12px", whiteSpace: "nowrap" }}

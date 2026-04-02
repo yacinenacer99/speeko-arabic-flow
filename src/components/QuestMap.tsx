@@ -247,7 +247,7 @@ const StageCard = ({ stage, side, icon: Icon }: { stage: Stage; side: "left" | "
 
       {isCurrent && stage.progress && (
         <div style={{ marginTop: 0 }}>
-          <div style={{ width: "100%", height: 6, background: "#E8E6F0", borderRadius: 999 }}>
+          <div style={{ width: "100%", height: 4, background: "#E8E6F0", borderRadius: 999 }}>
             <div
               style={{
                 width: `${(stage.progress.current / stage.progress.total) * 100}%`,

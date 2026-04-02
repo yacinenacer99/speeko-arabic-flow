@@ -64,7 +64,6 @@ const AnalysisLoading = ({ onComplete }: AnalysisLoadingProps) => {
     }
   }, [progress, affirmation]);
 
-  const dashOffset = CIRCUMFERENCE - (progress / 100) * CIRCUMFERENCE;
   const displayNum = Math.floor(progress);
 
   return (

@@ -26,7 +26,7 @@ const QuestMap = () => {
     <div style={{ padding: "0 24px 48px", direction: "rtl" }}>
       <h2
         className="font-cairo font-bold"
-        style={{ fontSize: 28, color: "#1A1A2E", marginBottom: 40, textAlign: "right" }}
+        style={{ fontSize: 22, color: "#1A1A2E", marginBottom: 32, textAlign: "right" }}
       >
         مسارك
       </h2>

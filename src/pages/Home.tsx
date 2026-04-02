@@ -80,14 +80,14 @@ const Home = () => {
           <div className="hero-stroke-wrapper" style={{ padding: 5 }}>
             <div
               className="hero-circle"
-              style={{ width: 260, height: 260, cursor: "pointer" }}
+              style={{ width: 200, height: 200, cursor: "pointer" }}
               onClick={() => navigate("/challenge")}
             >
               <div className="hero-text-overlay">
-                <span className="font-cairo font-bold" style={{ fontSize: 22, color: "white", textShadow: "0 2px 12px rgba(0,0,0,0.5)" }}>
+                <span className="font-cairo font-bold" style={{ fontSize: 18, color: "white", textShadow: "0 2px 12px rgba(0,0,0,0.5)" }}>
                   ابدأ التحدي
                 </span>
-                <span className="font-cairo font-light" style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>
+                <span className="font-cairo font-light" style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>
                   تكلم الآن
                 </span>
               </div>

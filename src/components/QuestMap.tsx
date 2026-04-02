@@ -221,8 +221,8 @@ const StageCard = ({ stage, side, icon: Icon }: { stage: Stage; side: "left" | "
       }}
     >
       {/* Stage icon in top-left corner (RTL: top-right visually) */}
-      <div style={{ position: "absolute", top: 16, left: 16 }}>
-        <Icon size={24} color={iconColor} />
+      <div style={{ position: "absolute", top: 12, left: 12 }}>
+        <Icon size={18} color={iconColor} />
       </div>
 
       <h3

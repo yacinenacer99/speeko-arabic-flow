@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Flame, Mic, Swords } from "lucide-react";
+import { Flame, Mic, Clock, Ban } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import QuestMap from "@/components/QuestMap";
@@ -110,24 +110,21 @@ const Home = () => {
             padding: "20px 24px",
           }}
         >
-          <div className="flex items-center justify-between" style={{ direction: "rtl" }}>
-            <span className="font-cairo font-bold" style={{ fontSize: 15, color: "#1A1A2E" }}>
-              تحدي اليوم
-            </span>
-            <Swords size={18} color="#6C63FF" />
+          <p className="font-cairo font-bold text-center" style={{ fontSize: 15, color: "#1A1A2E" }}>
+            تحدي اليوم
+          </p>
+          <p className="font-cairo font-bold text-center" style={{ fontSize: 18, color: "#6C63FF", marginTop: 16 }}>
+            جلسة بدون حشو
+          </p>
+          <p className="font-cairo font-light text-center" style={{ fontSize: 13, color: "#9090A8", lineHeight: 1.6, marginTop: 8 }}>
+            تكلم ٦٠ ثانية بأقل عدد كلمات حشو
+          </p>
+          <div className="flex items-center justify-center" style={{ marginTop: 16, gap: 16 }}>
+            <div className="flex items-center" style={{ gap: 6 }}>
+              <Clock size={14} color="#9090A8" />
+              <span className="font-cairo font-light" style={{ fontSize: 12, color: "#9090A8" }}>٦٠ ثانية</span>
+            </div>
           </div>
-          <p
-            className="font-cairo font-light"
-            style={{ fontSize: 13, color: "#9090A8", lineHeight: 1.7, marginTop: 12 }}
-          >
-            تكلم عن أهمية الوقت — بدون ما تستخدم ٥ كلمات أساسية. قدر تعبّر بطريقة مختلفة؟
-          </p>
-          <p
-            className="font-cairo font-light text-center"
-            style={{ fontSize: 11, color: "#6C63FF", marginTop: 16 }}
-          >
-            ٥ كلمات ممنوعة · ٦٠ ثانية
-          </p>
         </div>
       </div>
 

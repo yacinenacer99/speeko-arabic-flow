@@ -169,10 +169,10 @@ const HeroSection = () => {
     <section
       className="relative flex flex-col items-center overflow-hidden"
       style={{
-        height: "100vh",
-        paddingTop: 70,
-        paddingLeft: 24,
-        paddingRight: 24,
+        minHeight: "100dvh",
+        paddingTop: 80,
+        paddingLeft: "var(--page-padding-mobile)",
+        paddingRight: "var(--page-padding-mobile)",
         paddingBottom: 0,
         backgroundColor: isDark ? "#0F0F14" : "hsl(var(--background))",
         transition: `background-color 0.7s ease`,
@@ -198,16 +198,18 @@ const HeroSection = () => {
       {/* Atmospheric blobs — landing only */}
       {isLanding && (
         <>
-          <div className="blob blob-violet" style={{ width: 350, height: 350, top: "15%", right: "-10%" }} />
-          <div className="blob blob-pink" style={{ width: 300, height: 300, bottom: "20%", left: "-5%" }} />
-          <div className="blob blob-blue" style={{ width: 280, height: 280, top: "50%", left: "30%" }} />
+          <div className="blob blob-violet" style={{ width: 200, height: 200, top: "15%", right: "-10%" }} />
+          <div className="blob blob-pink" style={{ width: 200, height: 200, bottom: "20%", left: "-5%" }} />
+          <div className="blob blob-blue" style={{ width: 200, height: 200, top: "50%", left: "30%" }} />
         </>
       )}
 
       {/* Background glow */}
       <div
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full pointer-events-none"
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
         style={{
+          width: "min(500px, 100vw)",
+          height: "min(500px, 100vw)",
           background: "radial-gradient(circle, hsla(244, 100%, 68%, 0.15), transparent 70%)",
           filter: "blur(80px)",
           opacity: isDark ? 0.5 : 1,
@@ -231,15 +233,15 @@ const HeroSection = () => {
             pointerEvents: isLanding ? "auto" : "none",
           }}
         >
-          <h2
-            className="font-bold font-cairo text-foreground text-center"
-            style={{ fontSize: 36, lineHeight: 1.2, marginBottom: 12, padding: "0 24px" }}
+          <h1
+            className="font-bold font-cairo text-foreground text-center hero-heading"
+            style={{ fontSize: 28, lineHeight: 1.3, marginBottom: 12, padding: "0 var(--page-padding-mobile)" }}
           >
             سكوتك يضيع عليك فرص.
-          </h2>
+          </h1>
           <p
             className="font-light font-cairo text-muted-foreground text-center"
-            style={{ fontSize: 15, marginBottom: 44, padding: "0 24px" }}
+            style={{ fontSize: 14, marginBottom: 44, padding: "0 var(--page-padding-mobile)" }}
           >
             تحدياتنا تعلمك كيف تسولف بدون توتر
           </p>
@@ -266,21 +268,23 @@ const HeroSection = () => {
             }}
           >
             <div
-              className="hero-circle"
+              className="hero-circle hero-circle-responsive"
               style={{
-                width: isSmall ? 160 : 260,
-                height: isSmall ? 160 : 260,
+                width: isSmall ? 140 : 220,
+                height: isSmall ? 140 : 220,
                 cursor: "pointer",
                 transition: `width 0.7s ${EASE}, height 0.7s ${EASE}`,
                 animationDuration: isRecording ? "2s" : "3s",
+                maxWidth: "calc(100vw - 40px)",
               }}
               onClick={handleCircleClick}
             >
               <div className="hero-text-overlay">
                 {/* Landing text */}
                 <span
-                  className="font-cairo font-bold text-[20px] text-white"
+                  className="font-cairo font-bold text-white"
                   style={{
+                    fontSize: 18,
                     textShadow: "0 2px 12px rgba(0,0,0,0.5)",
                     opacity: isLanding ? 1 : 0,
                     position: isLanding ? "relative" : "absolute",
@@ -290,8 +294,9 @@ const HeroSection = () => {
                   ابدأ التحدي
                 </span>
                 <span
-                  className="font-cairo font-light text-[13px]"
+                  className="font-cairo font-light"
                   style={{
+                    fontSize: 12,
                     color: "rgba(255,255,255,0.6)",
                     opacity: isLanding ? 1 : 0,
                     position: isLanding ? "relative" : "absolute",
@@ -303,8 +308,9 @@ const HeroSection = () => {
 
                 {/* Timer text */}
                 <span
-                  className="font-cairo font-bold text-[32px]"
+                  className="font-cairo font-bold"
                   style={{
+                    fontSize: 28,
                     textShadow: "0 2px 12px rgba(0,0,0,0.5)",
                     opacity: isDark && !isResults ? 1 : 0,
                     position: isDark && !isResults ? "relative" : "absolute",
@@ -318,10 +324,10 @@ const HeroSection = () => {
                 >
                   {isRecording ? formatTime(timeLeft) : "1:00"}
                 </span>
-                {/* جاهز؟ below timer in topic state */}
                 <span
-                  className="font-cairo font-light text-[13px]"
+                  className="font-cairo font-light"
                   style={{
+                    fontSize: 12,
                     color: "rgba(255,255,255,0.6)",
                     opacity: state === "topic" ? 1 : 0,
                     position: state === "topic" ? "relative" : "absolute",
@@ -339,7 +345,7 @@ const HeroSection = () => {
         <div
           className="flex items-center justify-center"
           style={{
-            gap: 4,
+            gap: 3,
             height: 40,
             marginTop: isRecording ? 16 : 0,
             opacity: isRecording ? 1 : 0,
@@ -388,35 +394,37 @@ const HeroSection = () => {
             opacity: showTopic ? 1 : 0,
             transform: showTopic ? "translateY(0)" : "translateY(12px)",
             transition: "opacity 0.5s ease, transform 0.5s ease",
-            maxWidth: 320,
+            maxWidth: "calc(100% - 32px)",
             pointerEvents: showTopic ? "auto" : "none",
             maxHeight: showTopic ? 400 : 0,
             overflow: "hidden",
+            padding: "0 var(--page-padding-mobile)",
           }}
         >
           <p className="font-cairo text-center" style={{ fontWeight: 300, fontSize: 12, color: "hsl(var(--muted-foreground))", marginBottom: 6 }}>
             تكلم عن:
           </p>
-          <p className="font-cairo font-bold text-white text-center" style={{ fontSize: 22, marginBottom: 20 }}>
+          <p className="font-cairo font-bold text-white text-center" style={{ fontSize: 18, marginBottom: 20 }}>
             {currentTopic.topic}
           </p>
           <p className="font-cairo text-center" style={{ fontWeight: 300, fontSize: 12, color: "hsl(var(--muted-foreground))", marginBottom: 10 }}>
             ماتقدر تقول:
           </p>
-          <div className="flex flex-wrap justify-center" style={{ gap: 8 }}>
+          <div className="flex flex-wrap justify-center" style={{ gap: 8, maxWidth: 320, margin: "0 auto" }}>
             {currentTopic.forbidden.map((word) => {
               const isStruck = struckWords.includes(word);
               return (
                 <span
                   key={word}
-                  className="font-cairo font-bold text-[13px]"
+                  className="font-cairo font-bold"
                   style={{
+                    fontSize: 12,
                     background: isStruck
                       ? "rgba(255,68,68,0.25)"
                       : "rgba(255,68,68,0.08)",
                     border: `1px solid ${isStruck ? "#FF4444" : "rgba(255,107,107,0.35)"}`,
                     borderRadius: 999,
-                    padding: "5px 14px",
+                    padding: "6px 14px",
                     color: "#FF6B6B",
                     textDecoration: isStruck ? "line-through" : "none",
                     transition: "background 0.3s ease, border-color 0.3s ease",
@@ -448,6 +456,20 @@ const HeroSection = () => {
           <AnalysisLoading onComplete={() => navigate("/results")} />
         )}
       </div>
+
+      <style>{`
+        @media (min-width: 768px) {
+          .hero-heading { font-size: 34px !important; }
+          .hero-circle-responsive { width: ${isSmall ? '140px' : '240px'} !important; height: ${isSmall ? '140px' : '240px'} !important; }
+        }
+        @media (min-width: 1024px) {
+          .hero-heading { font-size: 38px !important; }
+          .hero-circle-responsive { width: ${isSmall ? '160px' : '260px'} !important; height: ${isSmall ? '160px' : '260px'} !important; }
+        }
+        @media (max-width: 359px) {
+          .hero-circle-responsive { width: ${isSmall ? '120px' : '200px'} !important; height: ${isSmall ? '120px' : '200px'} !important; }
+        }
+      `}</style>
     </section>
   );
 };

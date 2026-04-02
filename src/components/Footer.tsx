@@ -11,7 +11,7 @@ const Footer = () => {
   const linkStyle: React.CSSProperties = {
     fontFamily: "Cairo, sans-serif",
     fontWeight: 300,
-    fontSize: 14,
+    fontSize: 13,
     color: "#9090A8",
     background: "none",
     border: "none",
@@ -21,6 +21,7 @@ const Footer = () => {
     padding: 0,
     display: "block",
     transition: "color 0.2s",
+    minHeight: 44,
   };
 
   const headingStyle: React.CSSProperties = {
@@ -43,9 +44,9 @@ const Footer = () => {
   );
 
   return (
-    <footer style={{ background: "#0F0F14", padding: "48px 24px 32px 24px", direction: "rtl" }}>
-      <div className="max-w-[800px] mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+    <footer className="footer-responsive" style={{ background: "#0F0F14", padding: "32px 16px 24px", direction: "rtl" }}>
+      <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+        <div className="footer-grid">
           <div>
             <h4 className="font-cairo font-bold" style={{ fontSize: 18, color: "#FFFFFF", marginBottom: 8 }}>ملسون</h4>
             <p className="font-cairo font-light" style={{ fontSize: 13, color: "#9090A8" }}>تدرّب على الكلام بثقة</p>
@@ -64,11 +65,30 @@ const Footer = () => {
           </div>
         </div>
         <div style={{ borderTop: "1px solid #2A2A3E", marginTop: 32, paddingTop: 20 }}>
-          <p className="font-cairo font-light text-center" style={{ fontSize: 12, color: "#9090A8" }}>
+          <p className="font-cairo font-light text-center" style={{ fontSize: 11, color: "#9090A8" }}>
             © 2026 ملسون. جميع الحقوق محفوظة.
           </p>
         </div>
       </div>
+
+      <style>{`
+        .footer-grid {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+        @media (min-width: 768px) {
+          .footer-responsive { padding: 40px 32px !important; }
+          .footer-grid {
+            flex-direction: row;
+            gap: 40px;
+          }
+          .footer-grid > div { flex: 1; }
+        }
+        @media (min-width: 1024px) {
+          .footer-responsive { padding: 48px 24px 32px !important; }
+        }
+      `}</style>
     </footer>
   );
 };

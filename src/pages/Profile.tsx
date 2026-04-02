@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Lock, Mic, Flame, Sparkles, Award, Diamond, Trophy } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-
+import { useAuth } from "@/contexts/AuthContext";
 
 const badges = [
   { name: "أول جلسة", Icon: Mic, earned: true, date: "قبل 12 يوم" },
@@ -21,32 +21,33 @@ const menuItems = [
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   return (
-    <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100vh", direction: "rtl", paddingBottom: 80 }}>
+    <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100dvh", direction: "rtl", paddingBottom: 80 }}>
       <Navbar />
-      <div className="blob blob-violet" style={{ width: 300, height: 300, top: "5%", right: "-10%" }} />
+      <div className="blob blob-violet" style={{ width: 200, height: 200, top: "5%", right: "-10%" }} />
 
-      <div style={{ padding: "80px 24px 24px", maxWidth: 480, margin: "0 auto" }}>
+      <div className="page-narrow" style={{ paddingTop: 80 }}>
         {/* Header */}
         <div className="flex flex-col items-center" style={{ marginBottom: 32 }}>
           <div
-            className="flex items-center justify-center"
+            className="flex items-center justify-center profile-avatar"
             style={{
-              width: 80,
-              height: 80,
+              width: 72,
+              height: 72,
               borderRadius: "50%",
               background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-soft)))",
               marginBottom: 12,
             }}
           >
-            <span className="font-cairo font-bold text-white" style={{ fontSize: 32 }}>أ</span>
+            <span className="font-cairo font-bold text-white" style={{ fontSize: 28 }}>أ</span>
           </div>
           <p className="font-cairo font-bold" style={{ fontSize: 22, color: "hsl(var(--foreground))" }}>أحمد</p>
           <span
             className="font-cairo font-bold"
             style={{
-              fontSize: 13,
+              fontSize: 12,
               color: "hsl(var(--primary))",
               background: "rgba(108,99,255,0.1)",
               borderRadius: 999,
@@ -65,8 +66,8 @@ const Profile = () => {
             { value: "2", label: "الشارات" },
             { value: "12", label: "السترك" },
           ].map((s) => (
-            <div key={s.label} className="flex-1 flex flex-col items-center glass-card-light" style={{ padding: 16 }}>
-              <span className="font-cairo font-bold" style={{ fontSize: 24, color: "hsl(var(--primary-soft))" }}>{s.value}</span>
+            <div key={s.label} className="flex-1 flex flex-col items-center glass-card-light" style={{ padding: 14 }}>
+              <span className="font-cairo font-bold" style={{ fontSize: 22, color: "hsl(var(--primary-soft))" }}>{s.value}</span>
               <span className="font-cairo font-light" style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>{s.label}</span>
             </div>
           ))}
@@ -91,10 +92,10 @@ const Profile = () => {
               className="flex flex-col items-center text-center glass-card-light"
               style={{ padding: 16, opacity: b.earned ? 1 : 0.4, position: "relative" }}
             >
-              <div className="flex items-center justify-center" style={{ width: 40, height: 40, borderRadius: "50%", background: b.earned ? "rgba(93,190,138,0.1)" : "rgba(144,144,168,0.1)" }}>
+              <div className="flex items-center justify-center" style={{ width: 36, height: 36, borderRadius: "50%", background: b.earned ? "rgba(93,190,138,0.1)" : "rgba(144,144,168,0.1)" }}>
                 <b.Icon size={20} color={b.earned ? "#5DBE8A" : "hsl(var(--muted-foreground))"} />
               </div>
-              <p className="font-cairo font-bold" style={{ fontSize: 12, color: "hsl(var(--foreground))", marginTop: 6 }}>{b.name}</p>
+              <p className="font-cairo font-bold" style={{ fontSize: 10, color: "hsl(var(--foreground))", marginTop: 6 }}>{b.name}</p>
               {b.earned && b.date && (
                 <p className="font-cairo font-light" style={{ fontSize: 10, color: "hsl(var(--muted-foreground))" }}>{b.date}</p>
               )}
@@ -116,12 +117,13 @@ const Profile = () => {
               className="flex items-center justify-between w-full font-cairo font-light"
               style={{
                 padding: "14px 16px",
-                fontSize: 15,
+                fontSize: 14,
                 color: "hsl(var(--foreground))",
                 background: "none",
                 border: "none",
                 borderBottom: i < menuItems.length - 1 ? "1px solid hsl(var(--border))" : "none",
                 cursor: "pointer",
+                minHeight: 44,
               }}
             >
               <span>{item.label}</span>
@@ -132,13 +134,21 @@ const Profile = () => {
 
         <div className="glass-card-light" style={{ overflow: "hidden", padding: 0 }}>
           <button
+            onClick={() => { logout(); navigate("/"); }}
             className="w-full font-cairo font-light"
-            style={{ padding: "14px 16px", fontSize: 15, color: "#FF6B6B", background: "none", border: "none", cursor: "pointer", textAlign: "right" }}
+            style={{ padding: "14px 16px", fontSize: 14, color: "#FF6B6B", background: "none", border: "none", cursor: "pointer", textAlign: "right", minHeight: 44 }}
           >
             تسجيل الخروج
           </button>
         </div>
       </div>
+
+      <style>{`
+        @media (min-width: 1024px) {
+          .profile-avatar { width: 80px !important; height: 80px !important; }
+        }
+      `}</style>
+
       <Footer />
     </div>
   );

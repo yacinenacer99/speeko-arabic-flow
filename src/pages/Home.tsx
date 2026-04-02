@@ -63,7 +63,7 @@ const Home = () => {
       </div>
 
       {/* Spacer before circle */}
-      <div style={{ height: 56 }} />
+      <div style={{ height: 72 }} />
 
       {/* Circle button — centered */}
       <div className="flex flex-col items-center" style={{ padding: "0 24px" }}>

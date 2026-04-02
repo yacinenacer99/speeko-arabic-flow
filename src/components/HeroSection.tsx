@@ -160,7 +160,7 @@ const HeroSection = () => {
     else if (state === "topic") setState("recording");
     else if (state === "recording") {
       clearTimer();
-      setState("results");
+      setState("loading");
     }
   };
 

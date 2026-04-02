@@ -120,7 +120,7 @@ const SpineNode = ({ status, icon: Icon }: { status: Stage["status"]; icon: Reac
         <div
           style={{
             position: "absolute", top: -2, right: -2,
-            width: 16, height: 16, borderRadius: "50%",
+            width: 14, height: 14, borderRadius: "50%",
             background: "#5DBE8A",
             display: "flex", alignItems: "center", justifyContent: "center",
             zIndex: 3,

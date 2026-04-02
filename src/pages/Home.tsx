@@ -63,7 +63,7 @@ const Home = () => {
       </div>
 
       {/* Spacer before circle */}
-      <div style={{ height: 40 }} />
+      <div style={{ height: 56 }} />
 
       {/* Circle button — centered */}
       <div className="flex flex-col items-center" style={{ padding: "0 24px" }}>
@@ -97,7 +97,7 @@ const Home = () => {
       </div>
 
       {/* Daily Challenge Card */}
-      <div className="flex justify-center" style={{ padding: "32px 24px 0" }}>
+      <div className="flex justify-center" style={{ padding: "48px 24px 0" }}>
         <div
           style={{
             maxWidth: 340,

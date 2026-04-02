@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Flame } from "lucide-react";
+import { Flame, Mic } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import QuestMap from "@/components/QuestMap";

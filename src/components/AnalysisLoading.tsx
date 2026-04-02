@@ -11,10 +11,6 @@ const AFFIRMATIONS = [
 
 const DURATION = 4000;
 const HOLD = 500;
-const CIRCLE_SIZE = 120;
-const STROKE_WIDTH = 3;
-const RADIUS = (CIRCLE_SIZE - STROKE_WIDTH) / 2;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 interface AnalysisLoadingProps {
   onComplete?: () => void;

@@ -202,8 +202,22 @@
   animation: pulse-glow 2.5s ease-in-out infinite;
 }
 
+@keyframes quest-glow {
+  0%, 100% {
+    box-shadow: 0 0 16px rgba(108,99,255,0.3);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(108,99,255,0.5);
+  }
+}
+
+.animate-quest-glow {
+  animation: quest-glow 2s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-pulse-glow {
+  .animate-pulse-glow,
+  .animate-quest-glow {
     animation: none !important;
   }
 }

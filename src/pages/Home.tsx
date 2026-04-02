@@ -87,7 +87,7 @@ const Home = () => {
                 <span className="font-cairo font-bold" style={{ fontSize: 18, color: "white", textShadow: "0 2px 12px rgba(0,0,0,0.5)" }}>
                   ابدأ التحدي
                 </span>
-                <span className="font-cairo font-light" style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>
+                <span className="font-cairo font-light" style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>
                   تكلم الآن
                 </span>
               </div>

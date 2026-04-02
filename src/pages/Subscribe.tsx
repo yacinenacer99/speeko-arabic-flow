@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Check, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const Subscribe = () => {
   const navigate = useNavigate();

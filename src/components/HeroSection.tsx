@@ -142,11 +142,12 @@ const HeroSection = () => {
   }, [state]);
 
   const isLanding = state === "landing";
-  const isDark = state !== "landing";
-  const isSmall = !isLanding && state !== "results";
+  const isDark = state !== "landing" && state !== "loading";
+  const isSmall = !isLanding && state !== "results" && state !== "loading";
   const showTopic = state === "topic" || state === "recording";
   const isResults = state === "results";
   const isRecording = state === "recording";
+  const isLoading = state === "loading";
 
   const timerColor =
     timeLeft > 30

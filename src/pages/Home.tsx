@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Flame, Mic } from "lucide-react";
+import { Flame, Mic, Swords } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import QuestMap from "@/components/QuestMap";
@@ -32,7 +32,6 @@ const Home = () => {
           }}
         >
           <div className="flex items-center justify-between" style={{ direction: "rtl" }}>
-            {/* Right side — greeting + streak */}
             <div>
               <p className="font-cairo font-bold" style={{ fontSize: 20, color: "#1A1A2E" }}>
                 هلا، {userName}
@@ -44,14 +43,11 @@ const Home = () => {
                 </span>
               </div>
             </div>
-            {/* Left side — stage badge */}
             <div className="flex flex-col items-center">
               <div
                 className="flex items-center justify-center"
                 style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: "50%",
+                  width: 40, height: 40, borderRadius: "50%",
                   background: "rgba(108,99,255,0.1)",
                   border: "1.5px solid rgba(108,99,255,0.3)",
                 }}
@@ -71,7 +67,6 @@ const Home = () => {
 
       {/* Circle button — centered */}
       <div className="flex flex-col items-center" style={{ padding: "0 24px" }}>
-        {/* Glow bg */}
         <div
           className="absolute pointer-events-none"
           style={{
@@ -98,6 +93,41 @@ const Home = () => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Daily Challenge Card */}
+      <div className="flex justify-center" style={{ padding: "32px 24px 0" }}>
+        <div
+          style={{
+            maxWidth: 340,
+            width: "100%",
+            background: "rgba(255,255,255,0.5)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            border: "1px solid rgba(255,255,255,0.6)",
+            borderRadius: 20,
+            padding: "20px 24px",
+          }}
+        >
+          <div className="flex items-center justify-between" style={{ direction: "rtl" }}>
+            <span className="font-cairo font-bold" style={{ fontSize: 15, color: "#1A1A2E" }}>
+              تحدي اليوم
+            </span>
+            <Swords size={18} color="#6C63FF" />
+          </div>
+          <p
+            className="font-cairo font-light"
+            style={{ fontSize: 13, color: "#9090A8", lineHeight: 1.7, marginTop: 12 }}
+          >
+            تكلم عن أهمية الوقت — بدون ما تستخدم ٥ كلمات أساسية. قدر تعبّر بطريقة مختلفة؟
+          </p>
+          <p
+            className="font-cairo font-light text-center"
+            style={{ fontSize: 11, color: "#6C63FF", marginTop: 16 }}
+          >
+            ٥ كلمات ممنوعة · ٦٠ ثانية
+          </p>
         </div>
       </div>
 

@@ -2,15 +2,14 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Home, TrendingUp, User, Globe } from "lucide-react";
 
-const publicPages = ["/", "/onboarding", "/signup", "/login", "/subscribe", "/blog", "/contact"];
-const loggedInPages = ["/home", "/challenge", "/results", "/progress", "/profile", "/badges", "/settings", "/weeklyReport", "/streakLost", "/levelup"];
-
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [lang, setLang] = useState<"ar" | "en">("ar");
 
-  const isLoggedIn = loggedInPages.some(p => location.pathname.startsWith(p));
+  // TODO: Replace with real Supabase auth check when auth is connected
+  // e.g., const { data: { session } } = await supabase.auth.getSession()
+  const isLoggedIn = false;
 
   const darkPages = ["/challenge"];
   const isDark = darkPages.some(p => location.pathname === p);

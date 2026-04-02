@@ -349,6 +349,7 @@ const Results = () => {
           ابدأ خطة التعلم
         </button>
       </div>
+      <div style={{ height: 64 }} />
       <Footer />
     </div>
   );

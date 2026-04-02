@@ -119,6 +119,7 @@ const Settings = () => {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 };

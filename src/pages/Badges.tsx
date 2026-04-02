@@ -96,6 +96,7 @@ const Badges = () => {
           </>
         )}
       </div>
+      <Footer />
     </div>
   );
 };

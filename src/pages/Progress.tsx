@@ -110,6 +110,7 @@ const Progress = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

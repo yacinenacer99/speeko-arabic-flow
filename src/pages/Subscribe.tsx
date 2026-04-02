@@ -83,6 +83,7 @@ const Subscribe = () => {
           </button>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

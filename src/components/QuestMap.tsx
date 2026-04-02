@@ -108,13 +108,13 @@ const SpineNode = ({ status, icon: Icon }: { status: Stage["status"]; icon: Reac
       <div style={{ position: "relative" }}>
         <div
           style={{
-            width: 48, height: 48, borderRadius: "50%",
+            width: 36, height: 36, borderRadius: "50%",
             background: "#6C63FF",
             display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 4px 16px rgba(108,99,255,0.3)",
+            boxShadow: "0 4px 12px rgba(108,99,255,0.3)",
           }}
         >
-          <Icon size={20} color="white" />
+          <Icon size={16} color="white" />
         </div>
         {/* Completion check overlay */}
         <div

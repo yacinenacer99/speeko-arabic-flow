@@ -81,7 +81,7 @@ const HeroSection = () => {
   useEffect(() => {
     if (timeLeft === 0 && state === "recording") {
       clearTimer();
-      setState("results");
+      setState("loading");
     }
   }, [timeLeft, state, clearTimer]);
 

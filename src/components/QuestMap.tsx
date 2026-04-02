@@ -150,7 +150,7 @@ const SpineNode = ({ status, icon: Icon }: { status: Stage["status"]; icon: Reac
   return (
     <div
       style={{
-        width: 48, height: 48, borderRadius: "50%",
+        width: 36, height: 36, borderRadius: "50%",
         background: "rgba(255,255,255,0.3)",
         backdropFilter: "blur(12px)",
         WebkitBackdropFilter: "blur(12px)",
@@ -159,7 +159,7 @@ const SpineNode = ({ status, icon: Icon }: { status: Stage["status"]; icon: Reac
         opacity: 0.6,
       }}
     >
-      <Lock size={20} color="#9090A8" />
+      <Lock size={16} color="#9090A8" />
     </div>
   );
 };

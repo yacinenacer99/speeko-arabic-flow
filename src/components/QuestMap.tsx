@@ -65,7 +65,7 @@ const QuestMap = () => {
                   {!isLeft && (
                     <>
                       <div className="flex flex-col items-center" style={{ position: "relative" }}>
-                        <div style={{ width: 24, height: 2, background: spineColor, marginTop: 23 }} />
+                        <div style={{ width: 16, height: 2, background: spineColor, marginTop: 17 }} />
                       </div>
                       <StageCard stage={stage} side="right" icon={StageIcon} />
                     </>

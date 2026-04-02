@@ -197,14 +197,14 @@ const StageCard = ({ stage, side, icon: Icon }: { stage: Stage; side: "left" | "
     <div
       style={{
         width: "100%",
-        maxWidth: 280,
+        maxWidth: 240,
         background: "rgba(255,255,255,0.5)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
         border: "1px solid rgba(255,255,255,0.65)",
-        borderRadius: 20,
-        padding: isPro ? "24px 24px 0" : 24,
-        boxShadow: "0 8px 32px rgba(0,0,0,0.06)",
+        borderRadius: 16,
+        padding: isPro ? "16px 16px 0" : 16,
+        boxShadow: "0 6px 24px rgba(0,0,0,0.05)",
         opacity: isLocked ? 0.7 : 1,
         transition: "all 0.3s ease",
         overflow: "hidden",

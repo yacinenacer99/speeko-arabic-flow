@@ -42,7 +42,6 @@ const Onboarding = () => {
   const handleNext = () => {
     if (step < steps.length - 1) setStep(step + 1);
     else {
-      // Save to localStorage for now (replace with Supabase later)
       localStorage.setItem("user_name", name.trim());
       localStorage.setItem("user_interests", JSON.stringify(interests));
       localStorage.setItem("user_goal", goal || "");
@@ -64,12 +63,13 @@ const Onboarding = () => {
     WebkitBackdropFilter: "blur(16px)",
     border: selected ? "2px solid #6C63FF" : "1px solid rgba(255,255,255,0.6)",
     borderRadius: 20,
-    padding: 24,
+    padding: "20px 16px",
     cursor: "pointer",
     transition: "border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease",
     boxShadow: selected
       ? "0 0 0 3px rgba(108,99,255,0.1)"
       : "0 8px 32px rgba(0, 0, 0, 0.06)",
+    minHeight: 44,
   });
 
   const interestCardStyle = (selected: boolean): React.CSSProperties => ({
@@ -78,34 +78,35 @@ const Onboarding = () => {
     WebkitBackdropFilter: "blur(16px)",
     border: selected ? "2px solid #6C63FF" : "1px solid rgba(255,255,255,0.6)",
     borderRadius: 16,
-    padding: "20px 16px",
+    padding: "16px 12px",
     cursor: "pointer",
     textAlign: "center",
     transition: "border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease",
     boxShadow: selected
       ? "0 0 0 3px rgba(108,99,255,0.1)"
       : "0 8px 32px rgba(0, 0, 0, 0.06)",
+    minHeight: 44,
   });
 
   return (
     <div
       className="flex flex-col items-center relative"
       style={{
-        height: "100vh",
+        minHeight: "100dvh",
         overflow: "hidden",
         background: "hsl(var(--background))",
         direction: "rtl",
-        padding: "0 24px",
+        padding: "0 var(--page-padding-mobile)",
       }}
     >
       <Navbar />
 
       {/* Atmospheric blobs */}
-      <div className="blob blob-violet" style={{ width: 300, height: 300, top: "20%", right: "-10%" }} />
-      <div className="blob blob-pink" style={{ width: 250, height: 250, bottom: "10%", left: "-5%" }} />
+      <div className="blob blob-violet" style={{ width: 200, height: 200, top: "20%", right: "-10%" }} />
+      <div className="blob blob-pink" style={{ width: 200, height: 200, bottom: "10%", left: "-5%" }} />
 
       {/* Progress dots — 5 dots */}
-      <div className="flex gap-2 mt-20 mb-8 relative z-10">
+      <div className="flex gap-2 relative z-10" style={{ marginTop: 80, marginBottom: 32 }}>
         {steps.map((_, i) => (
           <div
             key={i}
@@ -125,7 +126,7 @@ const Onboarding = () => {
         {/* STEP 1 — NAME */}
         {currentStep === "name" && (
           <div className="w-full flex flex-col items-center">
-            <h1 className="font-cairo font-bold text-center" style={{ fontSize: 28, color: "#1A1A2E" }}>
+            <h1 className="font-cairo font-bold text-center onboarding-heading" style={{ fontSize: 24, color: "#1A1A2E" }}>
               وش نقول لك؟
             </h1>
             <p className="font-cairo font-light text-center" style={{ fontSize: 14, color: "#9090A8", marginTop: 8 }}>
@@ -146,7 +147,7 @@ const Onboarding = () => {
                 WebkitBackdropFilter: "blur(16px)",
                 border: "1px solid rgba(255,255,255,0.6)",
                 borderRadius: 12,
-                padding: "16px 20px",
+                padding: "14px 16px",
                 fontSize: 16,
                 color: "#1A1A2E",
                 outline: "none",
@@ -168,13 +169,13 @@ const Onboarding = () => {
         {/* STEP 2 — INTERESTS */}
         {currentStep === "interests" && (
           <div className="w-full flex flex-col items-center">
-            <h1 className="font-cairo font-bold text-center" style={{ fontSize: 28, color: "#1A1A2E" }}>
+            <h1 className="font-cairo font-bold text-center onboarding-heading" style={{ fontSize: 24, color: "#1A1A2E" }}>
               وش يهمك؟
             </h1>
             <p className="font-cairo font-light text-center" style={{ fontSize: 14, color: "#9090A8", marginTop: 8 }}>
               نختار لك تحديات على ذوقك
             </p>
-            <div className="grid grid-cols-2 w-full" style={{ gap: 12, marginTop: 24, maxWidth: 340 }}>
+            <div className="grid grid-cols-2 w-full" style={{ gap: 10, marginTop: 24, maxWidth: 340 }}>
               {interestItems.map((item) => {
                 const selected = interests.includes(item.id);
                 return (
@@ -183,10 +184,10 @@ const Onboarding = () => {
                     style={interestCardStyle(selected)}
                     onClick={() => toggleInterest(item.id)}
                   >
-                    <p className="font-cairo font-bold" style={{ fontSize: 14, color: "#1A1A2E" }}>
+                    <p className="font-cairo font-bold" style={{ fontSize: 13, color: "#1A1A2E" }}>
                       {item.title}
                     </p>
-                    <p className="font-cairo font-light" style={{ fontSize: 11, color: "#9090A8", marginTop: 4 }}>
+                    <p className="font-cairo font-light" style={{ fontSize: 10, color: "#9090A8", marginTop: 4 }}>
                       {item.sub}
                     </p>
                   </div>
@@ -199,16 +200,16 @@ const Onboarding = () => {
         {/* STEP 3 — GOAL */}
         {currentStep === "goal" && (
           <div className="w-full">
-            <h1 className="font-cairo font-bold text-center" style={{ fontSize: 28, color: "hsl(var(--foreground))", marginBottom: 24 }}>
+            <h1 className="font-cairo font-bold text-center onboarding-heading" style={{ fontSize: 24, color: "hsl(var(--foreground))", marginBottom: 24 }}>
               وش هدفك؟
             </h1>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2" style={{ gap: 10 }}>
               {goalItems.map((item) => (
                 <div key={item.id} style={cardStyle(goal === item.id)} onClick={() => setGoal(item.id)}>
                   <div className="flex justify-center" style={{ marginBottom: 8 }}>
                     <item.Icon size={16} color="#6C63FF" />
                   </div>
-                  <p className="font-cairo font-bold text-center" style={{ fontSize: 15, color: "hsl(var(--foreground))" }}>{item.title}</p>
+                  <p className="font-cairo font-bold text-center" style={{ fontSize: 14, color: "hsl(var(--foreground))" }}>{item.title}</p>
                   <p className="font-cairo font-light text-center" style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>{item.sub}</p>
                 </div>
               ))}
@@ -219,10 +220,10 @@ const Onboarding = () => {
         {/* STEP 4 — LEVEL */}
         {currentStep === "level" && (
           <div className="w-full">
-            <h1 className="font-cairo font-bold text-center" style={{ fontSize: 28, color: "hsl(var(--foreground))", marginBottom: 24 }}>
+            <h1 className="font-cairo font-bold text-center onboarding-heading" style={{ fontSize: 24, color: "hsl(var(--foreground))", marginBottom: 24 }}>
               كيف تحكي على نفسك؟
             </h1>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col" style={{ gap: 10 }}>
               {[
                 { id: "beginner", title: "مبتدئ", sub: "أتردد كثير وما أعرف وش أقول" },
                 { id: "intermediate", title: "متوسط", sub: "أتكلم بس أحس كلامي مو منظم" },
@@ -240,10 +241,10 @@ const Onboarding = () => {
         {/* STEP 5 — LANGUAGE */}
         {currentStep === "language" && (
           <div className="w-full">
-            <h1 className="font-cairo font-bold text-center" style={{ fontSize: 28, color: "hsl(var(--foreground))", marginBottom: 24 }}>
+            <h1 className="font-cairo font-bold text-center onboarding-heading" style={{ fontSize: 24, color: "hsl(var(--foreground))", marginBottom: 24 }}>
               وش لغتك؟
             </h1>
-            <div className="flex flex-col gap-3 w-full">
+            <div className="flex flex-col w-full" style={{ gap: 10 }}>
               <div style={cardStyle(language === "ar")} onClick={() => setLanguage("ar")}>
                 <p className="font-cairo font-bold" style={{ fontSize: 18, color: "hsl(var(--foreground))" }}>العربية الفصحى</p>
                 <p className="font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))" }}>Modern Standard Arabic</p>
@@ -258,7 +259,7 @@ const Onboarding = () => {
       </div>
 
       {/* Fixed bottom button */}
-      <div className="w-full pb-8 relative z-10" style={{ maxWidth: 400 }}>
+      <div className="w-full pb-8 relative z-10" style={{ maxWidth: 400, paddingBottom: "calc(24px + env(safe-area-inset-bottom, 0px))" }}>
         <button
           onClick={handleNext}
           disabled={!canNext}
@@ -268,7 +269,8 @@ const Onboarding = () => {
             border: "none",
             borderRadius: 999,
             padding: "16px 0",
-            fontSize: 16,
+            fontSize: 15,
+            height: 50,
             cursor: canNext ? "pointer" : "not-allowed",
             opacity: canNext ? 1 : 0.4,
             pointerEvents: canNext ? "auto" : "none",
@@ -278,6 +280,12 @@ const Onboarding = () => {
           التالي
         </button>
       </div>
+
+      <style>{`
+        @media (min-width: 1024px) {
+          .onboarding-heading { font-size: 28px !important; }
+        }
+      `}</style>
     </div>
   );
 };

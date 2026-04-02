@@ -7,7 +7,7 @@ const StreakLost = () => {
   return (
     <div
       className="flex flex-col items-center justify-center text-center"
-      style={{ height: "100vh", overflow: "hidden", background: "#0F0F14", direction: "rtl", padding: "0 24px" }}
+      style={{ minHeight: "100dvh", overflow: "hidden", background: "#0F0F14", direction: "rtl", padding: "0 var(--page-padding-mobile)" }}
     >
       <div style={{ position: "relative", marginBottom: 16 }}>
         <div
@@ -19,20 +19,16 @@ const StreakLost = () => {
         <div
           className="absolute flex items-center justify-center"
           style={{
-            top: -4,
-            right: -4,
-            width: 20,
-            height: 20,
-            borderRadius: "50%",
-            background: "#FF6B6B",
+            top: -4, right: -4, width: 20, height: 20,
+            borderRadius: "50%", background: "#FF6B6B",
           }}
         >
           <X size={12} color="white" />
         </div>
       </div>
 
-      <p className="font-cairo font-bold text-white" style={{ fontSize: 28 }}>انقطع سترك</p>
-      <p className="font-cairo font-light" style={{ fontSize: 16, color: "hsl(var(--muted-foreground))", marginTop: 8 }}>كان عندك 12 يوم</p>
+      <p className="font-cairo font-bold text-white" style={{ fontSize: 24 }}>انقطع سترك</p>
+      <p className="font-cairo font-light" style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", marginTop: 8 }}>كان عندك 12 يوم</p>
 
       <div
         className="flex flex-col items-center w-full glass-card-dark"
@@ -51,6 +47,7 @@ const StreakLost = () => {
             fontSize: 14,
             cursor: "pointer",
             marginTop: 16,
+            minHeight: 44,
           }}
         >
           استخدم الرمز
@@ -65,10 +62,11 @@ const StreakLost = () => {
           border: "none",
           borderRadius: 999,
           padding: "16px 0",
-          fontSize: 16,
+          fontSize: 15,
           cursor: "pointer",
           marginTop: 16,
           maxWidth: 320,
+          height: 50,
         }}
       >
         ابدأ من جديد

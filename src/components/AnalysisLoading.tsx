@@ -27,26 +27,20 @@ const AnalysisLoading = ({ onComplete }: AnalysisLoadingProps) => {
 
   useEffect(() => {
     startRef.current = performance.now();
-
     const tick = (now: number) => {
       const elapsed = now - startRef.current;
       const pct = Math.min((elapsed / DURATION) * 100, 100);
       setProgress(pct);
-
       if (pct < 100) {
         rafRef.current = requestAnimationFrame(tick);
       } else if (!doneRef.current) {
         doneRef.current = true;
         setTimeout(() => {
-          if (onComplete) {
-            onComplete();
-          } else {
-            navigate("/results");
-          }
+          if (onComplete) onComplete();
+          else navigate("/results");
         }, HOLD);
       }
     };
-
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
   }, [navigate, onComplete]);
@@ -78,73 +72,37 @@ const AnalysisLoading = ({ onComplete }: AnalysisLoadingProps) => {
         alignItems: "center",
         justifyContent: "center",
         direction: "rtl",
+        minHeight: "100dvh",
+        padding: "0 24px",
       }}
     >
-      {/* Blobs */}
-      <div
-        style={{
-          position: "absolute",
-          width: 250,
-          height: 250,
-          borderRadius: "50%",
-          background: "#6C63FF",
-          filter: "blur(80px)",
-          opacity: 0.1,
-          top: "15%",
-          right: "-5%",
-          pointerEvents: "none",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          width: 250,
-          height: 250,
-          borderRadius: "50%",
-          background: "#FF9DC4",
-          filter: "blur(80px)",
-          opacity: 0.1,
-          bottom: "20%",
-          left: "-5%",
-          pointerEvents: "none",
-        }}
-      />
+      <div className="blob blob-violet" style={{ width: 200, height: 200, top: "15%", right: "-5%" }} />
+      <div className="blob blob-pink" style={{ width: 200, height: 200, bottom: "20%", left: "-5%" }} />
 
-      {/* Large percentage number */}
       <div className="flex items-baseline" style={{ gap: 4 }}>
         <span
-          className="font-cairo font-bold"
+          className="font-cairo font-bold loading-percent"
           style={{
-            fontSize: 80,
+            fontSize: 64,
             background: "linear-gradient(135deg, #FF9DC4, #C4A8FF, #6C63FF)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
-            textShadow: "none",
             filter: "drop-shadow(0 0 30px rgba(108,99,255,0.3))",
           }}
         >
           {displayNum}
         </span>
-        <span
-          className="font-cairo font-light"
-          style={{
-            fontSize: 28,
-            color: "#9090A8",
-          }}
-        >
-          %
-        </span>
+        <span className="font-cairo font-light" style={{ fontSize: 24, color: "#9090A8" }}>%</span>
       </div>
 
-      {/* Affirmation */}
       <p
         className="font-cairo font-light"
         style={{
-          fontSize: 15,
+          fontSize: 14,
           color: "#FFFFFF",
           textAlign: "center",
-          maxWidth: 280,
+          maxWidth: 260,
           marginTop: 24,
           opacity: affirmationOpacity,
           transition: "opacity 0.4s ease",
@@ -153,18 +111,15 @@ const AnalysisLoading = ({ onComplete }: AnalysisLoadingProps) => {
         {affirmation}
       </p>
 
-      {/* Static subtitle */}
-      <p
-        className="font-cairo font-light"
-        style={{
-          fontSize: 12,
-          color: "#9090A8",
-          textAlign: "center",
-          marginTop: 16,
-        }}
-      >
+      <p className="font-cairo font-light" style={{ fontSize: 12, color: "#9090A8", textAlign: "center", marginTop: 16 }}>
         ملسون يجهّز تحليلك
       </p>
+
+      <style>{`
+        @media (min-width: 1024px) {
+          .loading-percent { font-size: 80px !important; }
+        }
+      `}</style>
     </div>
   );
 };

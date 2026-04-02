@@ -3,7 +3,6 @@ import { ArrowRight, Lock, Mic, Flame, Sparkles, Award, Zap, Diamond, Crown, Tro
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-
 const allBadges = [
   { name: "أول جلسة", Icon: Mic, desc: "أكمل جلستك الأولى", status: "earned" as const, date: "قبل 12 يوم" },
   { name: "7 أيام متواصلة", Icon: Flame, desc: "حافظ على سترك 7 أيام", status: "earned" as const, date: "قبل 5 أيام" },
@@ -26,7 +25,7 @@ const Badges = () => {
       key={b.name}
       className="flex flex-col items-center text-center glass-card-light"
       style={{
-        padding: 20,
+        padding: 16,
         position: "relative",
         opacity: b.status === "locked" ? 0.5 : 1,
       }}
@@ -34,18 +33,18 @@ const Badges = () => {
       <div
         className="flex items-center justify-center"
         style={{
-          width: 56,
-          height: 56,
+          width: 48,
+          height: 48,
           borderRadius: "50%",
           background: b.status === "earned" ? "rgba(93,190,138,0.15)" : b.status === "progress" ? "rgba(108,99,255,0.1)" : "rgba(144,144,168,0.1)",
         }}
       >
-        <b.Icon size={28} color={b.status === "earned" ? "#5DBE8A" : b.status === "progress" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"} />
+        <b.Icon size={24} color={b.status === "earned" ? "#5DBE8A" : b.status === "progress" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"} />
       </div>
-      <p className="font-cairo font-bold" style={{ fontSize: 15, color: "hsl(var(--foreground))", marginTop: 8 }}>{b.name}</p>
-      <p className="font-cairo font-light" style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 4 }}>{b.desc}</p>
+      <p className="font-cairo font-bold" style={{ fontSize: 13, color: "hsl(var(--foreground))", marginTop: 8 }}>{b.name}</p>
+      <p className="font-cairo font-light" style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", marginTop: 4 }}>{b.desc}</p>
       {b.status === "earned" && b.date && (
-        <p className="font-cairo font-light flex items-center gap-1" style={{ fontSize: 11, color: "#5DBE8A", marginTop: 6 }}>
+        <p className="font-cairo font-light flex items-center gap-1" style={{ fontSize: 10, color: "#5DBE8A", marginTop: 6 }}>
           <Sparkles size={10} /> {b.date}
         </p>
       )}
@@ -65,12 +64,12 @@ const Badges = () => {
   );
 
   return (
-    <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100vh", direction: "rtl", paddingBottom: 80 }}>
+    <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100dvh", direction: "rtl", paddingBottom: 80 }}>
       <Navbar />
-      <div className="blob blob-violet" style={{ width: 280, height: 280, top: "10%", right: "-10%" }} />
+      <div className="blob blob-violet" style={{ width: 200, height: 200, top: "10%", right: "-10%" }} />
 
-      <div style={{ padding: "80px 24px 24px", maxWidth: 480, margin: "0 auto" }}>
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1 font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", background: "none", border: "none", cursor: "pointer", marginBottom: 16 }}>
+      <div className="page-narrow" style={{ paddingTop: 80 }}>
+        <button onClick={() => navigate(-1)} className="flex items-center gap-1 font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", background: "none", border: "none", cursor: "pointer", marginBottom: 16, minHeight: 44 }}>
           <ArrowRight size={14} />
           رجوع
         </button>

@@ -7,7 +7,7 @@ const LevelUp = () => {
   return (
     <div
       className="flex flex-col items-center justify-center text-center"
-      style={{ height: "100vh", overflow: "hidden", background: "#0F0F14", direction: "rtl", padding: "0 24px" }}
+      style={{ minHeight: "100dvh", overflow: "hidden", background: "#0F0F14", direction: "rtl", padding: "0 var(--page-padding-mobile)" }}
     >
       {/* CSS confetti */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -37,17 +37,15 @@ const LevelUp = () => {
       <div
         className="flex items-center justify-center"
         style={{
-          width: 80,
-          height: 80,
-          borderRadius: "50%",
+          width: 80, height: 80, borderRadius: "50%",
           background: "rgba(168,156,255,0.15)",
         }}
       >
         <Star size={40} color="hsl(var(--primary-soft))" />
       </div>
-      <p className="font-cairo font-bold text-white" style={{ fontSize: 32, marginTop: 16 }}>ترقيت!</p>
-      <p className="font-cairo font-bold" style={{ fontSize: 48, color: "hsl(var(--primary-soft))", marginTop: 8 }}>متحدث</p>
-      <p className="font-cairo font-light" style={{ fontSize: 16, color: "hsl(var(--muted-foreground))", marginTop: 8 }}>وصلت للمرحلة الثانية</p>
+      <p className="font-cairo font-bold text-white" style={{ fontSize: 28, marginTop: 16 }}>ترقيت!</p>
+      <p className="font-cairo font-bold" style={{ fontSize: 40, color: "hsl(var(--primary-soft))", marginTop: 8 }}>متحدث</p>
+      <p className="font-cairo font-light" style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", marginTop: 8 }}>وصلت للمرحلة الثانية</p>
 
       <div
         className="flex flex-col items-center glass-card-dark"
@@ -69,10 +67,11 @@ const LevelUp = () => {
           border: "none",
           borderRadius: 999,
           padding: "16px 0",
-          fontSize: 16,
+          fontSize: 15,
           cursor: "pointer",
           marginTop: 32,
           maxWidth: 400,
+          height: 50,
         }}
       >
         استمر في التدريب

@@ -23,12 +23,13 @@ const Settings = () => {
       className="flex items-center justify-between w-full font-cairo font-light"
       style={{
         padding: "14px 16px",
-        fontSize: 15,
+        fontSize: 14,
         color: danger ? "#FF6B6B" : "hsl(var(--foreground))",
         background: "none",
         border: "none",
         borderBottom: "1px solid hsl(var(--border))",
         cursor: onClick ? "pointer" : "default",
+        minHeight: 44,
       }}
     >
       <span>{label}</span>
@@ -47,6 +48,9 @@ const Settings = () => {
         padding: 2,
         cursor: "pointer",
         transition: "background 0.2s ease",
+        minHeight: 44,
+        display: "flex",
+        alignItems: "center",
       }}
     >
       <div
@@ -63,12 +67,12 @@ const Settings = () => {
   );
 
   return (
-    <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100vh", direction: "rtl", padding: "0 24px" }}>
+    <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100dvh", direction: "rtl" }}>
       <Navbar />
-      <div className="blob blob-violet" style={{ width: 250, height: 250, top: "10%", right: "-8%" }} />
+      <div className="blob blob-violet" style={{ width: 200, height: 200, top: "10%", right: "-8%" }} />
 
-      <div style={{ paddingTop: 80, maxWidth: 480, margin: "0 auto" }}>
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1 font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", background: "none", border: "none", cursor: "pointer", marginBottom: 16 }}>
+      <div className="page-narrow" style={{ paddingTop: 80 }}>
+        <button onClick={() => navigate(-1)} className="flex items-center gap-1 font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", background: "none", border: "none", cursor: "pointer", marginBottom: 16, minHeight: 44 }}>
           <ArrowRight size={14} />
           رجوع
         </button>
@@ -83,7 +87,7 @@ const Settings = () => {
 
         <Section title="التفضيلات">
           <Row label="اللغة" right={
-            <button onClick={() => setLang(lang === "ar" ? "en" : "ar")} className="font-cairo font-bold" style={{ fontSize: 13, color: "hsl(var(--primary))", background: "none", border: "none", cursor: "pointer" }}>
+            <button onClick={() => setLang(lang === "ar" ? "en" : "ar")} className="font-cairo font-bold" style={{ fontSize: 13, color: "hsl(var(--primary))", background: "none", border: "none", cursor: "pointer", minHeight: 44 }}>
               {lang === "ar" ? "العربية" : "English"}
             </button>
           } />
@@ -109,10 +113,10 @@ const Settings = () => {
             <div className="glass-card-light" style={{ padding: 24, maxWidth: 320, width: "calc(100% - 48px)" }} onClick={(e) => e.stopPropagation()}>
               <p className="font-cairo font-bold text-center" style={{ fontSize: 18, color: "hsl(var(--foreground))", marginBottom: 8 }}>حذف الحساب</p>
               <p className="font-cairo font-light text-center" style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", marginBottom: 24 }}>هل أنت متأكد؟ لا يمكن التراجع عن هذا القرار.</p>
-              <button className="font-cairo font-bold text-white w-full" style={{ background: "#FF6B6B", border: "none", borderRadius: 999, padding: "14px 0", fontSize: 15, cursor: "pointer", marginBottom: 8 }}>
+              <button className="font-cairo font-bold text-white w-full" style={{ background: "#FF6B6B", border: "none", borderRadius: 999, padding: "14px 0", fontSize: 15, cursor: "pointer", marginBottom: 8, height: 50 }}>
                 نعم، احذف حسابي
               </button>
-              <button onClick={() => setShowDeleteConfirm(false)} className="font-cairo font-light w-full" style={{ background: "none", border: "none", color: "hsl(var(--muted-foreground))", fontSize: 13, cursor: "pointer", padding: 8 }}>
+              <button onClick={() => setShowDeleteConfirm(false)} className="font-cairo font-light w-full" style={{ background: "none", border: "none", color: "hsl(var(--muted-foreground))", fontSize: 13, cursor: "pointer", padding: 8, minHeight: 44 }}>
                 إلغاء
               </button>
             </div>

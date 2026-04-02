@@ -13,14 +13,12 @@ const Success = () => {
   return (
     <div
       className="flex flex-col items-center justify-center text-center"
-      style={{ height: "100vh", overflow: "hidden", background: "#0F0F14", direction: "rtl", padding: "0 24px" }}
+      style={{ minHeight: "100dvh", overflow: "hidden", background: "#0F0F14", direction: "rtl", padding: "0 var(--page-padding-mobile)" }}
     >
       <div
         className="flex items-center justify-center"
         style={{
-          width: 80,
-          height: 80,
-          borderRadius: "50%",
+          width: 80, height: 80, borderRadius: "50%",
           border: "3px solid hsl(var(--success))",
           animation: "scaleIn 0.5s ease forwards",
           marginBottom: 24,
@@ -34,8 +32,8 @@ const Success = () => {
         @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
       `}</style>
 
-      <p className="font-cairo font-bold text-white" style={{ fontSize: 28 }}>أهلاً بك في برو!</p>
-      <p className="font-cairo font-light" style={{ fontSize: 16, color: "hsl(var(--muted-foreground))", marginTop: 8, marginBottom: 32 }}>اشتراكك فعّال الآن</p>
+      <p className="font-cairo font-bold text-white" style={{ fontSize: 24 }}>أهلاً بك في برو!</p>
+      <p className="font-cairo font-light" style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", marginTop: 8, marginBottom: 32 }}>اشتراكك فعّال الآن</p>
 
       <div className="flex flex-col gap-4 w-full" style={{ maxWidth: 320 }}>
         {items.map((item, i) => (
@@ -45,7 +43,7 @@ const Success = () => {
             style={{ animation: `fadeInUp 0.5s ease ${0.3 + i * 0.2}s both` }}
           >
             <item.Icon size={20} color="hsl(var(--primary-soft))" />
-            <span className="font-cairo font-light text-white" style={{ fontSize: 15 }}>{item.text}</span>
+            <span className="font-cairo font-light text-white" style={{ fontSize: 14 }}>{item.text}</span>
           </div>
         ))}
       </div>
@@ -59,10 +57,11 @@ const Success = () => {
           border: "none",
           borderRadius: 999,
           padding: "16px 0",
-          fontSize: 16,
+          fontSize: 15,
           cursor: "pointer",
           marginTop: 40,
           maxWidth: 400,
+          height: 50,
         }}
       >
         ابدأ تدريبك الآن

@@ -14,14 +14,16 @@ const Contact = () => {
     border: "1px solid hsl(var(--border))",
     borderRadius: 12,
     padding: "14px 16px",
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: "Cairo, sans-serif",
     fontWeight: 300,
     background: "hsla(0, 0%, 100%, 0.6)",
     backdropFilter: "blur(10px)",
+    WebkitBackdropFilter: "blur(10px)",
     color: "hsl(var(--foreground))",
     outline: "none",
     direction: "rtl",
+    height: 48,
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -30,15 +32,15 @@ const Contact = () => {
   };
 
   return (
-    <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100vh", direction: "rtl", padding: "0 24px" }}>
+    <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100dvh", direction: "rtl" }}>
       <Navbar />
-      <div className="blob blob-violet" style={{ width: 250, height: 250, top: "15%", right: "-8%" }} />
+      <div className="blob blob-violet" style={{ width: 200, height: 200, top: "15%", right: "-8%" }} />
 
-      <div className="flex flex-col items-center" style={{ paddingTop: 80, maxWidth: 480, margin: "0 auto" }}>
-        <h1 className="font-cairo font-bold text-center" style={{ fontSize: 28, color: "hsl(var(--foreground))", marginBottom: 4 }}>تواصل معنا</h1>
+      <div className="page-narrow" style={{ paddingTop: 80 }}>
+        <h1 className="font-cairo font-bold text-center" style={{ fontSize: 24, color: "hsl(var(--foreground))", marginBottom: 4 }}>تواصل معنا</h1>
         <p className="font-cairo font-light text-center" style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", marginBottom: 24 }}>نرد في غضون 24 ساعة</p>
 
-        <div className="glass-card-light w-full" style={{ padding: 32 }}>
+        <div className="glass-card-light contact-card" style={{ padding: "24px 20px" }}>
           {sent ? (
             <div className="flex flex-col items-center py-8">
               <div
@@ -54,7 +56,7 @@ const Contact = () => {
               <input style={inputStyle} placeholder="الاسم" value={name} onChange={(e) => setName(e.target.value)} />
               <input style={inputStyle} placeholder="البريد الإلكتروني" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
               <textarea
-                style={{ ...inputStyle, minHeight: 120, resize: "none" }}
+                style={{ ...inputStyle, minHeight: 120, resize: "none", height: "auto" }}
                 placeholder="رسالتك"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
@@ -67,9 +69,10 @@ const Contact = () => {
                   border: "none",
                   borderRadius: 999,
                   padding: "14px 0",
-                  fontSize: 16,
+                  fontSize: 15,
                   cursor: "pointer",
                   marginTop: 8,
+                  height: 50,
                 }}
               >
                 أرسل
@@ -78,6 +81,13 @@ const Contact = () => {
           )}
         </div>
       </div>
+
+      <style>{`
+        @media (min-width: 1024px) {
+          .contact-card { padding: 32px 28px !important; }
+        }
+      `}</style>
+
       <Footer />
     </div>
   );

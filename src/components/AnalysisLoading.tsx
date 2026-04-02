@@ -11,10 +11,6 @@ const AFFIRMATIONS = [
 
 const DURATION = 4000;
 const HOLD = 500;
-const CIRCLE_SIZE = 120;
-const STROKE_WIDTH = 3;
-const RADIUS = (CIRCLE_SIZE - STROKE_WIDTH) / 2;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 interface AnalysisLoadingProps {
   onComplete?: () => void;
@@ -68,7 +64,6 @@ const AnalysisLoading = ({ onComplete }: AnalysisLoadingProps) => {
     }
   }, [progress, affirmation]);
 
-  const dashOffset = CIRCUMFERENCE - (progress / 100) * CIRCUMFERENCE;
   const displayNum = Math.floor(progress);
 
   return (
@@ -115,57 +110,31 @@ const AnalysisLoading = ({ onComplete }: AnalysisLoadingProps) => {
         }}
       />
 
-      {/* Progress circle */}
-      <div style={{ position: "relative", width: CIRCLE_SIZE, height: CIRCLE_SIZE }}>
-        <svg
-          width={CIRCLE_SIZE}
-          height={CIRCLE_SIZE}
-          style={{ transform: "rotate(-90deg)" }}
-        >
-          {/* Track */}
-          <circle
-            cx={CIRCLE_SIZE / 2}
-            cy={CIRCLE_SIZE / 2}
-            r={RADIUS}
-            fill="none"
-            stroke="#2A2A3E"
-            strokeWidth={STROKE_WIDTH}
-          />
-          {/* Progress arc */}
-          <circle
-            cx={CIRCLE_SIZE / 2}
-            cy={CIRCLE_SIZE / 2}
-            r={RADIUS}
-            fill="none"
-            stroke="#6C63FF"
-            strokeWidth={STROKE_WIDTH}
-            strokeLinecap="round"
-            strokeDasharray={CIRCUMFERENCE}
-            strokeDashoffset={dashOffset}
-            style={{ transition: "stroke-dashoffset 0.05s linear" }}
-          />
-        </svg>
-        {/* Percentage number */}
-        <div
+      {/* Large percentage number */}
+      <div className="flex items-baseline" style={{ gap: 4 }}>
+        <span
+          className="font-cairo font-bold"
           style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            fontSize: 80,
+            background: "linear-gradient(135deg, #FF9DC4, #C4A8FF, #6C63FF)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            textShadow: "none",
+            filter: "drop-shadow(0 0 30px rgba(108,99,255,0.3))",
           }}
         >
-          <span
-            className="font-cairo font-bold"
-            style={{
-              fontSize: 32,
-              color: "#FFFFFF",
-              textShadow: "0 0 20px rgba(108,99,255,0.3)",
-            }}
-          >
-            {displayNum}
-          </span>
-        </div>
+          {displayNum}
+        </span>
+        <span
+          className="font-cairo font-light"
+          style={{
+            fontSize: 28,
+            color: "#9090A8",
+          }}
+        >
+          %
+        </span>
       </div>
 
       {/* Affirmation */}

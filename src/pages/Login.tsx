@@ -71,7 +71,7 @@ const Login = () => {
               </button>
             </div>
             <button
-              onClick={() => navigate("/home")}
+              onClick={() => { login(); navigate("/home"); }}
               className="font-cairo font-bold text-white w-full"
               style={{ background: "hsl(var(--primary))", border: "none", borderRadius: 999, padding: "14px 0", fontSize: 16, cursor: "pointer", marginTop: 8 }}
             >

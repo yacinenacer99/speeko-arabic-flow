@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, ChevronLeft } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -118,6 +119,7 @@ const Settings = () => {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 };

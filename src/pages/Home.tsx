@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Lock, Check, Flame, Zap, Shield, Mic, Award } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const levels = [
   { level: 1, badge: "مبتدئ", desc: "تكلم 30 ثانية بدون توقف", status: "completed" as const },
@@ -172,6 +173,7 @@ const Home = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

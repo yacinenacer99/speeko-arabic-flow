@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Lock, Mic, Flame, Sparkles, Award, Zap, Diamond, Crown, Trophy } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 
 const allBadges = [
@@ -95,6 +96,7 @@ const Badges = () => {
           </>
         )}
       </div>
+      <Footer />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Lock, Mic, Flame, Sparkles, Award, Diamond, Trophy } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 
 const badges = [
@@ -138,6 +139,7 @@ const Profile = () => {
           </button>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

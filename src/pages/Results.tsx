@@ -17,6 +17,7 @@ import {
   Lock,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const TOOLTIP_CONTENT: Record<string, string> = {
   المدة: "مدة حديثك الفعلي مقارنة بوقت الجلسة الكامل",
@@ -348,6 +349,7 @@ const Results = () => {
           ابدأ خطة التعلم
         </button>
       </div>
+      <Footer />
     </div>
   );
 };

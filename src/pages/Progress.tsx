@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Lock } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 import ProGateModal from "@/components/ProGateModal";
 
@@ -109,6 +110,7 @@ const Progress = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

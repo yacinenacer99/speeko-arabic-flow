@@ -46,13 +46,10 @@ const Footer = () => {
     <footer style={{ background: "#0F0F14", padding: "48px 24px 32px 24px", direction: "rtl" }}>
       <div className="max-w-[800px] mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
-          {/* Brand */}
           <div>
             <h4 className="font-cairo font-bold" style={{ fontSize: 18, color: "#FFFFFF", marginBottom: 8 }}>ملسون</h4>
             <p className="font-cairo font-light" style={{ fontSize: 13, color: "#9090A8" }}>تدرّب على الكلام بثقة</p>
           </div>
-
-          {/* Pages */}
           <div>
             <h5 style={headingStyle}>الصفحات</h5>
             <LinkButton label="الرئيسية" path="/" />
@@ -60,17 +57,12 @@ const Footer = () => {
             <LinkButton label="المدونة" path="/blog" />
             <LinkButton label="الاشتراك" path="/subscribe" />
           </div>
-
-          {/* More */}
           <div>
             <h5 style={headingStyle}>المزيد</h5>
             <LinkButton label="تواصل معنا" path="/contact" />
-            <LinkButton label="الشروط والأحكام" path="/" />
             <LinkButton label="سياسة الخصوصية" path="/" />
           </div>
         </div>
-
-        {/* Divider + Copyright */}
         <div style={{ borderTop: "1px solid #2A2A3E", marginTop: 32, paddingTop: 20 }}>
           <p className="font-cairo font-light text-center" style={{ fontSize: 12, color: "#9090A8" }}>
             © 2026 ملسون. جميع الحقوق محفوظة.

@@ -82,7 +82,7 @@ const QuestMap = () => {
                     )}
                   </div>
                   <div style={{ width: 12, height: 2, background: spineColor, marginTop: 17, flexShrink: 0 }} />
-                  <div style={{ flex: 1, paddingBottom: isLast ? 0 : 16 }}>
+                  <div style={{ flex: 1, paddingBottom: isLast ? 0 : 12 }}>
                     <StageCard stage={stage} side="right" icon={StageIcon} />
                   </div>
                 </div>

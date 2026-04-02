@@ -58,7 +58,7 @@ const QuestMap = () => {
                     <SpineNode status={stage.status} icon={StageIcon} />
                     {isPro && <ProBadge />}
                     {!isLast && (
-                      <div style={{ width: 2, height: 60, background: `linear-gradient(${spineColor}, ${nextSpineColor})` }} />
+                      <div style={{ width: 2, height: 40, background: `linear-gradient(${spineColor}, ${nextSpineColor})` }} />
                     )}
                   </div>
 

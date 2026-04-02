@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
+import AnalysisLoading from "@/components/AnalysisLoading";
 
-type State = "landing" | "sport" | "topic" | "recording" | "results";
+type State = "landing" | "sport" | "topic" | "recording" | "results" | "loading";
 
 const TOPICS = [
   { topic: "تكلم عن أهمية الوقت", forbidden: ["مهم", "وقت", "يعني", "دائماً", "كثير"] },
@@ -80,7 +81,7 @@ const HeroSection = () => {
   useEffect(() => {
     if (timeLeft === 0 && state === "recording") {
       clearTimer();
-      setState("results");
+      setState("loading");
     }
   }, [timeLeft, state, clearTimer]);
 
@@ -141,11 +142,12 @@ const HeroSection = () => {
   }, [state]);
 
   const isLanding = state === "landing";
-  const isDark = state !== "landing";
-  const isSmall = !isLanding && state !== "results";
+  const isDark = state !== "landing" && state !== "loading";
+  const isSmall = !isLanding && state !== "results" && state !== "loading";
   const showTopic = state === "topic" || state === "recording";
   const isResults = state === "results";
   const isRecording = state === "recording";
+  const isLoading = state === "loading";
 
   const timerColor =
     timeLeft > 30
@@ -159,7 +161,7 @@ const HeroSection = () => {
     else if (state === "topic") setState("recording");
     else if (state === "recording") {
       clearTimer();
-      setState("results");
+      setState("loading");
     }
   };
 
@@ -441,107 +443,10 @@ const HeroSection = () => {
           اضغط للإيقاف
         </p>
 
-        {/* RESULTS — Session Complete Card */}
-        <div
-          className="flex flex-col items-center justify-center"
-          style={{
-            opacity: isResults ? 1 : 0,
-            transform: isResults ? "translateY(0)" : "translateY(20px)",
-            pointerEvents: isResults ? "auto" : "none",
-            transition: "opacity 0.6s ease, transform 0.6s ease",
-            position: isResults ? "relative" : "absolute",
-            width: "100%",
-          }}
-        >
-          <div className="glass-card-dark" style={{ padding: "32px 24px", maxWidth: 340, width: "calc(100% - 48px)" }}>
-            {/* Title with check icon */}
-            <div className="flex items-center justify-center gap-2" style={{ marginBottom: 28 }}>
-              <CheckCircle size={20} color="#5DBE8A" />
-              <p className="font-cairo font-bold text-white" style={{ fontSize: 20 }}>
-                انتهت الجلسة
-              </p>
-            </div>
-
-            {/* Three stats */}
-            <div className="flex justify-around" style={{ direction: "rtl" }}>
-              {[
-                { value: formatTime(60 - timeLeft), label: "المدة", color: "#FFFFFF" },
-                { value: "74", label: "نقاط التدفق", color: "#A89CFF" },
-                { value: "4", label: "كلمات الحشو", color: "#FFFFFF" },
-              ].map((stat) => (
-                <div key={stat.label} className="flex flex-col items-center">
-                  <span className="font-cairo font-bold" style={{ fontSize: 32, color: stat.color }}>
-                    {stat.value}
-                  </span>
-                  <span className="font-cairo font-light" style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 4 }}>
-                    {stat.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Divider */}
-            <div style={{ height: 1, background: "hsla(var(--glass-dark-border))", margin: "24px 0" }} />
-
-            {/* Primary button */}
-            <button
-              onClick={() => navigate("/results")}
-              className="font-cairo font-bold text-[16px] text-white w-full"
-              style={{
-                background: "hsl(var(--primary))",
-                borderRadius: 999,
-                padding: "16px 0",
-                boxShadow: "0 0 24px rgba(108,99,255,0.35)",
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              عرض التحليل الكامل
-            </button>
-
-            {/* Secondary link */}
-            <button
-              onClick={() => {
-                setState("landing");
-                setTimeLeft(60);
-                setStruckWords([]);
-              }}
-              className="font-cairo font-light text-[13px] w-full"
-              style={{
-                background: "none",
-                border: "none",
-                color: "hsl(var(--muted-foreground))",
-                marginTop: 16,
-                cursor: "pointer",
-                padding: 0,
-              }}
-            >
-              تدرب مرة ثانية
-            </button>
-          </div>
-
-          {/* CTA below card */}
-          <button
-            onClick={() => navigate("/onboarding")}
-            className="font-cairo font-bold w-full"
-            style={{
-              background: "white",
-              color: "#0F0F14",
-              border: "none",
-              borderRadius: 999,
-              padding: "14px 0",
-              fontSize: 15,
-              cursor: "pointer",
-              marginTop: 20,
-              maxWidth: 340,
-            }}
-          >
-            ابدأ خطة التعلم
-          </button>
-          <p className="font-cairo font-light" style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", marginTop: 8 }}>
-            مجاناً — لا تحتاج حساب
-          </p>
-        </div>
+        {/* Loading screen overlay */}
+        {isLoading && (
+          <AnalysisLoading onComplete={() => navigate("/results")} />
+        )}
       </div>
     </section>
   );

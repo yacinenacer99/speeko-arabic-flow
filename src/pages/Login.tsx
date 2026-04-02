@@ -48,7 +48,7 @@ const Login = () => {
           </p>
 
           <button
-            onClick={() => navigate("/home")}
+            onClick={() => { login(); navigate("/home"); }}
             className="font-cairo font-bold w-full flex items-center justify-center gap-2 glass-card-light"
             style={{ borderRadius: 999, padding: 14, fontSize: 15, color: "hsl(var(--foreground))", cursor: "pointer" }}
           >

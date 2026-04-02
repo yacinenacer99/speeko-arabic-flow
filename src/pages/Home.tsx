@@ -80,7 +80,7 @@ const Home = () => {
           <div className="hero-stroke-wrapper" style={{ padding: 5 }}>
             <div
               className="hero-circle"
-              style={{ width: 260, height: 260, cursor: "pointer" }}
+              style={{ width: 200, height: 200, cursor: "pointer" }}
               onClick={() => navigate("/challenge")}
             >
               <div className="hero-text-overlay">

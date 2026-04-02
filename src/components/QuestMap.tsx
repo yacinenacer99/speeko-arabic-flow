@@ -227,7 +227,7 @@ const StageCard = ({ stage, side, icon: Icon }: { stage: Stage; side: "left" | "
 
       <h3
         className="font-cairo font-bold"
-        style={{ fontSize: 17, color: isLocked ? "#9090A8" : "#1A1A2E", marginBottom: 4 }}
+        style={{ fontSize: 14, color: isLocked ? "#9090A8" : "#1A1A2E", marginBottom: 2 }}
       >
         {stage.name}
       </h3>

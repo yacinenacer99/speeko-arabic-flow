@@ -233,7 +233,7 @@ const StageCard = ({ stage, side, icon: Icon }: { stage: Stage; side: "left" | "
       </h3>
       <p
         className="font-cairo font-light"
-        style={{ fontSize: 13, color: isLocked ? "#C4C4D4" : "#9090A8", marginBottom: 12 }}
+        style={{ fontSize: 11, color: isLocked ? "#C4C4D4" : "#9090A8", marginBottom: 8 }}
       >
         {stage.desc}
       </p>

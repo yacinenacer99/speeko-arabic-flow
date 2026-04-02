@@ -27,102 +27,95 @@ const Navbar = () => {
   ];
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[1000]" style={{ direction: "rtl", pointerEvents: "none" }}>
-      <div
-        className="flex items-center justify-between"
-        style={{ height: 72, paddingRight: 20, paddingLeft: 20, pointerEvents: "auto" }}
+    <>
+      {/* Wordmark — fixed top-right, independent */}
+      <span
+        className="font-cairo font-bold cursor-pointer fixed z-[1001]"
+        style={{ top: 20, right: 20, fontSize: 14, color: wordmarkColor }}
+        onClick={() => navigate("/")}
       >
-        {/* RIGHT: Wordmark */}
-        <span
-          className="font-cairo font-bold cursor-pointer"
-          style={{ fontSize: 14, color: wordmarkColor, zIndex: 10 }}
-          onClick={() => navigate("/")}
-        >
-          ملسون
-        </span>
+        ملسون
+      </span>
 
-        {/* CENTER: Floating Pill */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2"
-          style={{
-            top: 14,
-            background: "#0F0F14",
-            border: "1px solid #2A2A3E",
-            borderRadius: 999,
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
-            pointerEvents: "auto",
-          }}
-        >
-          {isLoggedIn ? (
-            <div className="flex items-center" style={{ padding: "10px 28px", height: 56, gap: 0 }}>
-              {loggedInNavItems.map((item, i) => {
-                const active = isActive(item.path);
-                const color = active ? activeColor : inactiveColor;
-                return (
-                  <div key={item.path} className="flex items-center">
-                    <button
-                      onClick={() => navigate(item.path)}
-                      className="flex flex-col items-center justify-center transition-colors duration-200"
-                      style={{ padding: "0 18px", color, gap: 2 }}
-                      onMouseEnter={e => { if (!active) e.currentTarget.style.color = "#FFFFFF"; }}
-                      onMouseLeave={e => { if (!active) e.currentTarget.style.color = inactiveColor; }}
-                    >
-                      <item.icon size={18} />
-                      <span className="font-cairo font-light" style={{ fontSize: 11 }}>{item.label}</span>
-                    </button>
-                    <div style={{ width: 1, height: 28, background: "#2A2A3E" }} />
-                  </div>
-                );
-              })}
-              <button
-                onClick={() => setLang(lang === "ar" ? "en" : "ar")}
-                className="flex flex-col items-center justify-center transition-colors duration-200"
-                style={{ padding: "0 18px", color: inactiveColor, gap: 2 }}
-                onMouseEnter={e => { e.currentTarget.style.color = "#FFFFFF"; }}
-                onMouseLeave={e => { e.currentTarget.style.color = inactiveColor; }}
-              >
-                <Globe size={18} />
-                <span className="font-cairo font-light" style={{ fontSize: 11 }}>اللغة</span>
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center" style={{ padding: "12px 32px", height: 44, gap: 0 }}>
-              <button
-                onClick={() => navigate("/contact")}
-                className="font-cairo font-light transition-colors duration-200"
-                style={{ fontSize: 13, color: inactiveColor, padding: "0 16px", whiteSpace: "nowrap" }}
-                onMouseEnter={e => { e.currentTarget.style.color = "#FFFFFF"; }}
-                onMouseLeave={e => { e.currentTarget.style.color = inactiveColor; }}
-              >
-                من نحن
-              </button>
-              <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.15)" }} />
-              <button
-                onClick={() => navigate("/login")}
-                className="font-cairo font-light transition-colors duration-200"
-                style={{ fontSize: 13, color: inactiveColor, padding: "0 16px", whiteSpace: "nowrap" }}
-                onMouseEnter={e => { e.currentTarget.style.color = "#FFFFFF"; }}
-                onMouseLeave={e => { e.currentTarget.style.color = inactiveColor; }}
-              >
-                تسجيل الدخول
-              </button>
-              <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.15)" }} />
-              <button
-                onClick={() => setLang(lang === "ar" ? "en" : "ar")}
-                className="font-cairo font-light transition-colors duration-200"
-                style={{ fontSize: 13, color: inactiveColor, padding: "0 16px", whiteSpace: "nowrap" }}
-              >
-                اللغة
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Empty spacer for layout balance */}
-        <div style={{ width: 14 }} />
+      {/* Center pill — fixed, centered */}
+      <div
+        className="fixed z-[1000]"
+        style={{
+          top: 14,
+          left: "50%",
+          transform: "translateX(-50%)",
+          background: "#0F0F14",
+          border: "1px solid #2A2A3E",
+          borderRadius: 999,
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+        }}
+      >
+        {isLoggedIn ? (
+          <div className="flex items-center" style={{ padding: "8px 20px", height: 48, gap: 0 }}>
+            {loggedInNavItems.map((item, i) => {
+              const active = isActive(item.path);
+              const color = active ? activeColor : inactiveColor;
+              return (
+                <div key={item.path} className="flex items-center">
+                  <button
+                    onClick={() => navigate(item.path)}
+                    className="flex flex-col items-center justify-center transition-colors duration-200"
+                    style={{ padding: "0 14px", color, gap: 2 }}
+                    onMouseEnter={e => { if (!active) e.currentTarget.style.color = "#FFFFFF"; }}
+                    onMouseLeave={e => { if (!active) e.currentTarget.style.color = inactiveColor; }}
+                  >
+                    <item.icon size={16} />
+                    <span className="font-cairo font-light" style={{ fontSize: 10 }}>{item.label}</span>
+                  </button>
+                  <div style={{ width: 1, height: 24, background: "#2A2A3E" }} />
+                </div>
+              );
+            })}
+            <button
+              onClick={() => setLang(lang === "ar" ? "en" : "ar")}
+              className="flex flex-col items-center justify-center transition-colors duration-200"
+              style={{ padding: "0 14px", color: inactiveColor, gap: 2 }}
+              onMouseEnter={e => { e.currentTarget.style.color = "#FFFFFF"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = inactiveColor; }}
+            >
+              <Globe size={16} />
+              <span className="font-cairo font-light" style={{ fontSize: 10 }}>اللغة</span>
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center pill-logged-out" style={{ padding: "8px 20px", height: 40, gap: 0 }}>
+            <button
+              onClick={() => navigate("/contact")}
+              className="font-cairo font-light transition-colors duration-200"
+              style={{ fontSize: 12, color: inactiveColor, padding: "0 12px", whiteSpace: "nowrap" }}
+              onMouseEnter={e => { e.currentTarget.style.color = "#FFFFFF"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = inactiveColor; }}
+            >
+              من نحن
+            </button>
+            <div style={{ width: 1, height: 14, background: "rgba(255,255,255,0.15)" }} />
+            <button
+              onClick={() => navigate("/login")}
+              className="font-cairo font-light transition-colors duration-200"
+              style={{ fontSize: 12, color: inactiveColor, padding: "0 12px", whiteSpace: "nowrap" }}
+              onMouseEnter={e => { e.currentTarget.style.color = "#FFFFFF"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = inactiveColor; }}
+            >
+              تسجيل الدخول
+            </button>
+            <div style={{ width: 1, height: 14, background: "rgba(255,255,255,0.15)" }} />
+            <button
+              onClick={() => setLang(lang === "ar" ? "en" : "ar")}
+              className="font-cairo font-light transition-colors duration-200"
+              style={{ fontSize: 12, color: inactiveColor, padding: "0 12px", whiteSpace: "nowrap" }}
+            >
+              اللغة
+            </button>
+          </div>
+        )}
       </div>
-    </div>
+    </>
   );
 };
 

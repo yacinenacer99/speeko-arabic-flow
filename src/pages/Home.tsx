@@ -20,7 +20,7 @@ const Home = () => {
       {/* Launch Area */}
       <div style={{ padding: "90px 24px 0" }}>
         {/* Greeting + Streak — right aligned */}
-        <div style={{ marginBottom: 32 }}>
+        <div style={{ marginBottom: 48 }}>
           <h1
             className="font-cairo font-bold"
             style={{ fontSize: 32, color: "#1A1A2E", textAlign: "right" }}

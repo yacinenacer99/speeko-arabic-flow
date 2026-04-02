@@ -220,6 +220,7 @@ const HeroSection = () => {
       >
         {/* Hero text */}
         <div
+          className="py-[14px]"
           style={{
             opacity: isLanding ? 1 : 0,
             maxHeight: isLanding ? 200 : 0,

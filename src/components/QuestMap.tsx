@@ -126,7 +126,7 @@ const SpineNode = ({ status, icon: Icon }: { status: Stage["status"]; icon: Reac
             zIndex: 3,
           }}
         >
-          <Check size={10} color="white" />
+          <Check size={8} color="white" />
         </div>
       </div>
     );

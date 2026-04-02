@@ -97,7 +97,7 @@ const Home = () => {
       </div>
 
       {/* Daily Challenge Card */}
-      <div className="flex justify-center" style={{ padding: "32px 24px 0" }}>
+      <div className="flex justify-center" style={{ padding: "48px 24px 0" }}>
         <div
           style={{
             maxWidth: 340,

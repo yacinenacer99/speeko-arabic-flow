@@ -26,7 +26,7 @@ const QuestMap = () => {
     <div style={{ padding: "0 24px 48px", direction: "rtl" }}>
       <h2
         className="font-cairo font-bold"
-        style={{ fontSize: 28, color: "#1A1A2E", marginBottom: 40, textAlign: "right" }}
+        style={{ fontSize: 22, color: "#1A1A2E", marginBottom: 32, textAlign: "right" }}
       >
         مسارك
       </h2>
@@ -49,7 +49,7 @@ const QuestMap = () => {
                     <>
                       <StageCard stage={stage} side="left" icon={StageIcon} />
                       <div className="flex flex-col items-center" style={{ position: "relative" }}>
-                        <div style={{ width: 24, height: 2, background: spineColor, marginTop: 23 }} />
+                        <div style={{ width: 16, height: 2, background: spineColor, marginTop: 17 }} />
                       </div>
                     </>
                   )}
@@ -58,14 +58,14 @@ const QuestMap = () => {
                     <SpineNode status={stage.status} icon={StageIcon} />
                     {isPro && <ProBadge />}
                     {!isLast && (
-                      <div style={{ width: 2, height: 60, background: `linear-gradient(${spineColor}, ${nextSpineColor})` }} />
+                      <div style={{ width: 2, height: 40, background: `linear-gradient(${spineColor}, ${nextSpineColor})` }} />
                     )}
                   </div>
 
                   {!isLeft && (
                     <>
                       <div className="flex flex-col items-center" style={{ position: "relative" }}>
-                        <div style={{ width: 24, height: 2, background: spineColor, marginTop: 23 }} />
+                        <div style={{ width: 16, height: 2, background: spineColor, marginTop: 17 }} />
                       </div>
                       <StageCard stage={stage} side="right" icon={StageIcon} />
                     </>
@@ -74,15 +74,15 @@ const QuestMap = () => {
 
                 {/* Mobile layout */}
                 <div className="flex md:hidden w-full" style={{ gap: 0 }}>
-                  <div className="flex flex-col items-center shrink-0" style={{ marginLeft: 16, position: "relative", zIndex: 2 }}>
+                  <div className="flex flex-col items-center shrink-0" style={{ marginLeft: 12, position: "relative", zIndex: 2 }}>
                     <SpineNode status={stage.status} icon={StageIcon} />
                     {isPro && <ProBadge />}
                     {!isLast && (
-                      <div style={{ width: 2, flex: 1, minHeight: 40, background: `linear-gradient(${spineColor}, ${nextSpineColor})` }} />
+                      <div style={{ width: 2, flex: 1, minHeight: 28, background: `linear-gradient(${spineColor}, ${nextSpineColor})` }} />
                     )}
                   </div>
-                  <div style={{ width: 16, height: 2, background: spineColor, marginTop: 23, flexShrink: 0 }} />
-                  <div style={{ flex: 1, paddingBottom: isLast ? 0 : 16 }}>
+                  <div style={{ width: 12, height: 2, background: spineColor, marginTop: 17, flexShrink: 0 }} />
+                  <div style={{ flex: 1, paddingBottom: isLast ? 0 : 12 }}>
                     <StageCard stage={stage} side="right" icon={StageIcon} />
                   </div>
                 </div>
@@ -108,25 +108,25 @@ const SpineNode = ({ status, icon: Icon }: { status: Stage["status"]; icon: Reac
       <div style={{ position: "relative" }}>
         <div
           style={{
-            width: 48, height: 48, borderRadius: "50%",
+            width: 36, height: 36, borderRadius: "50%",
             background: "#6C63FF",
             display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 4px 16px rgba(108,99,255,0.3)",
+            boxShadow: "0 4px 12px rgba(108,99,255,0.3)",
           }}
         >
-          <Icon size={20} color="white" />
+          <Icon size={16} color="white" />
         </div>
         {/* Completion check overlay */}
         <div
           style={{
             position: "absolute", top: -2, right: -2,
-            width: 16, height: 16, borderRadius: "50%",
+            width: 14, height: 14, borderRadius: "50%",
             background: "#5DBE8A",
             display: "flex", alignItems: "center", justifyContent: "center",
             zIndex: 3,
           }}
         >
-          <Check size={10} color="white" />
+          <Check size={8} color="white" />
         </div>
       </div>
     );
@@ -136,13 +136,13 @@ const SpineNode = ({ status, icon: Icon }: { status: Stage["status"]; icon: Reac
       <div
         className="animate-quest-glow"
         style={{
-          width: 48, height: 48, borderRadius: "50%",
+          width: 36, height: 36, borderRadius: "50%",
           background: "#0F0F14",
           border: "2.5px solid #6C63FF",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}
       >
-        <Icon size={20} color="#6C63FF" />
+        <Icon size={16} color="#6C63FF" />
       </div>
     );
   }
@@ -150,7 +150,7 @@ const SpineNode = ({ status, icon: Icon }: { status: Stage["status"]; icon: Reac
   return (
     <div
       style={{
-        width: 48, height: 48, borderRadius: "50%",
+        width: 36, height: 36, borderRadius: "50%",
         background: "rgba(255,255,255,0.3)",
         backdropFilter: "blur(12px)",
         WebkitBackdropFilter: "blur(12px)",
@@ -159,7 +159,7 @@ const SpineNode = ({ status, icon: Icon }: { status: Stage["status"]; icon: Reac
         opacity: 0.6,
       }}
     >
-      <Lock size={20} color="#9090A8" />
+      <Lock size={16} color="#9090A8" />
     </div>
   );
 };
@@ -197,14 +197,14 @@ const StageCard = ({ stage, side, icon: Icon }: { stage: Stage; side: "left" | "
     <div
       style={{
         width: "100%",
-        maxWidth: 280,
+        maxWidth: 240,
         background: "rgba(255,255,255,0.5)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
         border: "1px solid rgba(255,255,255,0.65)",
-        borderRadius: 20,
-        padding: isPro ? "24px 24px 0" : 24,
-        boxShadow: "0 8px 32px rgba(0,0,0,0.06)",
+        borderRadius: 16,
+        padding: isPro ? "16px 16px 0" : 16,
+        boxShadow: "0 6px 24px rgba(0,0,0,0.05)",
         opacity: isLocked ? 0.7 : 1,
         transition: "all 0.3s ease",
         overflow: "hidden",
@@ -221,19 +221,19 @@ const StageCard = ({ stage, side, icon: Icon }: { stage: Stage; side: "left" | "
       }}
     >
       {/* Stage icon in top-left corner (RTL: top-right visually) */}
-      <div style={{ position: "absolute", top: 16, left: 16 }}>
-        <Icon size={24} color={iconColor} />
+      <div style={{ position: "absolute", top: 12, left: 12 }}>
+        <Icon size={18} color={iconColor} />
       </div>
 
       <h3
         className="font-cairo font-bold"
-        style={{ fontSize: 17, color: isLocked ? "#9090A8" : "#1A1A2E", marginBottom: 4 }}
+        style={{ fontSize: 14, color: isLocked ? "#9090A8" : "#1A1A2E", marginBottom: 2 }}
       >
         {stage.name}
       </h3>
       <p
         className="font-cairo font-light"
-        style={{ fontSize: 13, color: isLocked ? "#C4C4D4" : "#9090A8", marginBottom: 12 }}
+        style={{ fontSize: 11, color: isLocked ? "#C4C4D4" : "#9090A8", marginBottom: 8 }}
       >
         {stage.desc}
       </p>
@@ -247,7 +247,7 @@ const StageCard = ({ stage, side, icon: Icon }: { stage: Stage; side: "left" | "
 
       {isCurrent && stage.progress && (
         <div style={{ marginTop: 0 }}>
-          <div style={{ width: "100%", height: 6, background: "#E8E6F0", borderRadius: 999 }}>
+          <div style={{ width: "100%", height: 4, background: "#E8E6F0", borderRadius: 999 }}>
             <div
               style={{
                 width: `${(stage.progress.current / stage.progress.total) * 100}%`,
@@ -281,9 +281,9 @@ const StageCard = ({ stage, side, icon: Icon }: { stage: Stage; side: "left" | "
             style={{
               background: "rgba(108,99,255,0.06)",
               borderTop: "1px solid rgba(108,99,255,0.15)",
-              borderRadius: "0 0 20px 20px",
-              padding: "8px 16px",
-              margin: "0 -24px",
+              borderRadius: "0 0 16px 16px",
+              padding: "6px 12px",
+              margin: "0 -16px",
               textAlign: "center",
             }}
           >

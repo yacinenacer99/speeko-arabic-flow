@@ -1,23 +1,21 @@
 import { useState } from "react";
 import { ArrowUp, Lock } from "lucide-react";
 import Navbar from "@/components/Navbar";
-
 import ProGateModal from "@/components/ProGateModal";
 
 const WeeklyReport = () => {
   const [proModal, setProModal] = useState(false);
 
   return (
-    <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100vh", direction: "rtl", paddingBottom: 80 }}>
+    <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100dvh", direction: "rtl", paddingBottom: 80 }}>
       <Navbar />
       <ProGateModal open={proModal} onClose={() => setProModal(false)} />
-      <div className="blob blob-violet" style={{ width: 250, height: 250, top: "10%", right: "-8%" }} />
+      <div className="blob blob-violet" style={{ width: 200, height: 200, top: "10%", right: "-8%" }} />
 
-      <div style={{ padding: "80px 24px 24px", maxWidth: 480, margin: "0 auto" }}>
+      <div className="page-narrow" style={{ paddingTop: 80 }}>
         <h1 className="font-cairo font-bold" style={{ fontSize: 24, color: "hsl(var(--foreground))", marginBottom: 4 }}>تقريرك الأسبوعي</h1>
         <p className="font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", marginBottom: 24 }}>الأسبوع اللي فات</p>
 
-        {/* Improvement card */}
         <div className="glass-card-light" style={{ padding: 24, marginBottom: 24 }}>
           <p className="font-cairo font-bold" style={{ fontSize: 16, color: "hsl(var(--success))", marginBottom: 16 }}>تحسنت هذا الأسبوع</p>
           {[
@@ -32,7 +30,6 @@ const WeeklyReport = () => {
           ))}
         </div>
 
-        {/* Focus next week (pro) */}
         <div className="relative" style={{ borderRadius: 20, overflow: "hidden" }}>
           <div className="glass-card-light" style={{ filter: "blur(5px)", padding: 24 }}>
             <p className="font-cairo font-bold" style={{ fontSize: 16, color: "hsl(var(--foreground))" }}>وش تركز عليه الأسبوع الجاي</p>
@@ -44,7 +41,7 @@ const WeeklyReport = () => {
             <button
               onClick={() => setProModal(true)}
               className="font-cairo font-bold text-white"
-              style={{ background: "hsl(var(--primary))", border: "none", borderRadius: 999, padding: "10px 24px", fontSize: 13, cursor: "pointer", boxShadow: "0 0 20px rgba(108,99,255,0.4)" }}
+              style={{ background: "hsl(var(--primary))", border: "none", borderRadius: 999, padding: "10px 24px", fontSize: 13, cursor: "pointer", boxShadow: "0 0 20px rgba(108,99,255,0.4)", minHeight: 44 }}
             >
               افتح التحليل الكامل
             </button>

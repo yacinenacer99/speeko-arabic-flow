@@ -23,15 +23,15 @@ const currentIndex = stages.findIndex(s => s.status === "current");
 
 const QuestMap = () => {
   return (
-    <div style={{ padding: "0 24px 48px", direction: "rtl" }}>
+    <div className="quest-map-container" style={{ padding: "0 var(--page-padding-mobile) 48px", direction: "rtl" }}>
       <h2
-        className="font-cairo font-bold"
+        className="font-cairo font-bold quest-map-heading"
         style={{ fontSize: 22, color: "#1A1A2E", marginBottom: 32, textAlign: "right" }}
       >
         مسارك
       </h2>
 
-      <div className="relative" style={{ maxWidth: 700, margin: "0 auto" }}>
+      <div className="relative" style={{ maxWidth: 600, margin: "0 auto" }}>
         {stages.map((stage, i) => {
           const isLeft = i % 2 === 1;
           const isLast = i === stages.length - 1;
@@ -43,13 +43,13 @@ const QuestMap = () => {
           return (
             <div key={i} className="relative">
               <div className="flex items-start">
-                {/* Desktop layout */}
+                {/* Desktop/Tablet zigzag layout */}
                 <div className="hidden md:flex w-full" style={{ justifyContent: isLeft ? "flex-start" : "flex-end" }}>
                   {isLeft && (
                     <>
                       <StageCard stage={stage} side="left" icon={StageIcon} />
                       <div className="flex flex-col items-center" style={{ position: "relative" }}>
-                        <div style={{ width: 16, height: 2, background: spineColor, marginTop: 17 }} />
+                        <div style={{ width: 16, height: 2, background: spineColor, marginTop: 20 }} />
                       </div>
                     </>
                   )}
@@ -65,24 +65,24 @@ const QuestMap = () => {
                   {!isLeft && (
                     <>
                       <div className="flex flex-col items-center" style={{ position: "relative" }}>
-                        <div style={{ width: 16, height: 2, background: spineColor, marginTop: 17 }} />
+                        <div style={{ width: 16, height: 2, background: spineColor, marginTop: 20 }} />
                       </div>
                       <StageCard stage={stage} side="right" icon={StageIcon} />
                     </>
                   )}
                 </div>
 
-                {/* Mobile layout */}
+                {/* Mobile layout — spine on right */}
                 <div className="flex md:hidden w-full" style={{ gap: 0 }}>
                   <div className="flex flex-col items-center shrink-0" style={{ marginLeft: 12, position: "relative", zIndex: 2 }}>
                     <SpineNode status={stage.status} icon={StageIcon} />
                     {isPro && <ProBadge />}
                     {!isLast && (
-                      <div style={{ width: 2, flex: 1, minHeight: 28, background: `linear-gradient(${spineColor}, ${nextSpineColor})` }} />
+                      <div style={{ width: 2, flex: 1, minHeight: 20, background: `linear-gradient(${spineColor}, ${nextSpineColor})` }} />
                     )}
                   </div>
                   <div style={{ width: 12, height: 2, background: spineColor, marginTop: 17, flexShrink: 0 }} />
-                  <div style={{ flex: 1, paddingBottom: isLast ? 0 : 12 }}>
+                  <div style={{ flex: 1, paddingBottom: isLast ? 0 : 10 }}>
                     <StageCard stage={stage} side="right" icon={StageIcon} />
                   </div>
                 </div>
@@ -103,30 +103,30 @@ const QuestMap = () => {
 };
 
 const SpineNode = ({ status, icon: Icon }: { status: Stage["status"]; icon: React.ElementType }) => {
+  const size = 36;
   if (status === "completed") {
     return (
       <div style={{ position: "relative" }}>
         <div
           style={{
-            width: 36, height: 36, borderRadius: "50%",
+            width: size, height: size, borderRadius: "50%",
             background: "#6C63FF",
             display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: "0 4px 12px rgba(108,99,255,0.3)",
           }}
         >
-          <Icon size={16} color="white" />
+          <Icon size={14} color="white" />
         </div>
-        {/* Completion check overlay */}
         <div
           style={{
             position: "absolute", top: -2, right: -2,
-            width: 14, height: 14, borderRadius: "50%",
+            width: 12, height: 12, borderRadius: "50%",
             background: "#5DBE8A",
             display: "flex", alignItems: "center", justifyContent: "center",
             zIndex: 3,
           }}
         >
-          <Check size={8} color="white" />
+          <Check size={7} color="white" />
         </div>
       </div>
     );
@@ -136,21 +136,20 @@ const SpineNode = ({ status, icon: Icon }: { status: Stage["status"]; icon: Reac
       <div
         className="animate-quest-glow"
         style={{
-          width: 36, height: 36, borderRadius: "50%",
+          width: size, height: size, borderRadius: "50%",
           background: "#0F0F14",
           border: "2.5px solid #6C63FF",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}
       >
-        <Icon size={16} color="#6C63FF" />
+        <Icon size={14} color="#6C63FF" />
       </div>
     );
   }
-  // locked or pro-locked — show Lock icon
   return (
     <div
       style={{
-        width: 36, height: 36, borderRadius: "50%",
+        width: size, height: size, borderRadius: "50%",
         background: "rgba(255,255,255,0.3)",
         backdropFilter: "blur(12px)",
         WebkitBackdropFilter: "blur(12px)",
@@ -159,7 +158,7 @@ const SpineNode = ({ status, icon: Icon }: { status: Stage["status"]; icon: Reac
         opacity: 0.6,
       }}
     >
-      <Lock size={16} color="#9090A8" />
+      <Lock size={14} color="#9090A8" />
     </div>
   );
 };
@@ -203,7 +202,7 @@ const StageCard = ({ stage, side, icon: Icon }: { stage: Stage; side: "left" | "
         WebkitBackdropFilter: "blur(24px)",
         border: "1px solid rgba(255,255,255,0.65)",
         borderRadius: 16,
-        padding: isPro ? "16px 16px 0" : 16,
+        padding: isPro ? "14px 14px 0" : 14,
         boxShadow: "0 6px 24px rgba(0,0,0,0.05)",
         opacity: isLocked ? 0.7 : 1,
         transition: "all 0.3s ease",
@@ -211,37 +210,28 @@ const StageCard = ({ stage, side, icon: Icon }: { stage: Stage; side: "left" | "
         position: "relative",
         ...accentBorder,
       }}
-      onMouseEnter={e => {
-        e.currentTarget.style.borderColor = "rgba(108,99,255,0.25)";
-        e.currentTarget.style.boxShadow = "0 12px 40px rgba(108,99,255,0.08)";
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.borderColor = "rgba(255,255,255,0.65)";
-        e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.06)";
-      }}
     >
-      {/* Stage icon in top-left corner (RTL: top-right visually) */}
-      <div style={{ position: "absolute", top: 12, left: 12 }}>
-        <Icon size={18} color={iconColor} />
+      <div style={{ position: "absolute", top: 10, left: 10 }}>
+        <Icon size={16} color={iconColor} />
       </div>
 
       <h3
         className="font-cairo font-bold"
-        style={{ fontSize: 14, color: isLocked ? "#9090A8" : "#1A1A2E", marginBottom: 2 }}
+        style={{ fontSize: 13, color: isLocked ? "#9090A8" : "#1A1A2E", marginBottom: 2 }}
       >
         {stage.name}
       </h3>
       <p
         className="font-cairo font-light"
-        style={{ fontSize: 11, color: isLocked ? "#C4C4D4" : "#9090A8", marginBottom: 8 }}
+        style={{ fontSize: 10, color: isLocked ? "#C4C4D4" : "#9090A8", marginBottom: 6 }}
       >
         {stage.desc}
       </p>
 
       {isCompleted && (
         <div className="flex items-center gap-1" style={{ marginTop: 4 }}>
-          <CheckCircle size={12} color="#5DBE8A" />
-          <span className="font-cairo font-light" style={{ fontSize: 11, color: "#5DBE8A" }}>مكتملة</span>
+          <CheckCircle size={11} color="#5DBE8A" />
+          <span className="font-cairo font-light" style={{ fontSize: 10, color: "#5DBE8A" }}>مكتملة</span>
         </div>
       )}
 
@@ -258,7 +248,7 @@ const StageCard = ({ stage, side, icon: Icon }: { stage: Stage; side: "left" | "
               }}
             />
           </div>
-          <p className="font-cairo font-light" style={{ fontSize: 12, color: "#6C63FF", marginTop: 8 }}>
+          <p className="font-cairo font-light" style={{ fontSize: 11, color: "#6C63FF", marginTop: 6 }}>
             {stage.progress.current}/{stage.progress.total} {stage.criteria}
           </p>
         </div>
@@ -267,27 +257,27 @@ const StageCard = ({ stage, side, icon: Icon }: { stage: Stage; side: "left" | "
       {isLocked && !isPro && (
         <div className="flex items-center gap-1">
           <Lock size={10} color="#C4C4D4" />
-          <span className="font-cairo font-light" style={{ fontSize: 11, color: "#C4C4D4" }}>{stage.criteria}</span>
+          <span className="font-cairo font-light" style={{ fontSize: 10, color: "#C4C4D4" }}>{stage.criteria}</span>
         </div>
       )}
 
       {isPro && (
         <>
-          <div className="flex items-center gap-1" style={{ marginBottom: 16 }}>
+          <div className="flex items-center gap-1" style={{ marginBottom: 14 }}>
             <Lock size={10} color="#C4C4D4" />
-            <span className="font-cairo font-light" style={{ fontSize: 11, color: "#C4C4D4" }}>{stage.criteria}</span>
+            <span className="font-cairo font-light" style={{ fontSize: 10, color: "#C4C4D4" }}>{stage.criteria}</span>
           </div>
           <div
             style={{
               background: "rgba(108,99,255,0.06)",
               borderTop: "1px solid rgba(108,99,255,0.15)",
               borderRadius: "0 0 16px 16px",
-              padding: "6px 12px",
-              margin: "0 -16px",
+              padding: "5px 10px",
+              margin: "0 -14px",
               textAlign: "center",
             }}
           >
-            <span className="font-cairo font-light" style={{ fontSize: 11, color: "#6C63FF" }}>يتطلب اشتراك Pro</span>
+            <span className="font-cairo font-light" style={{ fontSize: 10, color: "#6C63FF" }}>يتطلب اشتراك Pro</span>
           </div>
         </>
       )}

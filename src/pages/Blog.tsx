@@ -28,16 +28,16 @@ const articles = [
 
 const Blog = () => {
   return (
-    <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100vh", direction: "rtl" }}>
+    <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100dvh", direction: "rtl" }}>
       <Navbar />
-      <div className="blob blob-violet" style={{ width: 250, height: 250, top: "10%", right: "-8%" }} />
+      <div className="blob blob-violet" style={{ width: 200, height: 200, top: "10%", right: "-8%" }} />
 
-      <div style={{ padding: "80px 24px 40px", maxWidth: 480, margin: "0 auto" }}>
-        <h1 className="font-cairo font-bold" style={{ fontSize: 28, color: "hsl(var(--foreground))", marginBottom: 24 }}>المدونة</h1>
+      <div className="page-narrow" style={{ paddingTop: 80, paddingBottom: 40 }}>
+        <h1 className="font-cairo font-bold" style={{ fontSize: 24, color: "hsl(var(--foreground))", marginBottom: 24 }}>المدونة</h1>
 
         <div className="flex flex-col gap-4">
           {articles.map((a, i) => (
-            <div key={i} className="flex flex-col cursor-pointer glass-card-light" style={{ padding: 24 }}>
+            <div key={i} className="flex flex-col cursor-pointer glass-card-light" style={{ padding: 20 }}>
               <span
                 className="font-cairo font-bold self-start"
                 style={{

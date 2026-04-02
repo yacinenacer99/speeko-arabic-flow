@@ -74,7 +74,7 @@ const QuestMap = () => {
 
                 {/* Mobile layout */}
                 <div className="flex md:hidden w-full" style={{ gap: 0 }}>
-                  <div className="flex flex-col items-center shrink-0" style={{ marginLeft: 16, position: "relative", zIndex: 2 }}>
+                  <div className="flex flex-col items-center shrink-0" style={{ marginLeft: 12, position: "relative", zIndex: 2 }}>
                     <SpineNode status={stage.status} icon={StageIcon} />
                     {isPro && <ProBadge />}
                     {!isLast && (

@@ -1,6 +1,20 @@
 import { useState, useEffect, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { Target, Briefcase, Sprout, Mic, Eye, EyeOff } from "lucide-react";
+import {
+  Target,
+  Briefcase,
+  Sprout,
+  Mic,
+  Eye,
+  EyeOff,
+  Coffee,
+  Laptop,
+  TrendingUp,
+  Globe,
+  Radio,
+  Zap,
+  Star,
+} from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import { getAuthErrorMessageAr } from "@/lib/authErrors";
@@ -20,12 +34,12 @@ const goalItems = [
 ];
 
 const interestItems = [
-  { id: "daily", title: "الحياة اليومية", sub: "مواقف يومية وسوالف" },
-  { id: "work", title: "العمل والمهنة", sub: "اجتماعات وعروض ومقابلات" },
-  { id: "tech", title: "التقنية", sub: "تطبيقات وذكاء اصطناعي" },
-  { id: "growth", title: "التطوير الشخصي", sub: "ثقة وتواصل وعادات" },
-  { id: "culture", title: "الثقافة والمجتمع", sub: "آراء وأفكار ونقاشات" },
-  { id: "media", title: "المحتوى والإعلام", sub: "بودكاست ويوتيوب وكتابة" },
+  { id: "daily", Icon: Coffee, title: "الحياة اليومية", sub: "مواقف يومية وسوالف" },
+  { id: "work", Icon: Briefcase, title: "العمل والمهنة", sub: "اجتماعات وعروض ومقابلات" },
+  { id: "tech", Icon: Laptop, title: "التقنية", sub: "تطبيقات وذكاء اصطناعي" },
+  { id: "growth", Icon: TrendingUp, title: "التطوير الشخصي", sub: "ثقة وتواصل وعادات" },
+  { id: "culture", Icon: Globe, title: "الثقافة والمجتمع", sub: "آراء وأفكار ونقاشات" },
+  { id: "media", Icon: Radio, title: "المحتوى والإعلام", sub: "بودكاست ويوتيوب وكتابة" },
 ];
 
 const Onboarding = () => {
@@ -288,10 +302,13 @@ const Onboarding = () => {
                     style={interestCardStyle(selected)}
                     onClick={() => toggleInterest(item.id)}
                   >
-                    <p className="font-cairo font-bold" style={{ fontSize: 13, color: "#1A1A2E" }}>
+                    <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
+                      <item.Icon size={20} color={selected ? "#6C63FF" : "#9090A8"} />
+                    </div>
+                    <p className="font-cairo font-bold" style={{ fontSize: 13, color: "#1A1A2E", textAlign: "center" }}>
                       {item.title}
                     </p>
-                    <p className="font-cairo font-light" style={{ fontSize: 10, color: "#9090A8", marginTop: 4 }}>
+                    <p className="font-cairo font-light" style={{ fontSize: 10, color: "#9090A8", marginTop: 4, textAlign: "center" }}>
                       {item.sub}
                     </p>
                   </div>
@@ -327,12 +344,15 @@ const Onboarding = () => {
             </h1>
             <div className="flex flex-col" style={{ gap: 10 }}>
               {[
-                { id: "beginner", title: "مبتدئ", sub: "أتردد كثير وما أعرف وش أقول" },
-                { id: "intermediate", title: "متوسط", sub: "أتكلم بس أحس كلامي مو منظم" },
-                { id: "advanced", title: "متقدم", sub: "أتكلم بثقة بس أبي أتحسن" },
+                { id: "beginner", Icon: Sprout, title: "مبتدئ", sub: "أتردد كثير وما أعرف وش أقول" },
+                { id: "intermediate", Icon: Zap, title: "متوسط", sub: "أتكلم بس أحس كلامي مو منظم" },
+                { id: "advanced", Icon: Star, title: "متقدم", sub: "أتكلم بثقة بس أبي أتحسن" },
               ].map((item) => (
                 <div key={item.id} style={cardStyle(level === item.id)} onClick={() => setLevel(item.id)}>
-                  <p className="font-cairo font-bold" style={{ fontSize: 18, color: "hsl(var(--foreground))" }}>{item.title}</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
+                    <item.Icon size={20} color={level === item.id ? "#6C63FF" : "#9090A8"} />
+                    <p className="font-cairo font-bold" style={{ fontSize: 18, color: "hsl(var(--foreground))" }}>{item.title}</p>
+                  </div>
                   <p className="font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", marginTop: 4 }}>{item.sub}</p>
                 </div>
               ))}

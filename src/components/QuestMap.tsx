@@ -1,4 +1,5 @@
 import { Check, Lock, CheckCircle, MessageCircle, Mic, Ban, Gauge, Shuffle, Crown } from "lucide-react";
+import { STAGE_NODES } from "@/lib/stageContent";
 
 interface Stage {
   name: string;
@@ -8,20 +9,53 @@ interface Stage {
   progress?: { current: number; total: number };
 }
 
-const stages: Stage[] = [
-  { name: "مبتدئ", desc: "اكسر حاجز الصمت", criteria: "٣ جلسات بحديث أكثر من ٤٥ ثانية", status: "completed" },
-  { name: "متحدث", desc: "تخلص من كلمات الحشو", criteria: "٣ جلسات متتالية بأقل من ٥ كلمات حشو", status: "current", progress: { current: 1, total: 3 } },
-  { name: "واضح", desc: "رتّب أفكارك", criteria: "٥ جلسات بنقاط تدفق أكثر من ٧٥", status: "locked" },
-  { name: "مؤثر", desc: "تحت الضغط", criteria: "٥ تحديات مفاجئة بنتيجة أكثر من ٧٠", status: "pro-locked" },
-  { name: "خطيب", desc: "أي موضوع، أي غرفة", criteria: "١٠ تحديات متقدمة بنتيجة أكثر من ٨٠", status: "pro-locked" },
-  { name: "سيد الكلام", desc: "ما يوقفك شيء", criteria: "حافظ على مستواك أو ترجع مرحلة", status: "pro-locked" },
-];
-
 const STAGE_ICONS = [MessageCircle, Mic, Ban, Gauge, Shuffle, Crown];
 
-const currentIndex = stages.findIndex(s => s.status === "current");
+export interface QuestMapProps {
+  currentStage: number;
+  stageProgressCount: number;
+  stageProgressRequired: number;
+  plan: "free" | "pro";
+}
 
-const QuestMap = () => {
+function buildStages(props: QuestMapProps): Stage[] {
+  const cs = Math.min(Math.max(Math.floor(props.currentStage), 1), 6);
+  const req = Math.max(props.stageProgressRequired, 1);
+  return STAGE_NODES.map((base, i) => {
+    const n = i + 1;
+    let status: Stage["status"];
+    if (n < cs) status = "completed";
+    else if (n === cs) status = "current";
+    else if (props.plan === "free" && n >= 4) status = "pro-locked";
+    else status = "locked";
+
+    const progress =
+      n === cs
+        ? {
+            current: props.stageProgressCount,
+            total: req,
+          }
+        : undefined;
+
+    return {
+      name: base.name,
+      desc: base.desc,
+      criteria: base.criteria,
+      status,
+      progress,
+    };
+  });
+}
+
+const QuestMap = ({ currentStage, stageProgressCount, stageProgressRequired, plan }: QuestMapProps) => {
+  const stages = buildStages({
+    currentStage,
+    stageProgressCount,
+    stageProgressRequired,
+    plan,
+  });
+  const currentIndex = stages.findIndex((s) => s.status === "current");
+
   return (
     <div className="quest-map-container" style={{ padding: "0 var(--page-padding-mobile) 48px", direction: "rtl" }}>
       <h2
@@ -35,7 +69,7 @@ const QuestMap = () => {
         {stages.map((stage, i) => {
           const isLeft = i % 2 === 1;
           const isLast = i === stages.length - 1;
-          const isPro = stage.status === "pro-locked";
+          const showProBadge = plan === "free" && i >= 3 && stage.status !== "completed";
           const spineColor = i <= currentIndex ? "#6C63FF" : "#E8E6F0";
           const nextSpineColor = i < currentIndex ? "#6C63FF" : "#E8E6F0";
           const StageIcon = STAGE_ICONS[i];
@@ -43,7 +77,6 @@ const QuestMap = () => {
           return (
             <div key={i} className="relative">
               <div className="flex items-start">
-                {/* Desktop/Tablet zigzag layout */}
                 <div className="hidden md:flex w-full" style={{ justifyContent: isLeft ? "flex-start" : "flex-end" }}>
                   {isLeft && (
                     <>
@@ -56,7 +89,7 @@ const QuestMap = () => {
 
                   <div className="flex flex-col items-center" style={{ position: "relative", zIndex: 2 }}>
                     <SpineNode status={stage.status} icon={StageIcon} />
-                    {isPro && <ProBadge />}
+                    {showProBadge && <ProBadge />}
                     {!isLast && (
                       <div style={{ width: 2, height: 40, background: `linear-gradient(${spineColor}, ${nextSpineColor})` }} />
                     )}
@@ -72,11 +105,10 @@ const QuestMap = () => {
                   )}
                 </div>
 
-                {/* Mobile layout — spine on right */}
                 <div className="flex md:hidden w-full" style={{ gap: 0 }}>
                   <div className="flex flex-col items-center shrink-0" style={{ marginLeft: 12, position: "relative", zIndex: 2 }}>
                     <SpineNode status={stage.status} icon={StageIcon} />
-                    {isPro && <ProBadge />}
+                    {showProBadge && <ProBadge />}
                     {!isLast && (
                       <div style={{ width: 2, flex: 1, minHeight: 20, background: `linear-gradient(${spineColor}, ${nextSpineColor})` }} />
                     )}

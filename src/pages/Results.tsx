@@ -1,25 +1,80 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
-  ArrowRight,
-  HelpCircle,
+  CheckCircle,
   Clock,
   MessageSquare,
   Gauge,
   AlertCircle,
   PauseCircle,
   XCircle,
-  Sparkles,
-  CheckSquare,
   Zap,
   Target,
-  ChevronLeft,
   Lock,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
+import { useSessionContext } from "@/contexts/SessionContext";
+import type { SessionResult } from "@/types/session";
+import { useAuth } from "@/contexts/AuthContext";
 
-const TOOLTIP_CONTENT: Record<string, string> = {
+const safeNum = (n: unknown, fallback = 0): number =>
+  (typeof n === "number" && Number.isFinite(n)) ? n : fallback;
+
+function getScoreDescription(score: number): string {
+  if (score >= 90) return "أداء استثنائي — أنت متحدث محترف";
+  if (score >= 75) return "جلسة ممتازة — في طريقك للتقدم";
+  if (score >= 60) return "أداء جيد — استمر بالتدريب";
+  if (score >= 40) return "بداية جيدة — ركز على التدفق";
+  return "لا بأس — كل متحدث بدأ من هنا";
+}
+
+function getMetricColor(metricName: string, value: number): string {
+  if (metricName === "fillerCount") {
+    if (value === 0) return "#5DBE8A";
+    if (value <= 3) return "#F59E0B";
+    return "#FF6B6B";
+  }
+  if (metricName === "longestPause") {
+    return value <= 3 ? "#5DBE8A" : "#F59E0B";
+  }
+  if (metricName === "forbiddenUsed") {
+    return value === 0 ? "#5DBE8A" : "#FF6B6B";
+  }
+  if (metricName === "pace") {
+    return value >= 110 && value <= 150 ? "#5DBE8A" : "#F59E0B";
+  }
+  if (metricName === "flowScore") {
+    if (value >= 75) return "#5DBE8A";
+    if (value >= 40) return "#F59E0B";
+    return "#FF6B6B";
+  }
+  return "#1A1A2E";
+}
+
+const COACHING_ITEMS = [
+  {
+    title: "وش سويت صح",
+    body: "هذا المحتوى متاح لمشتركي برو — افتح التحليل الكامل لمعرفة التفاصيل",
+    Icon: CheckCircle,
+    bg: "rgba(93,190,138,0.1)",
+  },
+  {
+    title: "وين تعثرت",
+    body: "هذا المحتوى متاح لمشتركي برو — افتح التحليل الكامل لمعرفة التفاصيل",
+    Icon: Zap,
+    bg: "rgba(245,158,11,0.1)",
+  },
+  {
+    title: "وش تركز عليه الجلسة الجاية",
+    body: "هذا المحتوى متاح لمشتركي برو — افتح التحليل الكامل لمعرفة التفاصيل",
+    Icon: Target,
+    bg: "rgba(255,107,107,0.1)",
+  },
+] as const;
+
+const METRIC_INFO: Record<string, string> = {
   المدة: "مدة حديثك الفعلي مقارنة بوقت الجلسة الكامل",
   الكلمات: "عدد الكلمات اللي قلتها خلال الجلسة",
   السرعة: "معدل كلماتك في الدقيقة — المثالي بين 110 و 150",
@@ -28,146 +83,218 @@ const TOOLTIP_CONTENT: Record<string, string> = {
   الممنوعة: "عدد الكلمات الممنوعة اللي استخدمتها في هذا التحدي",
 };
 
-const METRICS = [
-  { icon: Clock, dot: "hsl(var(--success))", label: "المدة", value: "0:58 / 1:00" },
-  { icon: MessageSquare, dot: "hsl(var(--success))", label: "الكلمات", value: "127 كلمة" },
-  { icon: Gauge, dot: "hsl(var(--success))", label: "السرعة", value: "128 ك/د" },
-  { icon: AlertCircle, dot: "hsl(var(--warning))", label: "الحشو", value: "4" },
-  { icon: PauseCircle, dot: "hsl(var(--warning))", label: "أطول توقف", value: "3.2 ث" },
-  { icon: XCircle, dot: "hsl(var(--danger))", label: "الممنوعة", value: "2 كلمات" },
-];
-
-const COACHING = [
-  {
-    title: "وش سويت صح",
-    Icon: CheckSquare,
-    bg: "rgba(93,190,138,0.15)",
-    color: "#5DBE8A",
-  },
-  {
-    title: "وين تعثرت",
-    Icon: Zap,
-    bg: "rgba(245,158,11,0.15)",
-    color: "#F59E0B",
-  },
-  {
-    title: "وش تركز عليه الجلسة الجاية",
-    Icon: Target,
-    bg: "rgba(255,107,107,0.15)",
-    color: "#FF6B6B",
-  },
-];
-
 const Results = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { isLoggedIn } = useAuth();
+  const { latestSession, loadSessionById } = useSessionContext();
+
+  const [session, setSession] = useState<SessionResult | null>(latestSession);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [openTooltip, setOpenTooltip] = useState<string | null>(null);
-  const [expandedCoach, setExpandedCoach] = useState<number | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (latestSession) {
+      setSession(latestSession);
+      return;
+    }
+
+    const id = searchParams.get("session");
+    if (!id) {
+      navigate("/home", { replace: true });
+      return;
+    }
+
+    setLoading(true);
+    void (async () => {
+      const loaded = await loadSessionById(id);
+      if (!loaded) {
+        setLoadError(true);
+        setLoading(false);
+        return;
+      }
+      setSession(loaded);
+      setLoading(false);
+    })();
+  }, [latestSession, loadSessionById, searchParams, navigate]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (openTooltip) {
-        const target = e.target as HTMLElement;
-        if (!target.closest("[data-tooltip-trigger]")) {
-          setOpenTooltip(null);
-        }
-      }
+      if (!openTooltip) return;
+      const target = e.target as HTMLElement;
+      if (!target.closest("[data-tooltip-trigger]")) setOpenTooltip(null);
     };
     document.addEventListener("click", handler);
     return () => document.removeEventListener("click", handler);
   }, [openTooltip]);
 
+  const formatDuration = (seconds: number): string => {
+    const s = Math.max(0, Math.round(safeNum(seconds)));
+    const m = Math.floor(s / 60);
+    const rem = s % 60;
+    return `${m}:${rem.toString().padStart(2, "0")}`;
+  };
+
+  if (loadError) {
+    return (
+      <div className="relative" style={{ minHeight: "100dvh", backgroundColor: "#F5F4F0", direction: "rtl" }}>
+        <Navbar />
+        <div className="page-narrow" style={{ paddingTop: 80 }}>
+          <p className="font-cairo font-light" style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", textAlign: "center" }}>
+            لم نستطع تحميل النتيجة الأخيرة
+          </p>
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+            <button
+              type="button"
+              onClick={() => navigate("/home")}
+              className="font-cairo font-bold"
+              style={{
+                background: "hsl(var(--primary))",
+                color: "white",
+                border: "none",
+                borderRadius: 999,
+                padding: "10px 24px",
+                fontSize: 14,
+                cursor: "pointer",
+                minHeight: 44,
+              }}
+            >
+              رجوع للصفحة الرئيسية
+            </button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!session || loading) {
+    return (
+      <div className="relative" style={{ minHeight: "100dvh", backgroundColor: "#F5F4F0", direction: "rtl" }}>
+        <Navbar />
+        <div className="page-narrow" style={{ paddingTop: 80 }}>
+          <div className="animate-pulse glass-card-light" style={{ padding: 24, marginBottom: 16, minHeight: 160 }} />
+          <div className="animate-pulse glass-card-light" style={{ padding: 24, minHeight: 220 }} />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!session.analysis) {
+    return (
+      <div className="relative" style={{ minHeight: "100dvh", backgroundColor: "#F5F4F0", direction: "rtl" }}>
+        <Navbar />
+        <div className="page-narrow" style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ textAlign: "center" }}>
+            <p className="font-cairo font-light" style={{ fontSize: 14, color: "#9090A8", textAlign: "center", marginBottom: 16 }}>
+              لا توجد بيانات للجلسة
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate("/home")}
+              className="font-cairo font-bold"
+              style={{
+                background: "#6C63FF",
+                color: "white",
+                border: "none",
+                borderRadius: 999,
+                padding: "12px 24px",
+                fontSize: 14,
+                cursor: "pointer",
+                minHeight: 44,
+              }}
+            >
+              الرئيسية
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const flowScore = safeNum(session.analysis.flowScore);
+  const speakingDuration = safeNum(session.analysis.speakingDuration);
+  const wordCount = safeNum(session.analysis.wordCount);
+  const pace = safeNum(session.analysis.pace);
+  const fillerCount = safeNum(session.analysis.fillerCount);
+  const longestPause = safeNum(session.analysis.longestPause);
+  const forbiddenUsedCount = Array.isArray(session.analysis.forbiddenUsed)
+    ? session.analysis.forbiddenUsed.length
+    : 0;
+
+  const metrics = [
+    { icon: Clock, label: "المدة", value: `${formatDuration(speakingDuration)} / 1:00`, color: getMetricColor("duration", speakingDuration) },
+    { icon: MessageSquare, label: "الكلمات", value: `${wordCount} كلمة`, color: getMetricColor("wordCount", wordCount) },
+    { icon: Gauge, label: "السرعة", value: `${pace} ك/د`, color: getMetricColor("pace", pace) },
+    { icon: AlertCircle, label: "الحشو", value: `${fillerCount}`, color: getMetricColor("fillerCount", fillerCount) },
+    { icon: PauseCircle, label: "أطول توقف", value: `${safeNum(longestPause).toFixed(1)} ث`, color: getMetricColor("longestPause", longestPause) },
+    { icon: XCircle, label: "الممنوعة", value: `${forbiddenUsedCount} كلمات`, color: getMetricColor("forbiddenUsed", forbiddenUsedCount) },
+  ] as const;
+
   return (
     <div
-      ref={containerRef}
       className="relative"
       style={{
         minHeight: "100dvh",
-        backgroundColor: "hsl(var(--background))",
+        background: "#F5F4F0",
         direction: "rtl",
-        paddingBottom: 120,
+        paddingBottom: 150,
       }}
     >
       <Navbar />
-
-      {/* Atmospheric blobs */}
-      <div className="blob blob-violet" style={{ width: 200, height: 200, top: "5%", right: "-10%" }} />
-      <div className="blob blob-blue" style={{ width: 200, height: 200, bottom: "30%", left: "-8%" }} />
-
-      <div className="page-narrow">
-        {/* Nav bar */}
-        <div style={{ paddingTop: 80, display: "flex", justifyContent: "flex-end" }}>
-          <button
-            onClick={() => navigate(-1)}
-            className="font-cairo"
+      <BackButton variant="light" />
+      <div className="page-narrow" style={{ paddingTop: 80 }}>
+        {session.stageAdvancement?.advanced === true && (
+          <div
             style={{
-              background: "none",
-              border: "none",
-              color: "hsl(var(--muted-foreground))",
-              fontSize: 13,
-              fontWeight: 300,
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-              cursor: "pointer",
-              minHeight: 44,
+              background: "rgba(108,99,255,0.1)",
+              border: "1px solid rgba(108,99,255,0.3)",
+              borderRadius: 16,
+              padding: 16,
+              marginBottom: 24,
+              textAlign: "center",
             }}
           >
-            رجوع
-            <ArrowRight size={14} color="hsl(var(--muted-foreground))" />
-          </button>
-        </div>
-
-        {/* Top section */}
-        <div style={{ textAlign: "center", paddingTop: 24 }}>
-          <p
-            className="font-cairo"
-            style={{ fontSize: 13, fontWeight: 300, color: "hsl(var(--muted-foreground))", marginBottom: 16 }}
-          >
-            السؤال · قدم نفسك في مقابلة عمل
-          </p>
-          <div style={{ marginBottom: 8 }}>
-            <span
-              className="font-cairo results-score"
-              style={{ fontSize: 48, fontWeight: 700, color: "hsl(var(--primary-soft))", lineHeight: 1 }}
-            >
-              74
+            <span className="font-cairo font-bold" style={{ fontSize: 16, color: "#6C63FF" }}>
+              ترقيت! أنت الآن {session.stageAdvancement.newStageName ?? ""}
             </span>
-            <span
-              className="font-cairo"
-              style={{ fontSize: 18, fontWeight: 300, color: "hsl(var(--muted-foreground))" }}
-            >
+          </div>
+        )}
+
+        <div style={{ textAlign: "center", paddingTop: 12 }}>
+          <p className="font-cairo" style={{ fontSize: 13, fontWeight: 300, color: "#9090A8", marginBottom: 16 }}>
+            {session.topic || "جلسة تدريبية"}
+          </p>
+
+          <div style={{ marginBottom: 8 }}>
+            <span className="font-cairo" style={{ fontSize: 48, fontWeight: 700, color: getMetricColor("flowScore", flowScore), lineHeight: 1 }}>
+              {flowScore}
+            </span>
+            <span className="font-cairo" style={{ fontSize: 18, fontWeight: 300, color: "#9090A8" }}>
               /100
             </span>
           </div>
-          <p
-            className="font-cairo"
-            style={{ fontSize: 14, fontWeight: 300, color: "hsl(var(--muted-foreground))", marginBottom: 28 }}
-          >
-            جلسة ممتازة — في طريقك للتقدم
+
+          <p className="font-cairo" style={{ fontSize: 14, fontWeight: 300, color: "#9090A8", textAlign: "center", marginBottom: 24 }}>
+            {getScoreDescription(flowScore)}
           </p>
         </div>
 
-        {/* Metric Grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 12,
-          }}
-        >
-          {METRICS.map((m) => {
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          {metrics.map((m) => {
             const IconComp = m.icon;
             return (
-              <div key={m.label} className="glass-card-light" style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10, minHeight: 100 }}>
-                {/* Header row */}
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <IconComp size={15} color="hsl(var(--muted-foreground))" />
-                  <div style={{ width: 7, height: 7, borderRadius: "50%", background: m.dot, flexShrink: 0 }} />
-                </div>
-                {/* Label with tooltip */}
+              <div
+                key={m.label}
+                className="glass-card-light"
+                style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10, minHeight: 90 }}
+              >
+                <IconComp size={15} color="#9090A8" />
+
                 <div style={{ display: "flex", alignItems: "center", gap: 4, position: "relative" }}>
-                  <span className="font-cairo" style={{ fontSize: 11, fontWeight: 300, color: "hsl(var(--muted-foreground))" }}>
+                  <span className="font-cairo" style={{ fontSize: 11, fontWeight: 300, color: "#9090A8" }}>
                     {m.label}
                   </span>
                   <div
@@ -178,9 +305,9 @@ const Results = () => {
                     }}
                     style={{ cursor: "pointer", display: "flex", alignItems: "center", minHeight: 44, minWidth: 44, justifyContent: "center" }}
                   >
-                    <HelpCircle size={13} color="hsl(var(--muted-foreground))" />
+                    <AlertCircle size={13} color="#9090A8" />
                   </div>
-                  {/* Tooltip */}
+
                   <div
                     className="glass-card-dark"
                     style={{
@@ -198,12 +325,12 @@ const Results = () => {
                     }}
                   >
                     <p className="font-cairo" style={{ fontSize: 12, fontWeight: 300, color: "white", lineHeight: 1.5, margin: 0 }}>
-                      {TOOLTIP_CONTENT[m.label]}
+                      {METRIC_INFO[m.label]}
                     </p>
                   </div>
                 </div>
-                {/* Value */}
-                <span className="font-cairo results-metric-value" style={{ fontSize: 20, fontWeight: 700, color: "hsl(var(--foreground))" }}>
+
+                <span className="font-cairo" style={{ fontSize: 20, fontWeight: 700, color: m.color }}>
                   {m.value}
                 </span>
               </div>
@@ -211,158 +338,125 @@ const Results = () => {
           })}
         </div>
 
-        {/* Coaching Notes */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "28px 0 12px" }}>
-          <Sparkles size={18} color="hsl(var(--primary-soft))" />
-          <span className="font-cairo" style={{ fontSize: 17, fontWeight: 700, color: "hsl(var(--foreground))" }}>
+          <span className="font-cairo" style={{ fontSize: 17, fontWeight: 700, color: "#1A1A2E" }}>
             ملاحظات المدرب
           </span>
         </div>
 
-        {COACHING.map((item, idx) => {
-          const isOpen = expandedCoach === idx;
-          return (
-            <div key={idx} className="glass-card-light" style={{ marginBottom: 10, overflow: "hidden", padding: 0 }}>
-              {/* Header */}
-              <button
-                onClick={() => setExpandedCoach(isOpen ? null : idx)}
-                className="font-cairo"
-                style={{
-                  width: "100%",
-                  padding: "18px 16px",
-                  background: "none",
-                  border: "none",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  cursor: "pointer",
-                  minHeight: 44,
-                }}
-              >
-                <div
-                  style={{
-                    background: item.bg,
-                    padding: 8,
-                    borderRadius: 10,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <item.Icon size={18} color={item.color} />
-                </div>
-                <span style={{ fontSize: 15, fontWeight: 700, color: "hsl(var(--foreground))", flex: 1, textAlign: "right" }}>
-                  {item.title}
-                </span>
-                <ChevronLeft
-                  size={18}
-                  color="hsl(var(--muted-foreground))"
-                  style={{
-                    transform: isOpen ? "rotate(-90deg)" : "rotate(0deg)",
-                    transition: "transform 0.3s ease",
-                    flexShrink: 0,
-                  }}
-                />
-              </button>
-              {/* Content */}
-              <div style={{ maxHeight: isOpen ? 200 : 0, overflow: "hidden", transition: "max-height 0.4s ease" }}>
-                <div style={{ padding: "0 16px 18px", position: "relative" }}>
-                  <div style={{ filter: "blur(5px)", pointerEvents: "none" }}>
-                    <p className="font-cairo" style={{ fontSize: 13, fontWeight: 300, color: "hsl(var(--muted-foreground))", lineHeight: 1.8, margin: 0 }}>
-                      أداؤك في بداية الجلسة كان ممتاز وبدأت بثقة واضحة
-                    </p>
-                    <p className="font-cairo" style={{ fontSize: 13, fontWeight: 300, color: "hsl(var(--muted-foreground))", lineHeight: 1.8, margin: 0 }}>
-                      استخدمت أمثلة جيدة ومناسبة للموضوع
-                    </p>
-                    <p className="font-cairo" style={{ fontSize: 13, fontWeight: 300, color: "hsl(var(--muted-foreground))", lineHeight: 1.8, margin: 0 }}>
-                      سرعة كلامك كانت مناسبة ومريحة للمستمع
-                    </p>
+        <div style={{ position: "relative", overflow: "hidden" }}>
+          <div style={{ filter: "blur(5px)", WebkitFilter: "blur(5px)", pointerEvents: "none" }}>
+            {COACHING_ITEMS.map((item) => (
+              <div key={item.title} className="glass-card-light" style={{ borderRadius: 16, padding: 16, marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                  <div style={{ width: 30, height: 30, borderRadius: 10, background: item.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <item.Icon size={16} color="#1A1A2E" />
                   </div>
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexDirection: "column",
-                      gap: 12,
-                    }}
-                  >
-                    <Lock size={20} color="hsl(var(--primary-soft))" />
-                    <button
-                      onClick={() => navigate("/subscribe")}
-                      className="font-cairo"
-                      style={{
-                        background: "hsl(var(--primary))",
-                        color: "white",
-                        fontSize: 13,
-                        fontWeight: 700,
-                        border: "none",
-                        borderRadius: 999,
-                        padding: "10px 24px",
-                        cursor: "pointer",
-                        boxShadow: "0 0 20px rgba(108,99,255,0.4)",
-                        minHeight: 44,
-                      }}
-                    >
-                      افتح التحليل الكامل
-                    </button>
-                  </div>
+                  <span className="font-cairo font-bold" style={{ fontSize: 14, color: "#1A1A2E" }}>
+                    {item.title}
+                  </span>
                 </div>
+                <p className="font-cairo font-light" style={{ fontSize: 13, color: "#9090A8", margin: 0 }}>
+                  {item.body}
+                </p>
               </div>
-            </div>
-          );
-        })}
+            ))}
+          </div>
+
+          <div
+            onClick={() => navigate("/subscribe")}
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "column",
+              background: "rgba(245,244,240,0.3)",
+              pointerEvents: "auto",
+              cursor: "pointer",
+              zIndex: 5,
+            }}
+          >
+            <Lock size={28} color="#9090A8" />
+            <span className="font-cairo font-bold" style={{ marginTop: 8, fontSize: 15, color: "#6C63FF" }}>
+              افتح التحليل الكامل
+            </span>
+            <span className="font-cairo font-light" style={{ marginTop: 4, fontSize: 12, color: "#9090A8" }}>
+              اشترك في برو
+            </span>
+          </div>
+        </div>
+
+        <div style={{ height: 100 }} />
+        <Footer />
       </div>
 
       {/* Fixed bottom bar */}
       <div
         style={{
-          position: "fixed",
+          position: "sticky",
           bottom: 0,
-          left: 0,
-          right: 0,
-          background: "linear-gradient(to top, hsl(40 14% 95%) 60%, transparent)",
-          padding: "16px var(--page-padding-mobile)",
+          background: "linear-gradient(to top, #F5F4F0 80%, transparent)",
+          padding: "24px 16px",
           paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
           zIndex: 100,
         }}
       >
-        <button
-          onClick={() => navigate("/onboarding")}
-          className="font-cairo"
-          style={{
-            width: "100%",
-            maxWidth: 400,
-            margin: "0 auto",
-            display: "block",
-            background: "hsl(var(--primary))",
-            color: "white",
-            fontSize: 15,
-            fontWeight: 700,
-            borderRadius: 999,
-            padding: "16px 0",
-            border: "none",
-            cursor: "pointer",
-            height: 52,
-          }}
-        >
-          ابدأ خطة التعلم
-        </button>
+        <div style={{ maxWidth: 400, margin: "0 auto", display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
+          {!isLoggedIn ? (
+            <>
+              <button
+                type="button"
+                onClick={() => navigate("/onboarding")}
+                className="font-cairo"
+                style={{
+                  width: "100%",
+                  background: "#6C63FF",
+                  color: "white",
+                  fontSize: 15,
+                  fontWeight: 700,
+                  borderRadius: 999,
+                  padding: "16px 32px",
+                  border: "none",
+                  cursor: "pointer",
+                  minHeight: 52,
+                }}
+              >
+                ابدأ خطة التعلم اليوم
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => navigate("/home")}
+                className="font-cairo"
+                style={{
+                  width: "100%",
+                  background: "#6C63FF",
+                  color: "white",
+                  fontSize: 15,
+                  fontWeight: 700,
+                  borderRadius: 999,
+                  padding: "16px 32px",
+                  border: "none",
+                  cursor: "pointer",
+                  minHeight: 52,
+                }}
+              >
+                تدرب مرة ثانية
+              </button>
+              <span className="font-cairo font-light" style={{ fontSize: 13, color: "#9090A8", textAlign: "center" }}>
+                شارك نتيجتك
+              </span>
+            </>
+          )}
+        </div>
       </div>
-      <div style={{ height: 100 }} />
-      <Footer />
-
-      <style>{`
-        @media (min-width: 1024px) {
-          .results-score { font-size: 72px !important; }
-          .results-metric-value { font-size: 24px !important; }
-        }
-      `}</style>
     </div>
   );
 };
 
 export default Results;
+

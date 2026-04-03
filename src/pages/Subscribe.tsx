@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Check, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 
 const Subscribe = () => {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ const Subscribe = () => {
   return (
     <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100dvh", direction: "rtl", paddingBottom: 40 }}>
       <Navbar />
+      <BackButton variant="light" />
       <div className="blob blob-violet" style={{ width: 200, height: 200, top: "10%", right: "-10%" }} />
       <div className="blob blob-pink" style={{ width: 200, height: 200, bottom: "10%", left: "-5%" }} />
 

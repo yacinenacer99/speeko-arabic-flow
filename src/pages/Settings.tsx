@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, ChevronLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 
 const Settings = () => {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState(true);
-  const [lang, setLang] = useState("ar");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
@@ -69,14 +69,10 @@ const Settings = () => {
   return (
     <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100dvh", direction: "rtl" }}>
       <Navbar />
+      <BackButton variant="light" />
       <div className="blob blob-violet" style={{ width: 200, height: 200, top: "10%", right: "-8%" }} />
 
       <div className="page-narrow" style={{ paddingTop: 80 }}>
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1 font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", background: "none", border: "none", cursor: "pointer", marginBottom: 16, minHeight: 44 }}>
-          <ArrowRight size={14} />
-          رجوع
-        </button>
-
         <h1 className="font-cairo font-bold" style={{ fontSize: 24, color: "hsl(var(--foreground))", marginBottom: 24 }}>الإعدادات</h1>
 
         <Section title="الحساب">
@@ -86,11 +82,14 @@ const Settings = () => {
         </Section>
 
         <Section title="التفضيلات">
-          <Row label="اللغة" right={
-            <button onClick={() => setLang(lang === "ar" ? "en" : "ar")} className="font-cairo font-bold" style={{ fontSize: 13, color: "hsl(var(--primary))", background: "none", border: "none", cursor: "pointer", minHeight: 44 }}>
-              {lang === "ar" ? "العربية" : "English"}
-            </button>
-          } />
+          <Row
+            label="اللغة"
+            right={
+              <span className="font-cairo font-bold" style={{ fontSize: 13, color: "hsl(var(--primary))", minHeight: 44, display: "flex", alignItems: "center" }}>
+                العربية
+              </span>
+            }
+          />
           <Row label="الإشعارات" right={<Toggle on={notifications} onToggle={() => setNotifications(!notifications)} />} />
         </Section>
 
@@ -100,8 +99,9 @@ const Settings = () => {
 
         <Section title="الدعم">
           <Row label="تواصل معنا" onClick={() => navigate("/contact")} />
-          <Row label="سياسة الخصوصية" onClick={() => navigate("/privacy")} />
-          <Row label="الشروط والأحكام" onClick={() => navigate("/terms")} />
+          {/* TODO: create dedicated privacy and terms pages */}
+          <Row label="سياسة الخصوصية" onClick={() => navigate("/contact")} />
+          <Row label="الشروط والأحكام" onClick={() => navigate("/contact")} />
         </Section>
 
         <div className="glass-card-light" style={{ overflow: "hidden", marginBottom: 40, padding: 0 }}>

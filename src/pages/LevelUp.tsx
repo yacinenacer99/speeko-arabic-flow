@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Star } from "lucide-react";
+import BackButton from "@/components/BackButton";
 
 const LevelUp = () => {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ const LevelUp = () => {
       className="flex flex-col items-center justify-center text-center"
       style={{ minHeight: "100dvh", overflow: "hidden", background: "#0F0F14", direction: "rtl", padding: "0 var(--page-padding-mobile)" }}
     >
+      <BackButton variant="light" />
       {/* CSS confetti */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {Array.from({ length: 20 }).map((_, i) => (
@@ -30,7 +32,7 @@ const LevelUp = () => {
       <style>{`
         @keyframes confettiFall {
           0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+          100% { transform: translateY(100dvh) rotate(720deg); opacity: 0; }
         }
       `}</style>
 

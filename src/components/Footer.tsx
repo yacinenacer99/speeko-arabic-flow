@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 
-const hiddenPages = ["/challenge", "/onboarding", "/signup", "/login", "/streakLost", "/levelup"];
+const hiddenPages = ["/challenge", "/onboarding", "/login", "/streak-lost", "/level-up"];
 
 const Footer = () => {
   const navigate = useNavigate();

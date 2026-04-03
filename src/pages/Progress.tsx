@@ -3,6 +3,7 @@ import { Lock } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProGateModal from "@/components/ProGateModal";
+import BackButton from "@/components/BackButton";
 
 const chartData = [62, 68, 71, 65, 74, 78, 74];
 const days = ["سبت", "أحد", "اثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة"];
@@ -20,6 +21,7 @@ const Progress = () => {
   return (
     <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100dvh", direction: "rtl", paddingBottom: 80 }}>
       <Navbar />
+      <BackButton variant="light" />
       <ProGateModal open={proModal} onClose={() => setProModal(false)} />
       <div className="blob blob-violet" style={{ width: 200, height: 200, top: "5%", right: "-10%" }} />
       <div className="blob blob-pink" style={{ width: 200, height: 200, bottom: "20%", left: "-5%" }} />

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ArrowUp, Lock } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import ProGateModal from "@/components/ProGateModal";
+import BackButton from "@/components/BackButton";
 
 const WeeklyReport = () => {
   const [proModal, setProModal] = useState(false);
@@ -9,6 +10,7 @@ const WeeklyReport = () => {
   return (
     <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100dvh", direction: "rtl", paddingBottom: 80 }}>
       <Navbar />
+      <BackButton variant="light" />
       <ProGateModal open={proModal} onClose={() => setProModal(false)} />
       <div className="blob blob-violet" style={{ width: 200, height: 200, top: "10%", right: "-8%" }} />
 

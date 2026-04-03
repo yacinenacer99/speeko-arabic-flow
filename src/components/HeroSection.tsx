@@ -1,19 +1,20 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import AnalysisLoading from "@/components/AnalysisLoading";
+import { requestMicrophoneAccess, startRecording, RecordingHandle, getAudioDuration } from "@/lib/audioRecorder";
+import { processSession } from "@/lib/sessionProcessor";
+import { useSessionContext } from "@/contexts/SessionContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRecordingContext } from "@/contexts/RecordingContext";
+import { supabase } from "@/lib/supabase";
+import { transcribeAudio } from "@/lib/whisperService";
+import { analyzeTranscript } from "@/lib/speechAnalysis";
+import { CONSTANTS } from "@/lib/constants";
+import { selectTopic, type Topic } from "@/lib/topics";
+import type { SessionResult, XPBreakdown, StageAdvancement } from "@/types/session";
 
 type State = "landing" | "sport" | "topic" | "recording" | "results" | "loading";
-
-const TOPICS = [
-  { topic: "تكلم عن أهمية الوقت", forbidden: ["مهم", "وقت", "يعني", "دائماً", "كثير"] },
-  { topic: "وش رأيك في التقنية؟", forbidden: ["تقنية", "هاتف", "يعني", "إنترنت", "تطبيق"] },
-  { topic: "تكلم عن شخص أثّر فيك", forbidden: ["ناس", "شخص", "يعني", "أثّر", "حياة"] },
-  { topic: "وش يجعل الإنسان ناجح؟", forbidden: ["نجاح", "ناجح", "يعني", "إنسان", "هدف"] },
-  { topic: "تكلم عن شيء تحب تسويه", forbidden: ["أحب", "دائماً", "يعني", "شيء", "وقت"] },
-  { topic: "وش رأيك في القراءة؟", forbidden: ["كتاب", "قراءة", "يعني", "معلومة", "تعلم"] },
-  { topic: "تكلم عن مكان تحب تروحه", forbidden: ["مكان", "روح", "يعني", "جميل", "أحب"] },
-];
 
 const formatTime = (t: number) =>
   `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
@@ -30,22 +31,52 @@ const WAVE_BARS = [
   { min: 6, max: 18, dur: 0.65 },
 ];
 
+const FILLER_PREVIEW = ["يعني", "أأأأء", "حرفياً", "بصراحة"] as const;
+
 const HeroSection = () => {
   const navigate = useNavigate();
+  const { session } = useAuth();
+  const { setIsRecording } = useRecordingContext();
+  const { setLatestSession } = useSessionContext();
+  const [userStage, setUserStage] = useState<number>(1);
+  const [userInterests, setUserInterests] = useState<string[]>([]);
   const [state, setState] = useState<State>("landing");
   const [timeLeft, setTimeLeft] = useState(60);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [flashKey, setFlashKey] = useState(0);
   const [showFlash, setShowFlash] = useState(false);
-  const [struckWords, setStruckWords] = useState<string[]>([]);
   const [showSilence, setShowSilence] = useState(false);
   const lastActivityRef = useRef(Date.now());
   const recordingStartRef = useRef(0);
+  const recordingRef = useRef<RecordingHandle | null>(null);
+  const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null);
+  const [waveHeights, setWaveHeights] = useState<number[]>(() => Array(7).fill(10));
+  const [showLoading, setShowLoading] = useState(false);
+  const [processingDone, setProcessingDone] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [micErrorMessage, setMicErrorMessage] = useState<string | null>(null);
+  const [swapCount, setSwapCount] = useState(0);
+  const [topicFadeIn, setTopicFadeIn] = useState(true);
+  const [currentTopic, setCurrentTopic] = useState<Topic>(() =>
+    selectTopic(1, [], []),
+  );
 
-  const currentTopic = useMemo(
-    () => TOPICS[Math.floor(Math.random() * TOPICS.length)],
-    []
+  /**
+   * Pick a topic using stage/interests and optionally avoid one topic id.
+   * @param excludeId Optional current topic id to avoid.
+   * @returns A selected topic.
+   */
+  const pickTopic = useCallback(
+    (excludeId?: number) => {
+      const selected = selectTopic(userStage, userInterests, []);
+      if (excludeId && selected.id === excludeId) {
+        const retry = selectTopic(userStage, userInterests, [excludeId]);
+        return retry;
+      }
+      return selected;
+    },
+    [userStage, userInterests],
   );
 
   const clearTimer = useCallback(() => {
@@ -54,6 +85,56 @@ const HeroSection = () => {
       timerRef.current = null;
     }
   }, []);
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    void (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("progress")
+          .select("stage")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+        if (error) {
+          console.log("[MLASOON:DB_ERROR] progress:", error.message);
+          return;
+        }
+        if (data?.stage) {
+          setUserStage(data.stage);
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.log("[MLASOON:DB_ERROR] progress:", message);
+      }
+    })();
+  }, [session]);
+
+  useEffect(() => {
+    if (!session?.user?.id) {
+      setUserInterests([]);
+      return;
+    }
+    void (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("users")
+          .select("interests")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+        if (error) {
+          console.log("[MLASOON:DB_ERROR] users:", error.message);
+          return;
+        }
+        if (Array.isArray(data?.interests)) {
+          const normalized = data.interests.filter((entry): entry is string => typeof entry === "string");
+          setUserInterests(normalized);
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.log("[MLASOON:DB_ERROR] users:", message);
+      }
+    })();
+  }, [session]);
 
   useEffect(() => {
     if (state === "sport") {
@@ -65,7 +146,6 @@ const HeroSection = () => {
   useEffect(() => {
     if (state === "recording") {
       setTimeLeft(60);
-      setStruckWords([]);
       recordingStartRef.current = Date.now();
       lastActivityRef.current = Date.now();
       timerRef.current = setInterval(() => {
@@ -81,11 +161,25 @@ const HeroSection = () => {
   useEffect(() => {
     if (timeLeft === 0 && state === "recording") {
       clearTimer();
-      setState("loading");
+      void stopRecordingAndProcess();
     }
   }, [timeLeft, state, clearTimer]);
 
   useEffect(() => () => clearTimer(), [clearTimer]);
+
+  useEffect(() => {
+    const immersive = state === "sport" || state === "topic" || state === "recording";
+    setIsRecording(immersive);
+    return () => setIsRecording(false);
+  }, [state, setIsRecording]);
+
+  useEffect(() => {
+    if (state === "landing") {
+      setSwapCount(0);
+      setTopicFadeIn(true);
+      setCurrentTopic(pickTopic());
+    }
+  }, [state, pickTopic]);
 
   useEffect(() => {
     if (state !== "recording") return;
@@ -102,27 +196,6 @@ const HeroSection = () => {
     let idRef = schedule();
     return () => clearTimeout(idRef);
   }, [state]);
-
-  useEffect(() => {
-    if (state !== "recording") return;
-    const available = () =>
-      currentTopic.forbidden.filter((w) => !struckWords.includes(w));
-    const schedule = () => {
-      const delay = 10000 + Math.random() * 8000;
-      return setTimeout(() => {
-        const pool = available();
-        if (pool.length > 0) {
-          const word = pool[Math.floor(Math.random() * pool.length)];
-          setStruckWords((prev) => [...prev, word]);
-          lastActivityRef.current = Date.now();
-        }
-        idRef = schedule();
-      }, delay);
-    };
-    let idRef = schedule();
-    return () => clearTimeout(idRef);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, currentTopic.forbidden]);
 
   useEffect(() => {
     if (state !== "recording") {
@@ -156,12 +229,181 @@ const HeroSection = () => {
         ? "#F59E0B"
         : "#FF4444";
 
+  useEffect(() => {
+    if (!isRecording) {
+      setWaveHeights(Array(7).fill(10));
+      return;
+    }
+    let rafId = 0;
+    const freqData = analyserNode ? new Uint8Array(analyserNode.frequencyBinCount) : null;
+    const tick = () => {
+      if (analyserNode && freqData) {
+        analyserNode.getByteFrequencyData(freqData);
+        const bucket = Math.floor(freqData.length / 7);
+        const nextHeights = Array.from({ length: 7 }, (_, i) => {
+          const start = i * bucket;
+          const end = i === 6 ? freqData.length : start + bucket;
+          let sum = 0;
+          for (let j = start; j < end; j += 1) sum += freqData[j];
+          const avg = end > start ? sum / (end - start) : 0;
+          return Math.max(6, Math.min(50, (avg / 255) * 50));
+        });
+        setWaveHeights(nextHeights);
+      } else {
+        setWaveHeights(Array.from({ length: 7 }, () => 8 + Math.random() * 42));
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, [isRecording, analyserNode]);
+
+  const beginRecordingFromLanding = () => {
+    setMicErrorMessage(null);
+    setErrorMessage(null);
+
+    requestMicrophoneAccess()
+      .then((stream) => {
+        const handle = startRecording(stream);
+        recordingRef.current = handle;
+        setAnalyserNode(handle.analyserNode);
+        setState("sport");
+      })
+      .catch((err) => {
+        const message = err instanceof Error ? err.message : "MICROPHONE_UNKNOWN";
+        if (message === "MICROPHONE_DENIED") {
+          setMicErrorMessage(
+            "يرجى السماح بالوصول للميكروفون من إعدادات المتصفح",
+          );
+        } else if (message === "MICROPHONE_NOT_SUPPORTED") {
+          setMicErrorMessage(
+            "متصفحك لا يدعم التسجيل — جرب Chrome أو Safari",
+          );
+        } else {
+          setMicErrorMessage("حدث خطأ غير متوقع في الميكروفون");
+        }
+      });
+  };
+
+  const swapTopic = () => {
+    if (swapCount >= 2) return;
+    setTopicFadeIn(false);
+    window.setTimeout(() => {
+      const nextTopic = pickTopic(currentTopic.id);
+      setCurrentTopic(nextTopic);
+      setSwapCount((count) => count + 1);
+      setTopicFadeIn(true);
+      console.log("[MLASOON] Topic swapped");
+    }, 200);
+  };
+
   const handleCircleClick = () => {
-    if (state === "landing") setState("sport");
-    else if (state === "topic") setState("recording");
-    else if (state === "recording") {
+    if (state === "landing") {
+      beginRecordingFromLanding();
+    } else if (state === "topic") {
+      setState("recording");
+    } else if (state === "recording") {
       clearTimer();
-      setState("loading");
+      void stopRecordingAndProcess();
+    }
+  };
+
+  /**
+   * Run a trial session pipeline without DB writes (no XP/progress updates).
+   * @param audioBlob Recorded audio.
+   * @param topic Topic label.
+   * @param forbiddenWords Forbidden words for this session.
+   * @returns SessionResult with sessionId="trial" and analysis-only fields.
+   */
+  const processTrial = async (
+    audioBlob: Blob,
+    topic: string,
+    forbiddenWords: string[],
+  ): Promise<SessionResult> => {
+    const safeDuration = (d: number): number =>
+      (typeof d === "number" && Number.isFinite(d) && d > 0)
+        ? d
+        : CONSTANTS.SESSION_DURATION_SECONDS;
+
+    const whisper = await transcribeAudio(audioBlob, forbiddenWords);
+    const rawDuration = await getAudioDuration(audioBlob);
+    const duration = safeDuration(rawDuration);
+
+    const wordCount = whisper.transcript.trim().split(/\s+/).filter(Boolean).length;
+    if (wordCount < CONSTANTS.MIN_WORD_COUNT) {
+      throw new Error("EMPTY_RECORDING");
+    }
+
+    const analysis = analyzeTranscript(
+      whisper.transcript,
+      whisper.words,
+      forbiddenWords,
+      duration,
+      1,
+    );
+
+    const zeroXP: XPBreakdown = {
+      sessionComplete: 0,
+      beatPersonalBest: 0,
+      zeroFillers: 0,
+      zeroForbidden: 0,
+      streakBonus: 0,
+      total: 0,
+    };
+
+    const zeroAdv: StageAdvancement = {
+      advanced: false,
+      newStage: null,
+      newStageName: null,
+    };
+
+    return {
+      sessionId: "trial",
+      topic,
+      analysis,
+      xp: zeroXP,
+      stageAdvancement: zeroAdv,
+      streakCount: 0,
+      timestamp: new Date().toISOString(),
+    };
+  };
+
+  const stopRecordingAndProcess = async () => {
+    try {
+      const handle = recordingRef.current;
+      if (!handle) {
+        throw new Error("EMPTY_RECORDING");
+      }
+      const blob = await handle.stop();
+      recordingRef.current = null;
+      setAnalyserNode(null);
+      setShowLoading(true);
+      setProcessingDone(false);
+      const challengeForbiddenForAuth =
+        userStage >= 3 ? currentTopic.forbiddenWords : [];
+
+      const result: SessionResult =
+        session?.user?.id
+          ? await processSession(
+              blob,
+              currentTopic.question,
+              challengeForbiddenForAuth,
+              session.user.id,
+              userStage,
+            )
+          : await processTrial(blob, currentTopic.question, currentTopic.forbiddenWords);
+
+      setLatestSession(result);
+      setProcessingDone(true);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (message === "EMPTY_RECORDING") {
+        setErrorMessage("لم نسمع شيء — حاول مرة ثانية");
+      } else {
+        setErrorMessage("حدث خطأ أثناء تحليل الجلسة");
+      }
+      console.log("[MLASOON] Session processing error:", message);
+      setShowLoading(false);
     }
   };
 
@@ -170,11 +412,12 @@ const HeroSection = () => {
       className="relative flex flex-col items-center overflow-hidden"
       style={{
         minHeight: "100dvh",
-        paddingTop: 80,
-        paddingLeft: "var(--page-padding-mobile)",
-        paddingRight: "var(--page-padding-mobile)",
+        margin: 0,
+        paddingTop: 0,
+        paddingLeft: 0,
+        paddingRight: 0,
         paddingBottom: 0,
-        backgroundColor: isDark ? "#0F0F14" : "hsl(var(--background))",
+        backgroundColor: isDark ? "#0F0F14" : "#F5F4F0",
         transition: `background-color 0.7s ease`,
         direction: "rtl",
       }}
@@ -219,9 +462,33 @@ const HeroSection = () => {
 
       {/* Main content area */}
       <div
-        className="relative z-10 flex flex-col items-center justify-center"
-        style={{ flex: 1, width: "100%", maxWidth: 400 }}
+        className="relative z-10 flex flex-col items-center"
+        style={{
+          flex: 1,
+          width: "100%",
+          maxWidth: 400,
+          justifyContent: isLanding ? "center" : "flex-start",
+          paddingTop: isLanding ? 0 : 24,
+          paddingLeft: "var(--page-padding-mobile)",
+          paddingRight: "var(--page-padding-mobile)",
+          transition: "all 0.7s ease",
+        }}
       >
+        <p
+          className="font-cairo font-light text-center"
+          style={{
+            fontSize: 13,
+            color: "rgba(255,255,255,0.5)",
+            opacity: isRecording ? 1 : 0,
+            marginBottom: isRecording ? 16 : 0,
+            minHeight: isRecording ? 20 : 0,
+            transition: "opacity 0.2s ease",
+            pointerEvents: "none",
+          }}
+        >
+          اضغط للإيقاف
+        </p>
+
         {/* Hero text */}
         <div
           className="py-[14px]"
@@ -229,7 +496,7 @@ const HeroSection = () => {
             opacity: isLanding ? 1 : 0,
             maxHeight: isLanding ? 200 : 0,
             overflow: "hidden",
-            transition: `opacity 0.5s ease, max-height 0.7s ${EASE}`,
+            transition: `opacity 0.4s ease, max-height 0.7s ${EASE}`,
             pointerEvents: isLanding ? "auto" : "none",
           }}
         >
@@ -252,8 +519,8 @@ const HeroSection = () => {
           className={isLanding ? "hero-float" : ""}
           style={{
             display: "inline-block",
-            marginTop: isSmall ? -20 : 0,
-            marginBottom: isSmall ? 16 : 0,
+            marginTop: 0,
+            marginBottom: 0,
             opacity: isResults ? 0 : 1,
             transform: isResults ? "scale(0.8)" : "scale(1)",
             transition: `margin-top 0.7s ${EASE}, margin-bottom 0.7s ${EASE}, opacity 0.5s ease, transform 0.5s ease`,
@@ -270,8 +537,8 @@ const HeroSection = () => {
             <div
               className="hero-circle hero-circle-responsive"
               style={{
-                width: isSmall ? 140 : 220,
-                height: isSmall ? 140 : 220,
+                width: isSmall ? 160 : 260,
+                height: isSmall ? 160 : 260,
                 cursor: "pointer",
                 transition: `width 0.7s ${EASE}, height 0.7s ${EASE}`,
                 animationDuration: isRecording ? "2s" : "3s",
@@ -345,29 +612,26 @@ const HeroSection = () => {
         <div
           className="flex items-center justify-center"
           style={{
-            gap: 3,
-            height: 40,
+            gap: 5,
+            width: 80,
+            height: 50,
             marginTop: isRecording ? 16 : 0,
             opacity: isRecording ? 1 : 0,
             transition: "opacity 0.4s ease, margin-top 0.4s ease",
             pointerEvents: "none",
           }}
         >
-          {WAVE_BARS.map((bar, i) => (
+          {WAVE_BARS.map((_, i) => (
             <div
               key={i}
               className="waveform-bar"
               style={{
-                width: 3,
+                width: 6,
                 borderRadius: 999,
-                backgroundColor: "hsl(var(--primary))",
-                height: isRecording ? undefined : 4,
+                backgroundColor: "#6C63FF",
+                height: isRecording ? waveHeights[i] : 6,
                 opacity: isRecording ? 1 : 0.3,
-                animation: isRecording
-                  ? `waveBar ${bar.dur}s ease-in-out infinite alternate`
-                  : "none",
-                ["--bar-min" as string]: `${bar.min}px`,
-                ["--bar-max" as string]: `${bar.max}px`,
+                transition: "height 0.1s linear",
               }}
             />
           ))}
@@ -391,12 +655,12 @@ const HeroSection = () => {
         {/* Topic info */}
         <div
           style={{
-            opacity: showTopic ? 1 : 0,
+            opacity: showTopic && topicFadeIn ? 1 : 0,
             transform: showTopic ? "translateY(0)" : "translateY(12px)",
-            transition: "opacity 0.5s ease, transform 0.5s ease",
+            transition: "opacity 0.2s ease, transform 0.5s ease",
             maxWidth: "calc(100% - 32px)",
             pointerEvents: showTopic ? "auto" : "none",
-            maxHeight: showTopic ? 400 : 0,
+            maxHeight: showTopic ? 500 : 0,
             overflow: "hidden",
             padding: "0 var(--page-padding-mobile)",
           }}
@@ -405,62 +669,153 @@ const HeroSection = () => {
             تكلم عن:
           </p>
           <p className="font-cairo font-bold text-white text-center" style={{ fontSize: 18, marginBottom: 20 }}>
-            {currentTopic.topic}
+            {currentTopic.question}
           </p>
-          <p className="font-cairo text-center" style={{ fontWeight: 300, fontSize: 12, color: "hsl(var(--muted-foreground))", marginBottom: 10 }}>
-            ماتقدر تقول:
+          <p className="font-cairo text-center" style={{ fontWeight: 300, fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 8 }}>
+            الكلمات الممنوعة:
           </p>
           <div className="flex flex-wrap justify-center" style={{ gap: 8, maxWidth: 320, margin: "0 auto" }}>
-            {currentTopic.forbidden.map((word) => {
-              const isStruck = struckWords.includes(word);
-              return (
-                <span
-                  key={word}
-                  className="font-cairo font-bold"
-                  style={{
-                    fontSize: 12,
-                    background: isStruck
-                      ? "rgba(255,68,68,0.25)"
-                      : "rgba(255,68,68,0.08)",
-                    border: `1px solid ${isStruck ? "#FF4444" : "rgba(255,107,107,0.35)"}`,
-                    borderRadius: 999,
-                    padding: "6px 14px",
-                    color: "#FF6B6B",
-                    textDecoration: isStruck ? "line-through" : "none",
-                    transition: "background 0.3s ease, border-color 0.3s ease",
-                  }}
-                >
-                  {isStruck ? `✕ ${word}` : word}
-                </span>
-              );
-            })}
+            {currentTopic.forbiddenWords.slice(0, 3).map((word) => (
+              <span
+                key={word}
+                className="font-cairo font-bold"
+                style={{
+                  fontSize: 13,
+                  background: "rgba(255,68,68,0.08)",
+                  border: "1px solid rgba(255,107,107,0.35)",
+                  borderRadius: 999,
+                  padding: "6px 16px",
+                  color: "#FF6B6B",
+                }}
+              >
+                {word}
+              </span>
+            ))}
           </div>
+
+          <div style={{ height: 16 }} />
+          <p className="font-cairo text-center" style={{ fontWeight: 300, fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 8 }}>
+            كلمات الحشو:
+          </p>
+          <div className="flex flex-wrap justify-center" style={{ gap: 8, maxWidth: 320, margin: "0 auto" }}>
+            {FILLER_PREVIEW.map((word) => (
+              <span
+                key={word}
+                className="font-cairo font-bold"
+                style={{
+                  fontSize: 13,
+                  background: "rgba(245,158,11,0.08)",
+                  border: "1px solid rgba(245,158,11,0.35)",
+                  borderRadius: 999,
+                  padding: "6px 16px",
+                  color: "#F59E0B",
+                }}
+              >
+                {word}
+              </span>
+            ))}
+          </div>
+
+          {state === "topic" && swapCount < 2 && (
+            <button
+              type="button"
+              onClick={swapTopic}
+              className="font-cairo font-light"
+              style={{
+                marginTop: 20,
+                border: "none",
+                background: "none",
+                color: "rgba(255,255,255,0.4)",
+                fontSize: 12,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                width: "100%",
+                cursor: "pointer",
+                minHeight: 44,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "rgba(255,255,255,0.4)";
+              }}
+            >
+              <RefreshCw size={18} />
+              غيّر السؤال
+            </button>
+          )}
         </div>
 
-        {/* Recording hint */}
-        <p
-          className="font-cairo font-light text-center mt-4"
-          style={{
-            fontSize: 12,
-            color: "#FF6B6B",
-            opacity: isRecording ? 0.6 : 0,
-            transition: "opacity 0.3s ease",
-            pointerEvents: "none",
-          }}
-        >
-          اضغط للإيقاف
-        </p>
+        {showLoading && (
+          <AnalysisLoading
+            processingDone={processingDone}
+            onComplete={() => navigate("/results")}
+          />
+        )}
 
-        {/* Loading screen overlay */}
-        {isLoading && (
-          <AnalysisLoading onComplete={() => navigate("/results")} />
+        {micErrorMessage && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 3000,
+              backgroundColor: "#0F0F14",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "0 var(--page-padding-mobile)",
+            }}
+          >
+            <div
+              className="glass-card-dark"
+              style={{
+                width: "100%",
+                maxWidth: 340,
+                padding: 20,
+                borderRadius: 20,
+              }}
+            >
+              <p className="font-cairo font-light" style={{ fontSize: 14, color: "#FFFFFF", textAlign: "center" }}>
+                {micErrorMessage}
+              </p>
+              <button
+                type="button"
+                onClick={beginRecordingFromLanding}
+                className="font-cairo font-bold w-full"
+                style={{
+                  marginTop: 16,
+                  background: "hsl(var(--primary))",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 999,
+                  padding: "14px 0",
+                  fontSize: 14,
+                  cursor: "pointer",
+                  minHeight: 44,
+                }}
+              >
+                حاول مرة أخرى
+              </button>
+            </div>
+          </div>
+        )}
+
+        {errorMessage && (
+          <p
+            className="font-cairo font-light text-center mt-4"
+            style={{ fontSize: 12, color: "#FF6B6B" }}
+          >
+            {errorMessage}
+          </p>
         )}
       </div>
 
       <style>{`
         @media (min-width: 768px) {
           .hero-heading { font-size: 34px !important; }
-          .hero-circle-responsive { width: ${isSmall ? '140px' : '240px'} !important; height: ${isSmall ? '140px' : '240px'} !important; }
+          .hero-circle-responsive { width: ${isSmall ? '160px' : '260px'} !important; height: ${isSmall ? '160px' : '260px'} !important; }
         }
         @media (min-width: 1024px) {
           .hero-heading { font-size: 38px !important; }

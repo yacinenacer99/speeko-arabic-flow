@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { Target, Briefcase, Sprout, Mic } from "lucide-react";
+import { Target, Briefcase, Sprout, Mic, Eye, EyeOff } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import { supabase } from "@/lib/supabase";
+import { getAuthErrorMessageAr } from "@/lib/authErrors";
+import {
+  upsertUserProfile,
+  PENDING_ONBOARDING_KEY,
+} from "@/lib/userProfile";
+import { useAuth } from "@/contexts/AuthContext";
 
-const steps = ["name", "interests", "goal", "level", "language"] as const;
+const steps = ["name", "interests", "goal", "level", "signup"] as const;
 
 const goalItems = [
   { id: "interview", Icon: Target, title: "المقابلات الوظيفية", sub: "جهز نفسك للمقابلة" },
@@ -23,37 +30,137 @@ const interestItems = [
 
 const Onboarding = () => {
   const navigate = useNavigate();
+  const { isLoggedIn, isLoading: authLoading } = useAuth();
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
   const [interests, setInterests] = useState<string[]>([]);
   const [goal, setGoal] = useState<string | null>(null);
   const [level, setLevel] = useState<string | null>(null);
-  const [language, setLanguage] = useState<string | null>(null);
+
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [signupError, setSignupError] = useState<string | null>(null);
+  const [authSubmitLoading, setAuthSubmitLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && isLoggedIn) {
+      navigate("/home", { replace: true });
+    }
+  }, [authLoading, isLoggedIn, navigate]);
 
   const currentStep = steps[step];
 
   const canNext =
     (currentStep === "name" && name.trim().length >= 2) ||
     (currentStep === "interests" && interests.length >= 1) ||
-    (currentStep === "goal" && goal) ||
-    (currentStep === "level" && level) ||
-    (currentStep === "language" && language);
+    (currentStep === "goal" && !!goal) ||
+    (currentStep === "level" && !!level) ||
+    (currentStep === "signup" &&
+      signupEmail.trim().includes("@") &&
+      signupPassword.length >= 6);
+
+  const persistPendingForOAuth = () => {
+    localStorage.setItem(
+      PENDING_ONBOARDING_KEY,
+      JSON.stringify({
+        name: name.trim(),
+        interests,
+        goal,
+        level,
+        language: "ar",
+      }),
+    );
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    border: "1px solid hsl(var(--border))",
+    borderRadius: 12,
+    padding: "14px 16px",
+    fontSize: 16,
+    fontFamily: "Cairo, sans-serif",
+    fontWeight: 300,
+    background: "hsla(0, 0%, 100%, 0.6)",
+    backdropFilter: "blur(10px)",
+    WebkitBackdropFilter: "blur(10px)",
+    color: "hsl(var(--foreground))",
+    outline: "none",
+    direction: "rtl",
+    height: 48,
+  };
+
+  const errorStyle: React.CSSProperties = {
+    fontSize: 13,
+    color: "#FF6B6B",
+    textAlign: "center",
+    marginBottom: 12,
+    fontFamily: "Cairo, sans-serif",
+  };
 
   const handleNext = () => {
-    if (step < steps.length - 1) setStep(step + 1);
-    else {
-      localStorage.setItem("user_name", name.trim());
-      localStorage.setItem("user_interests", JSON.stringify(interests));
-      localStorage.setItem("user_goal", goal || "");
-      localStorage.setItem("user_level", level || "");
-      localStorage.setItem("user_language", language || "");
-      navigate("/signup");
+    if (step >= 4) return;
+    if (!canNext) return;
+    setStep((s) => s + 1);
+  };
+
+  const handleCompleteSignup = async (e?: FormEvent) => {
+    e?.preventDefault();
+    if (step !== 4 || !canNext) return;
+    setSignupError(null);
+    setAuthSubmitLoading(true);
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email: signupEmail.trim(),
+      password: signupPassword,
+    });
+    setAuthSubmitLoading(false);
+    if (signUpError) {
+      setSignupError(getAuthErrorMessageAr(signUpError, "signup"));
+      return;
+    }
+    const uid = data.user?.id;
+    if (!uid) {
+      setSignupError("حدث خطأ، حاول مرة أخرى");
+      return;
+    }
+    localStorage.removeItem(PENDING_ONBOARDING_KEY);
+    const { error: upError } = await upsertUserProfile(supabase, {
+      id: uid,
+      name: name.trim(),
+      interests,
+      goal,
+      level: level!,
+      language: "ar",
+    });
+    if (upError) {
+      setSignupError("تعذر حفظ بياناتك، راجع الاتصال أو الإعدادات");
+      return;
+    }
+    localStorage.setItem("user_name", name.trim());
+    navigate("/home");
+  };
+
+  const handleGoogleSignup = async () => {
+    if (step !== 4) return;
+    setSignupError(null);
+    setGoogleLoading(true);
+    persistPendingForOAuth();
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/home`,
+      },
+    });
+    if (oauthError) {
+      setGoogleLoading(false);
+      setSignupError(getAuthErrorMessageAr(oauthError, "signup"));
     }
   };
 
   const toggleInterest = (id: string) => {
     setInterests((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
@@ -88,6 +195,8 @@ const Onboarding = () => {
     minHeight: 44,
   });
 
+  const authBusy = authSubmitLoading || googleLoading;
+
   return (
     <div
       className="flex flex-col items-center relative"
@@ -101,11 +210,9 @@ const Onboarding = () => {
     >
       <Navbar />
 
-      {/* Atmospheric blobs */}
       <div className="blob blob-violet" style={{ width: 200, height: 200, top: "20%", right: "-10%" }} />
       <div className="blob blob-pink" style={{ width: 200, height: 200, bottom: "10%", left: "-5%" }} />
 
-      {/* Progress dots — 5 dots */}
       <div className="flex gap-2 relative z-10" style={{ marginTop: 80, marginBottom: 32 }}>
         {steps.map((_, i) => (
           <div
@@ -121,9 +228,7 @@ const Onboarding = () => {
         ))}
       </div>
 
-      {/* Content */}
       <div className="flex-1 w-full flex flex-col items-center relative z-10 overflow-y-auto" style={{ maxWidth: 400 }}>
-        {/* STEP 1 — NAME */}
         {currentStep === "name" && (
           <div className="w-full flex flex-col items-center">
             <h1 className="font-cairo font-bold text-center onboarding-heading" style={{ fontSize: 24, color: "#1A1A2E" }}>
@@ -166,7 +271,6 @@ const Onboarding = () => {
           </div>
         )}
 
-        {/* STEP 2 — INTERESTS */}
         {currentStep === "interests" && (
           <div className="w-full flex flex-col items-center">
             <h1 className="font-cairo font-bold text-center onboarding-heading" style={{ fontSize: 24, color: "#1A1A2E" }}>
@@ -197,7 +301,6 @@ const Onboarding = () => {
           </div>
         )}
 
-        {/* STEP 3 — GOAL */}
         {currentStep === "goal" && (
           <div className="w-full">
             <h1 className="font-cairo font-bold text-center onboarding-heading" style={{ fontSize: 24, color: "hsl(var(--foreground))", marginBottom: 24 }}>
@@ -217,7 +320,6 @@ const Onboarding = () => {
           </div>
         )}
 
-        {/* STEP 4 — LEVEL */}
         {currentStep === "level" && (
           <div className="w-full">
             <h1 className="font-cairo font-bold text-center onboarding-heading" style={{ fontSize: 24, color: "hsl(var(--foreground))", marginBottom: 24 }}>
@@ -238,47 +340,128 @@ const Onboarding = () => {
           </div>
         )}
 
-        {/* STEP 5 — LANGUAGE */}
-        {currentStep === "language" && (
-          <div className="w-full">
-            <h1 className="font-cairo font-bold text-center onboarding-heading" style={{ fontSize: 24, color: "hsl(var(--foreground))", marginBottom: 24 }}>
-              وش لغتك؟
+        {currentStep === "signup" && (
+          <div className="w-full flex flex-col">
+            <h1 className="font-cairo font-bold text-center onboarding-heading" style={{ fontSize: 24, color: "hsl(var(--foreground))", marginBottom: 8 }}>
+              أنشئ حسابك
             </h1>
-            <div className="flex flex-col w-full" style={{ gap: 10 }}>
-              <div style={cardStyle(language === "ar")} onClick={() => setLanguage("ar")}>
-                <p className="font-cairo font-bold" style={{ fontSize: 18, color: "hsl(var(--foreground))" }}>العربية الفصحى</p>
-                <p className="font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))" }}>Modern Standard Arabic</p>
-              </div>
-              <div style={cardStyle(language === "en")} onClick={() => setLanguage("en")}>
-                <p className="font-cairo font-bold" style={{ fontSize: 18, color: "hsl(var(--foreground))" }}>English</p>
-                <p className="font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))" }}>English speaking training</p>
-              </div>
+            <p className="font-cairo font-light text-center" style={{ fontSize: 14, color: "#9090A8", marginBottom: 20 }}>
+              خطوة أخيرة — احفظ تقدّمك
+            </p>
+
+            {signupError && (
+              <p className="font-cairo font-light" style={errorStyle} role="alert">
+                {signupError}
+              </p>
+            )}
+
+            <button
+              type="button"
+              disabled={authBusy}
+              onClick={handleGoogleSignup}
+              className="font-cairo font-bold w-full flex items-center justify-center gap-2"
+              style={{
+                background: "rgba(255,255,255,0.5)",
+                backdropFilter: "blur(16px)",
+                border: "1px solid rgba(255,255,255,0.6)",
+                borderRadius: 999,
+                padding: 14,
+                fontSize: 15,
+                color: "hsl(var(--foreground))",
+                cursor: authBusy ? "not-allowed" : "pointer",
+                height: 48,
+                opacity: authBusy ? 0.7 : 1,
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/><path d="M3.964 10.706A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.038l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.962L3.964 7.294C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+              {googleLoading ? "جاري التحميل..." : "تابع مع Google"}
+            </button>
+
+            <div className="flex items-center gap-3 my-5">
+              <div className="flex-1" style={{ height: 1, background: "hsl(var(--border))" }} />
+              <span className="font-cairo font-light" style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>أو</span>
+              <div className="flex-1" style={{ height: 1, background: "hsl(var(--border))" }} />
             </div>
+
+            <form id="onboarding-signup-form" className="flex flex-col gap-3" onSubmit={handleCompleteSignup}>
+              <input
+                style={inputStyle}
+                placeholder="البريد الإلكتروني"
+                type="email"
+                autoComplete="email"
+                value={signupEmail}
+                onChange={(e) => setSignupEmail(e.target.value)}
+                disabled={authBusy}
+                required
+              />
+              <div className="relative">
+                <input
+                  style={inputStyle}
+                  placeholder="كلمة المرور"
+                  type={showPw ? "text" : "password"}
+                  autoComplete="new-password"
+                  value={signupPassword}
+                  onChange={(e) => setSignupPassword(e.target.value)}
+                  disabled={authBusy}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(!showPw)}
+                  className="absolute top-1/2 -translate-y-1/2"
+                  style={{ left: 14, background: "none", border: "none", cursor: "pointer", minHeight: 44, minWidth: 44, display: "flex", alignItems: "center", justifyContent: "center" }}
+                >
+                  {showPw ? <EyeOff size={18} color="hsl(var(--muted-foreground))" /> : <Eye size={18} color="hsl(var(--muted-foreground))" />}
+                </button>
+              </div>
+            </form>
           </div>
         )}
       </div>
 
-      {/* Fixed bottom button */}
       <div className="w-full pb-8 relative z-10" style={{ maxWidth: 400, paddingBottom: "calc(24px + env(safe-area-inset-bottom, 0px))" }}>
-        <button
-          onClick={handleNext}
-          disabled={!canNext}
-          className="font-cairo font-bold text-white w-full"
-          style={{
-            background: canNext ? "hsl(var(--primary))" : "#C4C4D0",
-            border: "none",
-            borderRadius: 999,
-            padding: "16px 0",
-            fontSize: 15,
-            height: 50,
-            cursor: canNext ? "pointer" : "not-allowed",
-            opacity: canNext ? 1 : 0.4,
-            pointerEvents: canNext ? "auto" : "none",
-            transition: "background 0.2s ease, opacity 0.2s ease",
-          }}
-        >
-          التالي
-        </button>
+        {step < 4 ? (
+          <button
+            type="button"
+            onClick={handleNext}
+            disabled={!canNext}
+            className="font-cairo font-bold text-white w-full"
+            style={{
+              background: canNext ? "hsl(var(--primary))" : "#C4C4D0",
+              border: "none",
+              borderRadius: 999,
+              padding: "16px 0",
+              fontSize: 15,
+              height: 50,
+              cursor: canNext ? "pointer" : "not-allowed",
+              opacity: canNext ? 1 : 0.4,
+              pointerEvents: canNext ? "auto" : "none",
+              transition: "background 0.2s ease, opacity 0.2s ease",
+            }}
+          >
+            التالي
+          </button>
+        ) : (
+          <button
+            type="submit"
+            form="onboarding-signup-form"
+            disabled={!canNext || authBusy}
+            className="font-cairo font-bold text-white w-full"
+            style={{
+              background: canNext && !authBusy ? "hsl(var(--primary))" : "#C4C4D0",
+              border: "none",
+              borderRadius: 999,
+              padding: "16px 0",
+              fontSize: 15,
+              height: 50,
+              cursor: canNext && !authBusy ? "pointer" : "not-allowed",
+              opacity: canNext && !authBusy ? 1 : 0.4,
+              transition: "background 0.2s ease, opacity 0.2s ease",
+            }}
+          >
+            {authSubmitLoading ? "جاري التحميل..." : "أنشئ الحساب"}
+          </button>
+        )}
       </div>
 
       <style>{`

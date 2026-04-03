@@ -1,109 +1,208 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
 
-const AFFIRMATIONS = [
-  { max: 20, text: "نحلل أداءك..." },
-  { max: 40, text: "كل جلسة تقرّبك من هدفك" },
-  { max: 60, text: "نقيّم طلاقتك وانسيابيتك" },
-  { max: 80, text: "الثقة تُبنى بالتكرار" },
-  { max: 99, text: "جاهز تشوف نتيجتك؟" },
-];
-
-const DURATION = 4000;
-const HOLD = 500;
+const DURATION_MS = 4000;
+const HOLD_AT_PCT = 95;
+const FINISH_ANIMATION_MS = 500;
+const COMPLETE_DELAY_MS = 300;
 
 interface AnalysisLoadingProps {
+  processingDone: boolean;
   onComplete?: () => void;
 }
 
-const AnalysisLoading = ({ onComplete }: AnalysisLoadingProps) => {
-  const navigate = useNavigate();
+function getAffirmationForProgress(pct: number): string {
+  if (pct <= 20) return "نحلل أداءك...";
+  if (pct <= 40) return "كل جلسة تقرّبك من هدفك";
+  if (pct <= 60) return "نقيّم طلاقتك وانسيابيتك";
+  if (pct <= 80) return "الثقة تُبنى بالتكرار";
+  return "جاهز تشوف نتيجتك؟";
+}
+
+const AnalysisLoading = ({ processingDone, onComplete }: AnalysisLoadingProps) => {
   const [progress, setProgress] = useState(0);
-  const [affirmation, setAffirmation] = useState(AFFIRMATIONS[0].text);
+  const [affirmation, setAffirmation] = useState("نحلل أداءك...");
   const [affirmationOpacity, setAffirmationOpacity] = useState(1);
-  const startRef = useRef(0);
-  const rafRef = useRef(0);
-  const doneRef = useRef(false);
+  const progressRef = useRef(0);
+  const completedRef = useRef(false);
+  const processingDoneRef = useRef(processingDone);
 
   useEffect(() => {
-    startRef.current = performance.now();
+    processingDoneRef.current = processingDone;
+  }, [processingDone]);
+
+  useEffect(() => {
+    let rafId = 0;
+    let finalizeTimeout: number | undefined;
+    const start = performance.now();
+
+    const finishAndComplete = () => {
+      if (completedRef.current) return;
+      completedRef.current = true;
+      setProgress(100);
+      progressRef.current = 100;
+      finalizeTimeout = window.setTimeout(() => onComplete?.(), COMPLETE_DELAY_MS);
+    };
+
+    const animateToHundred = (from: number) => {
+      const finishStart = performance.now();
+      const step = (now: number) => {
+        const elapsed = now - finishStart;
+        const ratio = Math.min(elapsed / FINISH_ANIMATION_MS, 1);
+        const value = from + (100 - from) * ratio;
+        progressRef.current = value;
+        setProgress(value);
+        if (ratio < 1) {
+          rafId = requestAnimationFrame(step);
+          return;
+        }
+        finishAndComplete();
+      };
+      rafId = requestAnimationFrame(step);
+    };
+
     const tick = (now: number) => {
-      const elapsed = now - startRef.current;
-      const pct = Math.min((elapsed / DURATION) * 100, 100);
-      setProgress(pct);
-      if (pct < 100) {
-        rafRef.current = requestAnimationFrame(tick);
-      } else if (!doneRef.current) {
-        doneRef.current = true;
-        setTimeout(() => {
-          if (onComplete) onComplete();
-          else navigate("/results");
-        }, HOLD);
+      if (completedRef.current) return;
+      const elapsed = now - start;
+      const linearProgress = Math.min((elapsed / DURATION_MS) * 100, 100);
+
+      if (!processingDoneRef.current && linearProgress >= HOLD_AT_PCT) {
+        progressRef.current = HOLD_AT_PCT;
+        setProgress(HOLD_AT_PCT);
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
+
+      if (processingDoneRef.current && linearProgress >= 100) {
+        finishAndComplete();
+        return;
+      }
+
+      progressRef.current = linearProgress;
+      setProgress(linearProgress);
+
+      if (processingDoneRef.current && progressRef.current >= HOLD_AT_PCT) {
+        animateToHundred(progressRef.current);
+        return;
+      }
+
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(rafId);
+      if (finalizeTimeout) window.clearTimeout(finalizeTimeout);
+    };
+  }, [onComplete]);
+
+  useEffect(() => {
+    if (!processingDone) return;
+    if (completedRef.current) return;
+    if (progressRef.current < HOLD_AT_PCT) return;
+
+    const from = progressRef.current;
+    const start = performance.now();
+    let rafId = 0;
+    const step = (now: number) => {
+      const elapsed = now - start;
+      const ratio = Math.min(elapsed / FINISH_ANIMATION_MS, 1);
+      const value = from + (100 - from) * ratio;
+      progressRef.current = value;
+      setProgress(value);
+      if (ratio < 1) {
+        rafId = requestAnimationFrame(step);
+        return;
+      }
+      if (!completedRef.current) {
+        completedRef.current = true;
+        window.setTimeout(() => onComplete?.(), COMPLETE_DELAY_MS);
       }
     };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [navigate, onComplete]);
+    rafId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafId);
+  }, [processingDone, onComplete]);
 
   useEffect(() => {
-    const current = AFFIRMATIONS.find((a) => progress <= a.max);
-    const newText = current?.text || AFFIRMATIONS[AFFIRMATIONS.length - 1].text;
-    if (newText !== affirmation) {
-      setAffirmationOpacity(0);
-      const timeout = setTimeout(() => {
-        setAffirmation(newText);
-        setAffirmationOpacity(1);
-      }, 400);
-      return () => clearTimeout(timeout);
-    }
+    const nextAffirmation = getAffirmationForProgress(Math.floor(progress));
+    if (nextAffirmation === affirmation) return;
+    setAffirmationOpacity(0);
+    const timeoutId = window.setTimeout(() => {
+      setAffirmation(nextAffirmation);
+      setAffirmationOpacity(1);
+    }, 400);
+    return () => window.clearTimeout(timeoutId);
   }, [progress, affirmation]);
 
-  const displayNum = Math.floor(progress);
+  const displayPct = Math.floor(progress);
 
   return (
     <div
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 2000,
+        zIndex: 9998,
+        minHeight: "100dvh",
         backgroundColor: "#0F0F14",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         direction: "rtl",
-        minHeight: "100dvh",
-        padding: "0 24px",
+        overflow: "hidden",
       }}
     >
-      <div className="blob blob-violet" style={{ width: 200, height: 200, top: "15%", right: "-5%" }} />
-      <div className="blob blob-pink" style={{ width: 200, height: 200, bottom: "20%", left: "-5%" }} />
+      <div
+        style={{
+          pointerEvents: "none",
+          position: "absolute",
+          top: "20%",
+          left: "10%",
+          width: 250,
+          height: 250,
+          borderRadius: "50%",
+          background: "#6C63FF",
+          filter: "blur(80px)",
+          opacity: 0.1,
+        }}
+      />
+      <div
+        style={{
+          pointerEvents: "none",
+          position: "absolute",
+          bottom: "20%",
+          right: "10%",
+          width: 250,
+          height: 250,
+          borderRadius: "50%",
+          background: "#FF9DC4",
+          filter: "blur(80px)",
+          opacity: 0.1,
+        }}
+      />
 
-      <div className="flex items-baseline" style={{ gap: 4 }}>
-        <span
-          className="font-cairo font-bold loading-percent"
-          style={{
-            fontSize: 64,
-            background: "linear-gradient(135deg, #FF9DC4, #C4A8FF, #6C63FF)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-            filter: "drop-shadow(0 0 30px rgba(108,99,255,0.3))",
-          }}
-        >
-          {displayNum}
-        </span>
-        <span className="font-cairo font-light" style={{ fontSize: 24, color: "#9090A8" }}>%</span>
+      <div
+        className="font-cairo font-bold loading-percent"
+        style={{
+          fontSize: 64,
+          background: "linear-gradient(135deg, #FF9DC4, #C4A8FF, #6C63FF, #A8C4FF)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+          textAlign: "center",
+          lineHeight: 1,
+        }}
+      >
+        {displayPct}%
       </div>
 
       <p
         className="font-cairo font-light"
         style={{
-          fontSize: 14,
+          marginTop: 24,
+          fontSize: 15,
           color: "#FFFFFF",
           textAlign: "center",
-          maxWidth: 260,
-          marginTop: 24,
+          maxWidth: "min(260px, 80vw)",
           opacity: affirmationOpacity,
           transition: "opacity 0.4s ease",
         }}
@@ -111,13 +210,9 @@ const AnalysisLoading = ({ onComplete }: AnalysisLoadingProps) => {
         {affirmation}
       </p>
 
-      <p className="font-cairo font-light" style={{ fontSize: 12, color: "#9090A8", textAlign: "center", marginTop: 16 }}>
-        ملسون يجهّز تحليلك
-      </p>
-
       <style>{`
-        @media (min-width: 1024px) {
-          .loading-percent { font-size: 80px !important; }
+        @media (max-width: 768px) {
+          .loading-percent { font-size: 48px !important; }
         }
       `}</style>
     </div>

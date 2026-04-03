@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Check } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 
 const Contact = () => {
   const [sent, setSent] = useState(false);
@@ -34,6 +35,7 @@ const Contact = () => {
   return (
     <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100dvh", direction: "rtl" }}>
       <Navbar />
+      <BackButton variant="light" />
       <div className="blob blob-violet" style={{ width: 200, height: 200, top: "15%", right: "-8%" }} />
 
       <div className="page-narrow" style={{ paddingTop: 80 }}>

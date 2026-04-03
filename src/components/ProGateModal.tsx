@@ -21,7 +21,7 @@ const ProGateModal = ({ open, onClose }: ProGateModalProps) => {
         className="flex flex-col items-center text-center"
         style={{
           background: "#1A1A28",
-          borderRadius: 24,
+          borderRadius: 20,
           padding: 32,
           maxWidth: 340,
           width: "calc(100% - 48px)",
@@ -45,6 +45,7 @@ const ProGateModal = ({ open, onClose }: ProGateModalProps) => {
             padding: "14px 0",
             fontSize: 16,
             cursor: "pointer",
+            minHeight: 44,
           }}
         >
           افتح برو — 9$ / شهر
@@ -59,6 +60,7 @@ const ProGateModal = ({ open, onClose }: ProGateModalProps) => {
             fontSize: 13,
             marginTop: 16,
             cursor: "pointer",
+            minHeight: 44,
           }}
         >
           لا شكراً

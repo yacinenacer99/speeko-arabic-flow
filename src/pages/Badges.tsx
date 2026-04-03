@@ -1,7 +1,7 @@
-import { useNavigate } from "react-router-dom";
-import { ArrowRight, Lock, Mic, Flame, Sparkles, Award, Zap, Diamond, Crown, Trophy } from "lucide-react";
+import { Lock, Mic, Flame, Sparkles, Award, Zap, Diamond, Crown, Trophy } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 
 const allBadges = [
   { name: "أول جلسة", Icon: Mic, desc: "أكمل جلستك الأولى", status: "earned" as const, date: "قبل 12 يوم" },
@@ -15,7 +15,6 @@ const allBadges = [
 ];
 
 const Badges = () => {
-  const navigate = useNavigate();
   const earned = allBadges.filter((b) => b.status === "earned");
   const inProgress = allBadges.filter((b) => b.status === "progress");
   const locked = allBadges.filter((b) => b.status === "locked");
@@ -66,14 +65,10 @@ const Badges = () => {
   return (
     <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100dvh", direction: "rtl", paddingBottom: 80 }}>
       <Navbar />
+      <BackButton variant="light" />
       <div className="blob blob-violet" style={{ width: 200, height: 200, top: "10%", right: "-10%" }} />
 
       <div className="page-narrow" style={{ paddingTop: 80 }}>
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1 font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", background: "none", border: "none", cursor: "pointer", marginBottom: 16, minHeight: 44 }}>
-          <ArrowRight size={14} />
-          رجوع
-        </button>
-
         <h1 className="font-cairo font-bold" style={{ fontSize: 24, color: "hsl(var(--foreground))", marginBottom: 24 }}>الإنجازات</h1>
 
         {earned.length > 0 && (

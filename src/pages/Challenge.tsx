@@ -3,7 +3,7 @@ import HeroSection from "@/components/HeroSection";
 
 const Challenge = () => {
   return (
-    <div className="min-h-screen">
+    <div style={{ minHeight: "100dvh" }}>
       <Navbar />
       <HeroSection />
     </div>

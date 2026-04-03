@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 
 const articles = [
   {
@@ -30,6 +31,7 @@ const Blog = () => {
   return (
     <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100dvh", direction: "rtl" }}>
       <Navbar />
+      <BackButton variant="light" />
       <div className="blob blob-violet" style={{ width: 200, height: 200, top: "10%", right: "-8%" }} />
 
       <div className="page-narrow" style={{ paddingTop: 80, paddingBottom: 40 }}>

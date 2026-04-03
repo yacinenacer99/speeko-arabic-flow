@@ -2,19 +2,17 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
-const PROTECTED_PREFIXES = ["/home", "/challenge", "/results", "/progress", "/profile", "/badges", "/settings", "/weeklyReport", "/streakLost", "/levelup"];
-
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isLoggedIn } = useAuth();
+  const { session, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (!isLoading && !session) {
       navigate("/login", { replace: true });
     }
-  }, [isLoggedIn, navigate]);
+  }, [isLoading, session, navigate]);
 
-  if (!isLoggedIn) return null;
+  if (isLoading || !session) return null;
   return <>{children}</>;
 };
 

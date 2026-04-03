@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Flame, X } from "lucide-react";
+import BackButton from "@/components/BackButton";
 
 const StreakLost = () => {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ const StreakLost = () => {
       className="flex flex-col items-center justify-center text-center"
       style={{ minHeight: "100dvh", overflow: "hidden", background: "#0F0F14", direction: "rtl", padding: "0 var(--page-padding-mobile)" }}
     >
+      <BackButton variant="light" />
       <div style={{ position: "relative", marginBottom: 16 }}>
         <div
           className="flex items-center justify-center"

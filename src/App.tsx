@@ -4,10 +4,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { RecordingProvider } from "@/contexts/RecordingContext";
+import { SessionProvider } from "@/contexts/SessionContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index.tsx";
 import Onboarding from "./pages/Onboarding.tsx";
-import Signup from "./pages/Signup.tsx";
 import Login from "./pages/Login.tsx";
 import Home from "./pages/Home.tsx";
 import Challenge from "./pages/Challenge.tsx";
@@ -34,28 +35,31 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-            <Route path="/challenge" element={<ProtectedRoute><Challenge /></ProtectedRoute>} />
-            <Route path="/results" element={<Results />} />
-            <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/badges" element={<ProtectedRoute><Badges /></ProtectedRoute>} />
-            <Route path="/levelup" element={<ProtectedRoute><LevelUp /></ProtectedRoute>} />
-            <Route path="/streakLost" element={<ProtectedRoute><StreakLost /></ProtectedRoute>} />
-            <Route path="/weeklyReport" element={<ProtectedRoute><WeeklyReport /></ProtectedRoute>} />
-            <Route path="/subscribe" element={<Subscribe />} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/success" element={<Success />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/contact" element={<Contact />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <RecordingProvider>
+            <SessionProvider>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+                <Route path="/challenge" element={<ProtectedRoute><Challenge /></ProtectedRoute>} />
+                <Route path="/results" element={<Results />} />
+                <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/badges" element={<ProtectedRoute><Badges /></ProtectedRoute>} />
+                <Route path="/level-up" element={<ProtectedRoute><LevelUp /></ProtectedRoute>} />
+                <Route path="/streak-lost" element={<ProtectedRoute><StreakLost /></ProtectedRoute>} />
+                <Route path="/weekly-report" element={<ProtectedRoute><WeeklyReport /></ProtectedRoute>} />
+                <Route path="/subscribe" element={<Subscribe />} />
+                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/success" element={<Success />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/contact" element={<Contact />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </SessionProvider>
+          </RecordingProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { Sparkles, BarChart3, Unlock } from "lucide-react";
+import { Sparkles, BarChart3, Unlock, Check } from "lucide-react";
+import BackButton from "@/components/BackButton";
 
 const items = [
   { Icon: Sparkles, text: "التحليل الكامل بعد كل جلسة" },
@@ -15,6 +16,7 @@ const Success = () => {
       className="flex flex-col items-center justify-center text-center"
       style={{ minHeight: "100dvh", overflow: "hidden", background: "#0F0F14", direction: "rtl", padding: "0 var(--page-padding-mobile)" }}
     >
+      <BackButton variant="light" />
       <div
         className="flex items-center justify-center"
         style={{
@@ -24,7 +26,7 @@ const Success = () => {
           marginBottom: 24,
         }}
       >
-        <span className="font-cairo font-bold" style={{ fontSize: 40, color: "hsl(var(--success))" }}>✓</span>
+        <Check size={40} color="hsl(var(--success))" />
       </div>
 
       <style>{`

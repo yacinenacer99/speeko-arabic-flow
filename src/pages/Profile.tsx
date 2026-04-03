@@ -2,7 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Lock, Mic, Flame, Sparkles, Award, Diamond, Trophy } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
+import BackButton from "@/components/BackButton";
 
 const badges = [
   { name: "أول جلسة", Icon: Mic, earned: true, date: "قبل 12 يوم" },
@@ -21,11 +22,16 @@ const menuItems = [
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
 
   return (
     <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100dvh", direction: "rtl", paddingBottom: 80 }}>
       <Navbar />
+      <BackButton variant="light" />
       <div className="blob blob-violet" style={{ width: 200, height: 200, top: "5%", right: "-10%" }} />
 
       <div className="page-narrow" style={{ paddingTop: 80 }}>
@@ -134,7 +140,8 @@ const Profile = () => {
 
         <div className="glass-card-light" style={{ overflow: "hidden", padding: 0 }}>
           <button
-            onClick={() => { logout(); navigate("/"); }}
+            type="button"
+            onClick={handleLogout}
             className="w-full font-cairo font-light"
             style={{ padding: "14px 16px", fontSize: 14, color: "#FF6B6B", background: "none", border: "none", cursor: "pointer", textAlign: "right", minHeight: 44 }}
           >

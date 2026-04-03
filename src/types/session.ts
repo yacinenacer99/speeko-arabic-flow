@@ -1,0 +1,49 @@
+// Shared session and analysis types for recording pipeline.
+
+export interface WhisperWord {
+  word: string;
+  start: number;
+  end: number;
+}
+
+export interface WhisperResult {
+  transcript: string;
+  words: WhisperWord[];
+}
+
+export interface AnalysisResult {
+  fillerCount: number;
+  fillerWords: Array<{ word: string; count: number }>;
+  wordCount: number;
+  pace: number;
+  forbiddenUsed: string[];
+  longestPause: number;
+  speakingDuration: number;
+  flowScore: number;
+}
+
+export interface XPBreakdown {
+  sessionComplete: number;
+  beatPersonalBest: number;
+  zeroFillers: number;
+  zeroForbidden: number;
+  streakBonus: number;
+  total: number;
+}
+
+export interface StageAdvancement {
+  advanced: boolean;
+  newStage: number | null;
+  newStageName: string | null;
+}
+
+export interface SessionResult {
+  sessionId: string;
+  topic: string;
+  analysis: AnalysisResult;
+  xp: XPBreakdown;
+  stageAdvancement: StageAdvancement;
+  streakCount: number;
+  timestamp: string;
+}
+

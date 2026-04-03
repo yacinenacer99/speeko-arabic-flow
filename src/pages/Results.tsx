@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import type { LucideIcon } from "lucide-react";
 import {
   CheckCircle,
   Clock,
@@ -16,8 +17,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BackButton from "@/components/BackButton";
 import { useSessionContext } from "@/contexts/SessionContext";
-import type { SessionResult } from "@/types/session";
+import type { AnalysisResult, SessionResult } from "@/types/session";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 
 const safeNum = (n: unknown, fallback = 0): number =>
   (typeof n === "number" && Number.isFinite(n)) ? n : fallback;
@@ -83,41 +85,118 @@ const METRIC_INFO: Record<string, string> = {
   الممنوعة: "عدد الكلمات الممنوعة اللي استخدمتها في هذا التحدي",
 };
 
+type CoachingDisplayItem = {
+  title: string;
+  body: string;
+  Icon: LucideIcon;
+  bg: string;
+};
+
+function buildProCoaching(analysis: AnalysisResult): CoachingDisplayItem[] {
+  const flow = analysis.flowScore;
+  const filler = analysis.fillerCount;
+  const pause = analysis.longestPause;
+  const forbidden = Array.isArray(analysis.forbiddenUsed) ? analysis.forbiddenUsed.length : 0;
+
+  const strengths: string[] = [];
+  if (flow >= 70) strengths.push("نقاط التدفق قوية وثابتة.");
+  if (filler <= 2) strengths.push("استخدام قليل لكلمات الحشو.");
+  if (pause <= 3) strengths.push("انسيابية جيدة مع غياب توقفات طويلة.");
+  if (forbidden === 0) strengths.push("احترام قواعد الكلمات الممنوعة في الموضوع.");
+  if (strengths.length === 0) {
+    strengths.push("أكملت الجلسة بثبات — الاستمرار يبني الثقة.");
+  }
+
+  const struggles: string[] = [];
+  if (filler > 4) struggles.push("كلمات الحشو تحتاج تقليلاً تدريجياً.");
+  if (pause > 3) struggles.push("فترات الصمت الطويلة تؤثر على الإيقاع.");
+  if (forbidden > 0) struggles.push("راجع استخدام الكلمات الممنوعة في السؤال.");
+  if (flow < 55) struggles.push("التركيز على طلاقة الأفكار يعزز النتيجة.");
+  if (struggles.length === 0) {
+    struggles.push("لا تعثّر واضح — راقب التفاصيل في الجلسة القادمة.");
+  }
+
+  let nextFocus = "ركّز على تقسيم الفكرة إلى جمل قصيرة واضحة.";
+  if (filler > 3) nextFocus = "تدرب على التوقف بدل الحشو بين الجمل.";
+  else if (pause > 3) nextFocus = "اختصر الثواني بين الأفكار بربط عبارات بسيطة.";
+  else if (forbidden > 0) nextFocus = "خطط لبدائل قبل التحدي لتجنب الكلمات الممنوعة.";
+
+  return [
+    { title: "وش سويت صح", body: strengths.join(" "), Icon: CheckCircle, bg: "rgba(93,190,138,0.1)" },
+    { title: "وين تعثرت", body: struggles.join(" "), Icon: Zap, bg: "rgba(245,158,11,0.1)" },
+    { title: "وش تركز عليه الجلسة الجاية", body: nextFocus, Icon: Target, bg: "rgba(255,107,107,0.1)" },
+  ];
+}
+
 const Results = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isLoggedIn } = useAuth();
+  const sessionIdFromUrl = useMemo(() => searchParams.get("session"), [searchParams]);
+  const { isLoggedIn, session: authSession } = useAuth();
   const { latestSession, loadSessionById } = useSessionContext();
 
-  const [session, setSession] = useState<SessionResult | null>(latestSession);
-  const [loading, setLoading] = useState(false);
+  const [session, setSession] = useState<SessionResult | null>(null);
+  const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [openTooltip, setOpenTooltip] = useState<string | null>(null);
+  const [userPlan, setUserPlan] = useState<"free" | "pro">("free");
 
   useEffect(() => {
-    if (latestSession) {
-      setSession(latestSession);
-      return;
-    }
+    let cancelled = false;
 
-    const id = searchParams.get("session");
-    if (!id) {
-      navigate("/home", { replace: true });
-      return;
-    }
-
-    setLoading(true);
-    void (async () => {
-      const loaded = await loadSessionById(id);
-      if (!loaded) {
-        setLoadError(true);
+    const run = async () => {
+      if (sessionIdFromUrl) {
+        setLoading(true);
+        setLoadError(false);
+        const loaded = await loadSessionById(sessionIdFromUrl);
+        if (cancelled) return;
+        if (!loaded) {
+          setLoadError(true);
+          setLoading(false);
+          return;
+        }
+        setSession(loaded);
         setLoading(false);
         return;
       }
-      setSession(loaded);
+
+      if (latestSession) {
+        setSession(latestSession);
+        setLoading(false);
+        setLoadError(false);
+        return;
+      }
+
       setLoading(false);
-    })();
-  }, [latestSession, loadSessionById, searchParams, navigate]);
+      navigate("/home", { replace: true });
+    };
+
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionIdFromUrl, latestSession, loadSessionById, navigate]);
+
+  useEffect(() => {
+    if (!authSession?.user?.id) {
+      setUserPlan("free");
+      return;
+    }
+    void supabase
+      .from("subscriptions")
+      .select("plan")
+      .eq("user_id", authSession.user.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) {
+          console.log("[MLASOON] subscriptions load error:", error.message);
+          setUserPlan("free");
+          return;
+        }
+        if (data?.plan === "pro") setUserPlan("pro");
+        else setUserPlan("free");
+      });
+  }, [authSession?.user?.id]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -128,6 +207,18 @@ const Results = () => {
     document.addEventListener("click", handler);
     return () => document.removeEventListener("click", handler);
   }, [openTooltip]);
+
+  const coachingItems: CoachingDisplayItem[] = useMemo(() => {
+    if (userPlan === "pro" && session) {
+      return buildProCoaching(session.analysis);
+    }
+    return COACHING_ITEMS.map((item) => ({
+      title: item.title,
+      body: item.body,
+      Icon: item.Icon,
+      bg: item.bg,
+    }));
+  }, [userPlan, session]);
 
   const formatDuration = (seconds: number): string => {
     const s = Math.max(0, Math.round(safeNum(seconds)));
@@ -345,8 +436,14 @@ const Results = () => {
         </div>
 
         <div style={{ position: "relative", overflow: "hidden" }}>
-          <div style={{ filter: "blur(5px)", WebkitFilter: "blur(5px)", pointerEvents: "none" }}>
-            {COACHING_ITEMS.map((item) => (
+          <div
+            style={{
+              filter: userPlan !== "pro" ? "blur(5px)" : "none",
+              WebkitFilter: userPlan !== "pro" ? "blur(5px)" : "none",
+              pointerEvents: userPlan !== "pro" ? "none" : "auto",
+            }}
+          >
+            {coachingItems.map((item) => (
               <div key={item.title} className="glass-card-light" style={{ borderRadius: 16, padding: 16, marginBottom: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                   <div style={{ width: 30, height: 30, borderRadius: 10, background: item.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -363,29 +460,31 @@ const Results = () => {
             ))}
           </div>
 
-          <div
-            onClick={() => navigate("/subscribe")}
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexDirection: "column",
-              background: "rgba(245,244,240,0.3)",
-              pointerEvents: "auto",
-              cursor: "pointer",
-              zIndex: 5,
-            }}
-          >
-            <Lock size={28} color="#9090A8" />
-            <span className="font-cairo font-bold" style={{ marginTop: 8, fontSize: 15, color: "#6C63FF" }}>
-              افتح التحليل الكامل
-            </span>
-            <span className="font-cairo font-light" style={{ marginTop: 4, fontSize: 12, color: "#9090A8" }}>
-              اشترك في برو
-            </span>
-          </div>
+          {userPlan !== "pro" && (
+            <div
+              onClick={() => navigate("/subscribe")}
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexDirection: "column",
+                background: "rgba(245,244,240,0.3)",
+                pointerEvents: "auto",
+                cursor: "pointer",
+                zIndex: 5,
+              }}
+            >
+              <Lock size={28} color="#9090A8" />
+              <span className="font-cairo font-bold" style={{ marginTop: 8, fontSize: 15, color: "#6C63FF" }}>
+                افتح التحليل الكامل
+              </span>
+              <span className="font-cairo font-light" style={{ marginTop: 4, fontSize: 12, color: "#9090A8" }}>
+                اشترك في برو
+              </span>
+            </div>
+          )}
         </div>
 
         <div style={{ height: 100 }} />

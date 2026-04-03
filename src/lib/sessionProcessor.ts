@@ -325,42 +325,37 @@ export async function processSession(
   );
   const xp = await computeXP(userId, analysis, stage, streakCount);
 
-  let sessionId = "";
   const nowIso = new Date().toISOString();
 
-  try {
-    const { data, error } = await supabase
-      .from("sessions")
-      .insert({
-        user_id: userId,
-        topic,
-        duration,
-        flow_score: analysis.flowScore,
-        filler_count: analysis.fillerCount,
-        forbidden_used: analysis.forbiddenUsed.length,
-        pace: analysis.pace,
-        longest_pause: analysis.longestPause,
-        word_count: analysis.wordCount,
-        transcript: whisper.transcript,
-        challenge_type: getChallengeType(stage),
-        analysis,
-        xp_breakdown: xp,
-        stage_advancement: stageAdvancement,
-        streak_count: streakCount,
-      })
-      .select<SessionRow>("id")
-      .single();
+  const { data: sessionRow, error: sessionError } = await supabase
+    .from("sessions")
+    .insert({
+      user_id: userId,
+      topic,
+      duration,
+      flow_score: analysis.flowScore,
+      filler_count: analysis.fillerCount,
+      forbidden_used: analysis.forbiddenUsed.length,
+      pace: analysis.pace,
+      longest_pause: analysis.longestPause,
+      word_count: analysis.wordCount,
+      transcript: whisper.transcript,
+      challenge_type: getChallengeType(stage),
+      analysis,
+      xp_breakdown: xp,
+      stage_advancement: stageAdvancement,
+      streak_count: streakCount,
+    })
+    .select<SessionRow>("id")
+    .single();
 
-    if (error) {
-      console.log("[MLASOON:DB_ERROR] sessions:", error.message);
-    } else if (data) {
-      sessionId = data.id;
-      console.log("[MLASOON] Session saved, id:", sessionId);
-    }
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.log("[MLASOON:DB_ERROR] sessions:", message);
+  if (sessionError || !sessionRow) {
+    console.log("[MLASOON] session insert failed:", sessionError?.message);
+    throw new Error("SESSION_SAVE_FAILED");
   }
+
+  const sessionId = sessionRow.id;
+  console.log("[MLASOON] Session saved, id:", sessionId);
 
   return {
     sessionId,

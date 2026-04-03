@@ -50,6 +50,7 @@ const HeroSection = () => {
   const lastActivityRef = useRef(Date.now());
   const recordingStartRef = useRef(0);
   const recordingRef = useRef<RecordingHandle | null>(null);
+  const micStreamRef = useRef<MediaStream | null>(null);
   const isProcessingRef = useRef(false);
   const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null);
   const [waveHeights, setWaveHeights] = useState<number[]>(() => Array(7).fill(10));
@@ -265,10 +266,9 @@ const HeroSection = () => {
 
     requestMicrophoneAccess()
       .then((stream) => {
-        const handle = startRecording(stream);
-        recordingRef.current = handle;
-        setAnalyserNode(handle.analyserNode);
+        micStreamRef.current = stream;
         setState("sport");
+        console.log("[MLASOON] Mic access granted, stream stored");
       })
       .catch((err) => {
         const message = err instanceof Error ? err.message : "MICROPHONE_UNKNOWN";
@@ -302,7 +302,16 @@ const HeroSection = () => {
     if (state === "landing") {
       beginRecordingFromLanding();
     } else if (state === "topic") {
+      if (!micStreamRef.current) {
+        setErrorMessage("انتهت صلاحية الميكروفون — حاول مجدداً");
+        setState("landing");
+        return;
+      }
+      const handle = startRecording(micStreamRef.current);
+      recordingRef.current = handle;
+      setAnalyserNode(handle.analyserNode);
       setState("recording");
+      console.log("[MLASOON] Recording started");
     } else if (state === "recording") {
       clearTimer();
       void stopRecordingAndProcess();
@@ -382,6 +391,7 @@ const HeroSection = () => {
       }
       const blob = await handle.stop();
       recordingRef.current = null;
+      micStreamRef.current = null;
       setAnalyserNode(null);
       setShowLoading(true);
       setProcessingDone(false);
@@ -403,7 +413,9 @@ const HeroSection = () => {
       setProcessingDone(true);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      if (message === "EMPTY_RECORDING") {
+      if (message === "SESSION_SAVE_FAILED") {
+        setErrorMessage("تعذّر حفظ الجلسة — تحقق من اتصالك وحاول مجدداً");
+      } else if (message === "EMPTY_RECORDING") {
         setErrorMessage("لم نسمع شيء — حاول مرة ثانية");
       } else {
         setErrorMessage("حدث خطأ أثناء تحليل الجلسة");
@@ -438,6 +450,10 @@ const HeroSection = () => {
             if (recordingRef.current) {
               recordingRef.current.stop().catch(() => {});
               recordingRef.current = null;
+            }
+            if (micStreamRef.current) {
+              micStreamRef.current.getTracks().forEach((t) => t.stop());
+              micStreamRef.current = null;
             }
             setAnalyserNode(null);
             setIsRecording(false);

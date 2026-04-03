@@ -123,7 +123,7 @@ const Navbar = () => {
                 padding: "0 10px",
                 cursor: "pointer",
               }}
-              onClick={() => go("/")}
+              onClick={() => go("/home")}
             >
               ملسون
             </span>

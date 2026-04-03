@@ -50,6 +50,7 @@ const HeroSection = () => {
   const lastActivityRef = useRef(Date.now());
   const recordingStartRef = useRef(0);
   const recordingRef = useRef<RecordingHandle | null>(null);
+  const isProcessingRef = useRef(false);
   const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null);
   const [waveHeights, setWaveHeights] = useState<number[]>(() => Array(7).fill(10));
   const [showLoading, setShowLoading] = useState(false);
@@ -119,7 +120,7 @@ const HeroSection = () => {
         const { data, error } = await supabase
           .from("users")
           .select("interests")
-          .eq("user_id", session.user.id)
+          .eq("id", session.user.id)
           .maybeSingle();
         if (error) {
           console.log("[MLASOON:DB_ERROR] users:", error.message);
@@ -369,6 +370,11 @@ const HeroSection = () => {
   };
 
   const stopRecordingAndProcess = async () => {
+    if (isProcessingRef.current) {
+      console.log("[MLASOON] stopRecordingAndProcess already running — skipping");
+      return;
+    }
+    isProcessingRef.current = true;
     try {
       const handle = recordingRef.current;
       if (!handle) {
@@ -404,6 +410,8 @@ const HeroSection = () => {
       }
       console.log("[MLASOON] Session processing error:", message);
       setShowLoading(false);
+    } finally {
+      isProcessingRef.current = false;
     }
   };
 
@@ -426,16 +434,18 @@ const HeroSection = () => {
         <button
           type="button"
           onClick={() => {
-            if (state === "recording") {
-              clearTimer();
-              if (recordingRef.current) {
-                recordingRef.current.stop().catch(() => {});
-                recordingRef.current = null;
-              }
-              setAnalyserNode(null);
-              setIsRecording(false);
+            clearTimer();
+            if (recordingRef.current) {
+              recordingRef.current.stop().catch(() => {});
+              recordingRef.current = null;
             }
+            setAnalyserNode(null);
+            setIsRecording(false);
+            isProcessingRef.current = false;
+            setShowLoading(false);
+            setProcessingDone(false);
             setState("landing");
+            console.log("[MLASOON] Back pressed — recorder stopped, stream released");
           }}
           style={{
             position: "fixed",

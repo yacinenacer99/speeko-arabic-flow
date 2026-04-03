@@ -145,6 +145,7 @@ const AnalysisLoading = ({ processingDone, visible, onComplete }: AnalysisLoadin
 
   if (visible) hasStartedRef.current = true;
   if (!hasStartedRef.current) return null;
+  if (!visible && !processingDone && !completedRef.current) return null;
 
   const displayPct = Math.floor(progress);
 

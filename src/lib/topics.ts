@@ -83,6 +83,15 @@ export const TOPICS: Topic[] = [
   { id: 72, question: "وش التغييرات اللي تتوقعها في طريقة عمل الناس؟", forbiddenWords: ["مكاتب", "دوام", "ريموت"], category: "أسئلة مستقبلية", difficulty: "hard" },
 ];
 
+const INTEREST_TO_CATEGORY: Record<string, string> = {
+  daily: "الحياة اليومية",
+  work: "العمل والمسار المهني",
+  tech: "التقنية والمستقبل",
+  growth: "التطوير الشخصي",
+  culture: "الثقافة والمجتمع",
+  media: "المحتوى والإعلام",
+};
+
 /**
  * Resolve allowed topic difficulties for the current stage.
  * @param userStage Current stage (1-6).
@@ -105,14 +114,17 @@ export function selectTopic(userStage: number, userInterests: string[], recentTo
   const allowed = allowedDifficultiesByStage(userStage);
   const byDifficulty = TOPICS.filter((topic) => allowed.has(topic.difficulty));
   const recentSet = new Set(recentTopicIds);
-  const interestsSet = new Set(userInterests);
+  const mappedCategories = userInterests
+    .map((code) => INTEREST_TO_CATEGORY[code])
+    .filter((c): c is string => typeof c === "string" && c.length > 0);
+  const categorySet = new Set(mappedCategories);
 
   const preferred = byDifficulty
-    .filter((topic) => interestsSet.has(topic.category))
+    .filter((topic) => categorySet.has(topic.category))
     .filter((topic) => !recentSet.has(topic.id));
 
   const rest = byDifficulty
-    .filter((topic) => !interestsSet.has(topic.category))
+    .filter((topic) => !categorySet.has(topic.category))
     .filter((topic) => !recentSet.has(topic.id));
 
   const pickRandom = (pool: Topic[]) => pool[Math.floor(Math.random() * pool.length)];

@@ -61,7 +61,7 @@ const Footer = () => {
           <div>
             <h5 style={headingStyle}>المزيد</h5>
             <LinkButton label="تواصل معنا" path="/contact" />
-            <LinkButton label="سياسة الخصوصية" path="/" />
+            <LinkButton label="سياسة الخصوصية" path="/privacy" />
           </div>
         </div>
         <div style={{ borderTop: "1px solid #2A2A3E", marginTop: 32, paddingTop: 20 }}>

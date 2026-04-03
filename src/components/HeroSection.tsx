@@ -14,7 +14,7 @@ import { CONSTANTS } from "@/lib/constants";
 import { selectTopic, type Topic } from "@/lib/topics";
 import type { SessionResult, XPBreakdown, StageAdvancement } from "@/types/session";
 
-type State = "landing" | "sport" | "topic" | "recording" | "results" | "loading";
+type State = "landing" | "sport" | "topic" | "recording";
 
 const formatTime = (t: number) =>
   `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
@@ -217,12 +217,10 @@ const HeroSection = () => {
   }, [state]);
 
   const isLanding = state === "landing";
-  const isDark = state !== "landing" && state !== "loading";
-  const isSmall = !isLanding && state !== "results" && state !== "loading";
+  const isDark = state !== "landing";
+  const isSmall = !isLanding;
   const showTopic = state === "topic" || state === "recording";
-  const isResults = state === "results";
   const isRecording = state === "recording";
-  const isLoading = state === "loading";
 
   const timerColor =
     timeLeft > 30
@@ -585,10 +583,10 @@ const HeroSection = () => {
             display: "inline-block",
             marginTop: 0,
             marginBottom: 0,
-            opacity: isResults ? 0 : 1,
-            transform: isResults ? "scale(0.8)" : "scale(1)",
+            opacity: 1,
+            transform: "scale(1)",
             transition: `margin-top 0.7s ${EASE}, margin-bottom 0.7s ${EASE}, opacity 0.5s ease, transform 0.5s ease`,
-            pointerEvents: isResults ? "none" : "auto",
+            pointerEvents: "auto",
           }}
         >
           <div
@@ -643,8 +641,8 @@ const HeroSection = () => {
                   style={{
                     fontSize: 28,
                     textShadow: "0 2px 12px rgba(0,0,0,0.5)",
-                    opacity: isDark && !isResults ? 1 : 0,
-                    position: isDark && !isResults ? "relative" : "absolute",
+                    opacity: isDark ? 1 : 0,
+                    position: isDark ? "relative" : "absolute",
                     transition: "opacity 0.3s ease 0.3s, color 0.5s ease",
                     color: isRecording ? timerColor : "#FFFFFF",
                     animation:

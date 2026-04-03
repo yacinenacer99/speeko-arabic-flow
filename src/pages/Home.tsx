@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { toast } from "sonner";
 import { Flame, Mic, Clock } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -26,8 +27,11 @@ type HomeData = {
 
 type LoadState = "loading" | "ok" | "error";
 
+type HomeLocationState = { freezeSuccess?: boolean };
+
 const Home = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { session, isLoading: authLoading } = useAuth();
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [data, setData] = useState<HomeData | null>(null);
@@ -109,6 +113,14 @@ const Home = () => {
       }
     })();
   }, [session, authLoading, uid]);
+
+  useEffect(() => {
+    const st = location.state as HomeLocationState | null;
+    if (st?.freezeSuccess) {
+      toast.success("تم حفظ سترك باستخدام رمز التجميد");
+      navigate("/home", { replace: true, state: {} });
+    }
+  }, [location.state, navigate]);
 
   const handleRetry = useCallback(() => {
     setRetryKey((k) => k + 1);

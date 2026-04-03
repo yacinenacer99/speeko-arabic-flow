@@ -47,6 +47,14 @@ function buildStages(props: QuestMapProps): Stage[] {
   });
 }
 
+function motivationalLine(currentStage: number): string {
+  const cs = Math.min(Math.max(Math.floor(currentStage), 1), 6);
+  const remainingStages = 6 - cs;
+  if (remainingStages <= 0) return "وصلت لأعلى مستوى — أنت سيد الكلام";
+  if (remainingStages === 1) return "مرحلة واحدة تفصلك عن سيد الكلام";
+  return `${remainingStages} مراحل تفصلك عن سيد الكلام`;
+}
+
 const QuestMap = ({ currentStage, stageProgressCount, stageProgressRequired, plan }: QuestMapProps) => {
   const stages = buildStages({
     currentStage,
@@ -128,7 +136,7 @@ const QuestMap = ({ currentStage, stageProgressCount, stageProgressRequired, pla
         className="font-cairo font-light text-center"
         style={{ fontSize: 14, color: "#9090A8", marginTop: 40 }}
       >
-        ٤ مراحل تفصلك عن سيد الكلام
+        {motivationalLine(currentStage)}
       </p>
     </div>
   );
@@ -206,7 +214,7 @@ const ProBadge = () => (
       marginTop: 4,
     }}
   >
-    Pro
+    برو
   </span>
 );
 
@@ -309,7 +317,7 @@ const StageCard = ({ stage, side, icon: Icon }: { stage: Stage; side: "left" | "
               textAlign: "center",
             }}
           >
-            <span className="font-cairo font-light" style={{ fontSize: 10, color: "#6C63FF" }}>يتطلب اشتراك Pro</span>
+            <span className="font-cairo font-light" style={{ fontSize: 10, color: "#6C63FF" }}>يتطلب اشتراك برو</span>
           </div>
         </>
       )}

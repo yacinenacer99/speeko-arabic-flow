@@ -1,14 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Check } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BackButton from "@/components/BackButton";
 
 const Contact = () => {
+  const [searchParams] = useSearchParams();
   const [sent, setSent] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    const subject = searchParams.get("subject");
+    if (subject === "حذف-الحساب") {
+      setMessage((prev) => (prev.trim() === "" ? "أرغب في حذف حسابي نهائياً من المنصة." : prev));
+    }
+  }, [searchParams]);
 
   const inputStyle: React.CSSProperties = {
     width: "100%",

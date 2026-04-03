@@ -1,14 +1,57 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BackButton from "@/components/BackButton";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 
 const Settings = () => {
   const navigate = useNavigate();
+  const { session } = useAuth();
   const [notifications, setNotifications] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [displayName, setDisplayName] = useState<string>("");
+  const [displayEmail, setDisplayEmail] = useState<string>("");
+  const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
+  const [deleteMessage, setDeleteMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    void (async () => {
+      const { data, error } = await supabase.from("users").select("name").eq("id", session.user.id).maybeSingle();
+      if (error) {
+        console.log("[MLASOON] settings user load:", error.message);
+        return;
+      }
+      const n = data?.name;
+      setDisplayName(typeof n === "string" && n.trim() ? n.trim() : "");
+    })();
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    const email = session?.user?.email;
+    setDisplayEmail(typeof email === "string" ? email : "");
+  }, [session?.user?.email]);
+
+  const handlePasswordReset = async () => {
+    setPasswordMessage(null);
+    const email = session?.user?.email;
+    if (!email) {
+      setPasswordMessage("لا يوجد بريد مرتبط بالحساب");
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/settings`,
+    });
+    if (error) {
+      console.log("[MLASOON] reset password:", error.message);
+      setPasswordMessage("تعذّر إرسال الرابط — حاول مجدداً");
+      return;
+    }
+    setPasswordMessage("تم إرسال رابط تغيير كلمة المرور إلى بريدك");
+  };
 
   const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <div style={{ marginBottom: 24 }}>
@@ -19,6 +62,7 @@ const Settings = () => {
 
   const Row = ({ label, right, onClick, danger }: { label: string; right?: React.ReactNode; onClick?: () => void; danger?: boolean }) => (
     <button
+      type="button"
       onClick={onClick}
       className="flex items-center justify-between w-full font-cairo font-light"
       style={{
@@ -40,6 +84,12 @@ const Settings = () => {
   const Toggle = ({ on, onToggle }: { on: boolean; onToggle: () => void }) => (
     <div
       onClick={onToggle}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onToggle();
+      }}
+      role="switch"
+      aria-checked={on}
+      tabIndex={0}
       style={{
         width: 44,
         height: 24,
@@ -75,10 +125,21 @@ const Settings = () => {
       <div className="page-narrow" style={{ paddingTop: 80 }}>
         <h1 className="font-cairo font-bold" style={{ fontSize: 24, color: "hsl(var(--foreground))", marginBottom: 24 }}>الإعدادات</h1>
 
+        {passwordMessage && (
+          <p className="font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--foreground))", marginBottom: 12 }}>
+            {passwordMessage}
+          </p>
+        )}
+        {deleteMessage && (
+          <p className="font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--foreground))", marginBottom: 12 }}>
+            {deleteMessage}
+          </p>
+        )}
+
         <Section title="الحساب">
-          <Row label="الاسم" right={<span className="font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))" }}>أحمد</span>} />
-          <Row label="البريد الإلكتروني" right={<span className="font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))" }}>ahmed@email.com</span>} />
-          <Row label="كلمة المرور" onClick={() => {}} />
+          <Row label="الاسم" right={<span className="font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))" }}>{displayName || "—"}</span>} />
+          <Row label="البريد الإلكتروني" right={<span className="font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))" }}>{displayEmail || "—"}</span>} />
+          <Row label="كلمة المرور" onClick={() => void handlePasswordReset()} />
         </Section>
 
         <Section title="التفضيلات">
@@ -90,7 +151,19 @@ const Settings = () => {
               </span>
             }
           />
-          <Row label="الإشعارات" right={<Toggle on={notifications} onToggle={() => setNotifications(!notifications)} />} />
+          <div
+            className="flex items-center justify-between w-full font-cairo font-light"
+            style={{
+              padding: "14px 16px",
+              fontSize: 14,
+              color: "hsl(var(--foreground))",
+              borderBottom: "1px solid hsl(var(--border))",
+              minHeight: 44,
+            }}
+          >
+            <span>الإشعارات</span>
+            <Toggle on={notifications} onToggle={() => setNotifications(!notifications)} />
+          </div>
         </Section>
 
         <Section title="الاشتراك">
@@ -99,9 +172,8 @@ const Settings = () => {
 
         <Section title="الدعم">
           <Row label="تواصل معنا" onClick={() => navigate("/contact")} />
-          {/* TODO: create dedicated privacy and terms pages */}
-          <Row label="سياسة الخصوصية" onClick={() => navigate("/contact")} />
-          <Row label="الشروط والأحكام" onClick={() => navigate("/contact")} />
+          <Row label="سياسة الخصوصية" onClick={() => navigate("/privacy")} />
+          <Row label="الشروط والأحكام" onClick={() => navigate("/privacy")} />
         </Section>
 
         <div className="glass-card-light" style={{ overflow: "hidden", marginBottom: 40, padding: 0 }}>
@@ -113,10 +185,19 @@ const Settings = () => {
             <div className="glass-card-light" style={{ padding: 24, maxWidth: 320, width: "calc(100% - 48px)" }} onClick={(e) => e.stopPropagation()}>
               <p className="font-cairo font-bold text-center" style={{ fontSize: 18, color: "hsl(var(--foreground))", marginBottom: 8 }}>حذف الحساب</p>
               <p className="font-cairo font-light text-center" style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", marginBottom: 24 }}>هل أنت متأكد؟ لا يمكن التراجع عن هذا القرار.</p>
-              <button className="font-cairo font-bold text-white w-full" style={{ background: "#FF6B6B", border: "none", borderRadius: 999, padding: "14px 0", fontSize: 15, cursor: "pointer", marginBottom: 8, height: 50 }}>
+              <button
+                type="button"
+                className="font-cairo font-bold text-white w-full"
+                style={{ background: "#FF6B6B", border: "none", borderRadius: 999, padding: "14px 0", fontSize: 15, cursor: "pointer", marginBottom: 8, height: 50 }}
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setDeleteMessage("تواصل معنا لحذف حسابك نهائياً");
+                  navigate("/contact?subject=حذف-الحساب");
+                }}
+              >
                 نعم، احذف حسابي
               </button>
-              <button onClick={() => setShowDeleteConfirm(false)} className="font-cairo font-light w-full" style={{ background: "none", border: "none", color: "hsl(var(--muted-foreground))", fontSize: 13, cursor: "pointer", padding: 8, minHeight: 44 }}>
+              <button type="button" onClick={() => setShowDeleteConfirm(false)} className="font-cairo font-light w-full" style={{ background: "none", border: "none", color: "hsl(var(--muted-foreground))", fontSize: 13, cursor: "pointer", padding: 8, minHeight: 44 }}>
                 إلغاء
               </button>
             </div>

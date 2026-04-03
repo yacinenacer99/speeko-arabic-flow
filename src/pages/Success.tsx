@@ -16,7 +16,7 @@ const Success = () => {
       className="flex flex-col items-center justify-center text-center"
       style={{ minHeight: "100dvh", overflow: "hidden", background: "#0F0F14", direction: "rtl", padding: "0 var(--page-padding-mobile)" }}
     >
-      <BackButton variant="light" />
+      <BackButton variant="dark" />
       <div
         className="flex items-center justify-center"
         style={{

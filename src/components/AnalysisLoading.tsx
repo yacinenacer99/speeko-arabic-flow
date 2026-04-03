@@ -7,6 +7,7 @@ const COMPLETE_DELAY_MS = 300;
 
 interface AnalysisLoadingProps {
   processingDone: boolean;
+  visible: boolean;
   onComplete?: () => void;
 }
 
@@ -18,13 +19,14 @@ function getAffirmationForProgress(pct: number): string {
   return "جاهز تشوف نتيجتك؟";
 }
 
-const AnalysisLoading = ({ processingDone, onComplete }: AnalysisLoadingProps) => {
+const AnalysisLoading = ({ processingDone, visible, onComplete }: AnalysisLoadingProps) => {
   const [progress, setProgress] = useState(0);
   const [affirmation, setAffirmation] = useState("نحلل أداءك...");
   const [affirmationOpacity, setAffirmationOpacity] = useState(1);
   const progressRef = useRef(0);
   const completedRef = useRef(false);
   const processingDoneRef = useRef(processingDone);
+  const hasStartedRef = useRef(false);
 
   useEffect(() => {
     processingDoneRef.current = processingDone;
@@ -33,7 +35,7 @@ const AnalysisLoading = ({ processingDone, onComplete }: AnalysisLoadingProps) =
   useEffect(() => {
     let rafId = 0;
     let finalizeTimeout: number | undefined;
-    const start = performance.now();
+    let animationStart: number | null = null;
 
     const finishAndComplete = () => {
       if (completedRef.current) return;
@@ -61,8 +63,15 @@ const AnalysisLoading = ({ processingDone, onComplete }: AnalysisLoadingProps) =
     };
 
     const tick = (now: number) => {
+      if (!hasStartedRef.current) {
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
+      if (animationStart === null) {
+        animationStart = now;
+      }
       if (completedRef.current) return;
-      const elapsed = now - start;
+      const elapsed = now - animationStart;
       const linearProgress = Math.min((elapsed / DURATION_MS) * 100, 100);
 
       if (!processingDoneRef.current && linearProgress >= HOLD_AT_PCT) {
@@ -96,6 +105,7 @@ const AnalysisLoading = ({ processingDone, onComplete }: AnalysisLoadingProps) =
   }, [onComplete]);
 
   useEffect(() => {
+    if (!hasStartedRef.current) return;
     if (!processingDone) return;
     if (completedRef.current) return;
     if (progressRef.current < HOLD_AT_PCT) return;
@@ -132,6 +142,9 @@ const AnalysisLoading = ({ processingDone, onComplete }: AnalysisLoadingProps) =
     }, 400);
     return () => window.clearTimeout(timeoutId);
   }, [progress, affirmation]);
+
+  if (visible) hasStartedRef.current = true;
+  if (!hasStartedRef.current) return null;
 
   const displayPct = Math.floor(progress);
 

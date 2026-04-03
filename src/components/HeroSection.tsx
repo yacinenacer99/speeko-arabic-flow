@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, ChevronRight } from "lucide-react";
 import AnalysisLoading from "@/components/AnalysisLoading";
 import { requestMicrophoneAccess, startRecording, RecordingHandle, getAudioDuration } from "@/lib/audioRecorder";
 import { processSession } from "@/lib/sessionProcessor";
@@ -168,8 +168,8 @@ const HeroSection = () => {
   useEffect(() => () => clearTimer(), [clearTimer]);
 
   useEffect(() => {
-    const immersive = state === "sport" || state === "topic" || state === "recording";
-    setIsRecording(immersive);
+    const shouldHide = state === "recording";
+    setIsRecording(shouldHide);
     return () => setIsRecording(false);
   }, [state, setIsRecording]);
 
@@ -422,6 +422,44 @@ const HeroSection = () => {
         direction: "rtl",
       }}
     >
+      {(state === "topic" || state === "recording") && (
+        <button
+          type="button"
+          onClick={() => {
+            if (state === "recording") {
+              clearTimer();
+              if (recordingRef.current) {
+                recordingRef.current.stop().catch(() => {});
+                recordingRef.current = null;
+              }
+              setAnalyserNode(null);
+              setIsRecording(false);
+            }
+            setState("landing");
+          }}
+          style={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 1100,
+            background: "rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            borderRadius: 999,
+            width: 44,
+            height: 44,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+          }}
+          aria-label="رجوع"
+        >
+          <ChevronRight size={20} color="rgba(255,255,255,0.7)" />
+        </button>
+      )}
+
       {/* Edge flash overlay */}
       <div
         key={flashKey}
@@ -468,7 +506,7 @@ const HeroSection = () => {
           width: "100%",
           maxWidth: 400,
           justifyContent: isLanding ? "center" : "flex-start",
-          paddingTop: isLanding ? 0 : 24,
+          paddingTop: isLanding ? 0 : 80,
           paddingLeft: "var(--page-padding-mobile)",
           paddingRight: "var(--page-padding-mobile)",
           transition: "all 0.7s ease",
@@ -748,12 +786,11 @@ const HeroSection = () => {
           )}
         </div>
 
-        {showLoading && (
-          <AnalysisLoading
-            processingDone={processingDone}
-            onComplete={() => navigate("/results")}
-          />
-        )}
+        <AnalysisLoading
+          processingDone={processingDone}
+          visible={showLoading}
+          onComplete={() => navigate("/results")}
+        />
 
         {micErrorMessage && (
           <div

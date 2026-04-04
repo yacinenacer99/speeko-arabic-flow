@@ -88,6 +88,8 @@ const HeroSection = () => {
     }
   }, []);
 
+  const handleNavigateToResults = useCallback(() => navigate("/results"), [navigate]);
+
   useEffect(() => {
     if (!session?.user?.id) return;
     void (async () => {
@@ -230,7 +232,7 @@ const HeroSection = () => {
         : "#FF4444";
 
   useEffect(() => {
-    if (!isRecording) {
+    if (!isRecording || showLoading) {
       setWaveHeights(Array(7).fill(10));
       return;
     }
@@ -256,7 +258,7 @@ const HeroSection = () => {
     };
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, [isRecording, analyserNode]);
+  }, [isRecording, analyserNode, showLoading]);
 
   const beginRecordingFromLanding = () => {
     setMicErrorMessage(null);
@@ -831,7 +833,7 @@ const HeroSection = () => {
         <AnalysisLoading
           processingDone={processingDone}
           visible={showLoading}
-          onComplete={() => navigate("/results")}
+          onComplete={handleNavigateToResults}
         />
 
         {micErrorMessage && (

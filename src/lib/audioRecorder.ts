@@ -98,24 +98,37 @@ export function startRecording(stream: MediaStream): RecordingHandle {
  * @returns Promise with duration in seconds.
  */
 export function getAudioDuration(blob: Blob): Promise<number> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const url = URL.createObjectURL(blob);
     const audio = new Audio();
-    audio.src = url;
-    audio.addEventListener("loadedmetadata", () => {
-      if (isNaN(audio.duration)) {
-        URL.revokeObjectURL(url);
-        reject(new Error("Failed to read audio duration"));
-        return;
-      }
-      const duration = audio.duration;
+    let settled = false;
+
+    const finish = (duration: number) => {
+      if (settled) return;
+      settled = true;
       URL.revokeObjectURL(url);
       resolve(duration);
+    };
+
+    // Fallback: if loadedmetadata never fires (common with WebM), resolve with 0
+    // so safeDuration in the caller can apply the default.
+    const timeout = window.setTimeout(() => {
+      console.log("[MLASOON] getAudioDuration timed out — using fallback");
+      finish(0);
+    }, 3000);
+
+    audio.addEventListener("loadedmetadata", () => {
+      window.clearTimeout(timeout);
+      finish(isNaN(audio.duration) || !isFinite(audio.duration) ? 0 : audio.duration);
     });
+
     audio.addEventListener("error", () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Failed to load audio for duration"));
+      window.clearTimeout(timeout);
+      console.log("[MLASOON] getAudioDuration error event");
+      finish(0);
     });
+
+    audio.src = url;
   });
 }
 

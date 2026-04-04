@@ -384,18 +384,28 @@ const HeroSection = () => {
     }
     try {
       isProcessingRef.current = true;
+      console.log("[MLASOON] step 1: guard passed, isProcessingRef set");
+
       const handle = recordingRef.current;
+      console.log("[MLASOON] step 2: handle =", handle ? "exists" : "null");
       if (!handle) {
         throw new Error("EMPTY_RECORDING");
       }
+
+      console.log("[MLASOON] step 3: calling handle.stop()");
       const blob = await handle.stop();
+      console.log("[MLASOON] step 4: blob received, size =", blob.size);
+
       recordingRef.current = null;
       micStreamRef.current = null;
       setAnalyserNode(null);
       setShowLoading(true);
       setProcessingDone(false);
+      console.log("[MLASOON] step 5: showLoading = true");
+
       const challengeForbiddenForAuth =
         userStage >= 3 ? currentTopic.forbiddenWords : [];
+      console.log("[MLASOON] step 6: userId =", session?.user?.id ?? "guest", "stage =", userStage);
 
       const result: SessionResult =
         session?.user?.id
@@ -408,18 +418,24 @@ const HeroSection = () => {
             )
           : await processTrial(blob, currentTopic.question, currentTopic.forbiddenWords);
 
+      console.log("[MLASOON] step 7: result received, flowScore =", result.analysis.flowScore);
       setLatestSession(result);
       setProcessingDone(true);
+      console.log("[MLASOON] step 8: processingDone = true");
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
+      const stack = err instanceof Error ? err.stack : "no stack";
+      console.log("[MLASOON] ERROR MESSAGE:", message);
+      console.log("[MLASOON] ERROR STACK:", stack);
       if (message === "SESSION_SAVE_FAILED") {
         setErrorMessage("تعذّر حفظ الجلسة — تحقق من اتصالك وحاول مجدداً");
       } else if (message === "EMPTY_RECORDING") {
         setErrorMessage("لم نسمع شيء — حاول مرة ثانية");
+      } else if (message === "WHISPER_NOT_CONFIGURED") {
+        setErrorMessage("خدمة النص الصوتي غير مفعّلة — تحقق من إعدادات VITE_MOCK_WHISPER");
       } else {
         setErrorMessage("حدث خطأ أثناء تحليل الجلسة");
       }
-      console.log("[MLASOON] Session processing error:", message);
       setShowLoading(false);
     } finally {
       isProcessingRef.current = false;

@@ -308,6 +308,7 @@ const HeroSection = () => {
       const handle = startRecording(micStreamRef.current);
       recordingRef.current = handle;
       setAnalyserNode(handle.analyserNode);
+      isProcessingRef.current = false;
       setState("recording");
       console.log("[MLASOON] Recording started");
     } else if (state === "recording") {
@@ -381,8 +382,8 @@ const HeroSection = () => {
       console.log("[MLASOON] stopRecordingAndProcess already running — skipping");
       return;
     }
-    isProcessingRef.current = true;
     try {
+      isProcessingRef.current = true;
       const handle = recordingRef.current;
       if (!handle) {
         throw new Error("EMPTY_RECORDING");
@@ -422,6 +423,7 @@ const HeroSection = () => {
       setShowLoading(false);
     } finally {
       isProcessingRef.current = false;
+      console.log("[MLASOON] isProcessingRef reset");
     }
   };
 

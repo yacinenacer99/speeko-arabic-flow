@@ -529,7 +529,7 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
           }}
           style={{
             position: "fixed",
-            top: 24,
+            top: 80,
             right: 16,
             zIndex: 1100,
             background: "none",

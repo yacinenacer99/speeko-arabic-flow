@@ -186,6 +186,13 @@ const HeroSection = () => {
   }, [state, pickTopic]);
 
   useEffect(() => {
+    if (state === "landing") {
+      setCurrentTopic(pickTopic());
+      console.log("[MLASOON] Topic refreshed after user data loaded");
+    }
+  }, [userStage, userInterests]);
+
+  useEffect(() => {
     if (state !== "recording") return;
     const schedule = () => {
       const delay = 8000 + Math.random() * 4000;

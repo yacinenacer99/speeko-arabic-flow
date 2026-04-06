@@ -33,6 +33,22 @@ const AnalysisLoading = ({ processingDone, visible, onComplete }: AnalysisLoadin
   }, [processingDone]);
 
   useEffect(() => {
+    if (!visible) return;
+    completedRef.current = false;
+    progressRef.current = 0;
+    setProgress(0);
+    setAffirmation("نحلل أداءك...");
+    setAffirmationOpacity(1);
+    console.log("[MLASOON] AnalysisLoading reset for new session");
+  }, [visible]);
+
+  useEffect(() => {
+    if (!visible) {
+      hasStartedRef.current = false;
+    }
+  }, [visible]);
+
+  useEffect(() => {
     let rafId = 0;
     let finalizeTimeout: number | undefined;
     let animationStart: number | null = null;

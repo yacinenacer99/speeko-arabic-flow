@@ -6,6 +6,20 @@ import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabase";
 import BackButton from "@/components/BackButton";
 import { useAuth } from "@/contexts/AuthContext";
+import { STAGE_NODES } from "@/lib/stageContent";
+
+const LEVEL_LABELS: Record<string, string> = {
+  beginner: "مبتدئ",
+  intermediate: "متوسط",
+  advanced: "متقدم",
+};
+
+const GOAL_LABELS: Record<string, string> = {
+  interview: "المقابلات الوظيفية",
+  work: "العمل والاجتماعات",
+  personal: "تطوير شخصي",
+  content: "المحتوى والتسجيل",
+};
 
 type UserRow = {
   name: string | null;
@@ -92,8 +106,13 @@ const Profile = () => {
   const nextGoal = nextXpMilestone(xp);
   const xpBarPct = nextGoal > 0 ? Math.min(100, (xp / nextGoal) * 100) : 0;
   const stageLabel =
-    typeof progressData?.stage === "number" ? `مرحلة ${progressData.stage}` : progressData?.stage != null ? String(progressData.stage) : "";
-  const badgeSubtitle = userData?.level?.trim() || userData?.goal?.trim() || "";
+    typeof progressData?.stage === "number"
+      ? STAGE_NODES[(progressData.stage) - 1]?.name ?? `مرحلة ${progressData.stage}`
+      : progressData?.stage != null ? String(progressData.stage) : "";
+  const badgeSubtitle =
+    (userData?.level ? LEVEL_LABELS[userData.level] ?? userData.level : "") ||
+    (userData?.goal ? GOAL_LABELS[userData.goal] ?? userData.goal : "") ||
+    "";
 
   return (
     <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100dvh", direction: "rtl", paddingBottom: 80 }}>

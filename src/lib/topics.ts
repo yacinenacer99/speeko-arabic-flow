@@ -86,10 +86,10 @@ export const TOPICS: Topic[] = [
 const INTEREST_TO_CATEGORY: Record<string, string> = {
   daily: "الحياة اليومية",
   work: "العمل والمسار المهني",
-  tech: "التقنية والمستقبل",
+  tech: "التقنية",
   growth: "التطوير الشخصي",
-  culture: "الثقافة والمجتمع",
-  media: "المحتوى والإعلام",
+  culture: "المجتمع",
+  media: "الترفيه",
 };
 
 /**

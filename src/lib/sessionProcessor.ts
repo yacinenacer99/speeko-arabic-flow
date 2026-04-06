@@ -116,16 +116,15 @@ function meetsStageCriterion(stage: number, analysis: AnalysisResult): boolean {
 
 /**
  * Update progress row with streak and stage advancement.
+ * Computes XP internally after resolving the real streak count.
  * @param userId User identifier.
  * @param analysis Session analysis.
- * @param xp XP breakdown for this session.
- * @returns StageAdvancement and new streak count.
+ * @returns StageAdvancement, new streak count, stage, and XP breakdown.
  */
 async function updateProgress(
   userId: string,
   analysis: AnalysisResult,
-  xp: XPBreakdown,
-): Promise<{ stageAdvancement: StageAdvancement; streakCount: number; stage: number }> {
+): Promise<{ stageAdvancement: StageAdvancement; streakCount: number; stage: number; xp: XPBreakdown }> {
   const today = currentDate();
   let row: ProgressRow | null = null;
 
@@ -209,7 +208,6 @@ async function updateProgress(
     }
   }
 
-  currentXP += xp.total;
   last_session_date = today;
 
   const stageMeta = CONSTANTS.STAGE_CRITERIA.find((c) => c.stage === stage);
@@ -218,6 +216,9 @@ async function updateProgress(
     newStage: stage,
     newStageName: stageMeta?.name ?? null,
   };
+
+  const xp = await computeXP(userId, analysis, stage, streak);
+  currentXP += xp.total;
 
   try {
     const { error } = await supabase.from("progress").upsert(
@@ -250,7 +251,7 @@ async function updateProgress(
     console.log("[MLASOON:DB_ERROR] progress:", message);
   }
 
-  return { stageAdvancement, streakCount: streak, stage };
+  return { stageAdvancement, streakCount: streak, stage, xp };
 }
 
 /**
@@ -316,14 +317,10 @@ export async function processSession(
   );
   console.log("[MLASOON] Analysis complete, flow score:", analysis.flowScore);
 
-  const todayStage = userStage;
-  const tempXP = await computeXP(userId, analysis, todayStage, 0);
-  const { stageAdvancement, streakCount, stage } = await updateProgress(
+  const { stageAdvancement, streakCount, stage, xp } = await updateProgress(
     userId,
     analysis,
-    tempXP,
   );
-  const xp = await computeXP(userId, analysis, stage, streakCount);
 
   const nowIso = new Date().toISOString();
 

@@ -79,10 +79,16 @@ export function analyzeTranscript(
 
   const pace = safeDuration > 0 ? Math.round((wordCount / safeDuration) * 60) : 0;
 
+  const wordBoundaryMatch = (text: string, word: string): boolean => {
+    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(^|\\s|[،,:.!?])${escaped}($|\\s|[،,:.!?])`, "u");
+    return regex.test(text);
+  };
+
   let forbiddenUsed: string[] = [];
   if (userStage >= 3) {
     const normalizedForbidden = forbiddenWords.map((w) => normalize(w));
-    forbiddenUsed = normalizedForbidden.filter((w) => normalizedText.includes(w));
+    forbiddenUsed = normalizedForbidden.filter((w) => wordBoundaryMatch(normalizedText, w));
   }
 
   let longestPause = 0;

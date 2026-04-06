@@ -19,6 +19,7 @@ const Login = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [confirmationSent, setConfirmationSent] = useState(false);
 
   useEffect(() => {
     if (!authLoading && isLoggedIn) {
@@ -78,6 +79,10 @@ const Login = () => {
       setError(getAuthErrorMessageAr(signUpError, "signup"));
       return;
     }
+    if (!data.session) {
+      setConfirmationSent(true);
+      return;
+    }
     const uid = data.user?.id;
     if (uid) {
       const { error: upError } = await upsertUserProfile(supabase, defaultSignupProfile(uid));
@@ -130,6 +135,12 @@ const Login = () => {
           <p className="font-cairo font-light text-center" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", marginBottom: 24 }}>
             {subtitle}
           </p>
+
+          {confirmationSent && (
+            <p className="font-cairo font-light" style={{ fontSize: 13, color: "#5DBE8A", textAlign: "center", marginBottom: 12, fontFamily: "Cairo, sans-serif" }} role="status">
+              تم إرسال رابط التأكيد إلى بريدك — تحقق من صندوق الوارد لتفعيل حسابك
+            </p>
+          )}
 
           {error && (
             <p className="font-cairo font-light" style={errorStyle} role="alert">

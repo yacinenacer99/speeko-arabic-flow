@@ -315,13 +315,20 @@ const Results = () => {
     ? session.analysis.forbiddenUsed.length
     : 0;
 
+  const forbiddenLabel =
+    forbiddenUsedCount === 0
+      ? "لا كلمات ممنوعة"
+      : forbiddenUsedCount === 1
+      ? "كلمة ممنوعة واحدة"
+      : `${forbiddenUsedCount} كلمات ممنوعة`;
+
   const metrics = [
     { icon: Clock, label: "المدة", value: `${formatDuration(speakingDuration)} / 1:00`, color: getMetricColor("duration", speakingDuration) },
     { icon: MessageSquare, label: "الكلمات", value: `${wordCount} كلمة`, color: getMetricColor("wordCount", wordCount) },
     { icon: Gauge, label: "السرعة", value: `${pace} ك/د`, color: getMetricColor("pace", pace) },
     { icon: AlertCircle, label: "الحشو", value: `${fillerCount}`, color: getMetricColor("fillerCount", fillerCount) },
     { icon: PauseCircle, label: "أطول توقف", value: `${safeNum(longestPause).toFixed(1)} ث`, color: getMetricColor("longestPause", longestPause) },
-    { icon: XCircle, label: "الممنوعة", value: `${forbiddenUsedCount} كلمات`, color: getMetricColor("forbiddenUsed", forbiddenUsedCount) },
+    { icon: XCircle, label: "الممنوعة", value: forbiddenLabel, color: getMetricColor("forbiddenUsed", forbiddenUsedCount) },
   ] as const;
 
   return (
@@ -494,8 +501,10 @@ const Results = () => {
       {/* Fixed bottom bar */}
       <div
         style={{
-          position: "sticky",
+          position: "fixed",
           bottom: 0,
+          left: 0,
+          right: 0,
           background: "linear-gradient(to top, #F5F4F0 80%, transparent)",
           padding: "24px 16px",
           paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
@@ -529,7 +538,7 @@ const Results = () => {
             <>
               <button
                 type="button"
-                onClick={() => navigate("/home")}
+                onClick={() => navigate("/challenge")}
                 className="font-cairo"
                 style={{
                   width: "100%",

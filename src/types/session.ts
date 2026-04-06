@@ -9,6 +9,7 @@ export interface WhisperWord {
 export interface WhisperResult {
   transcript: string;
   words: WhisperWord[];
+  language?: string;
 }
 
 export interface AnalysisResult {

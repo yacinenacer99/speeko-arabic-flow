@@ -501,6 +501,8 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
         setErrorMessage("تعذّر حفظ الجلسة — تحقق من اتصالك وحاول مجدداً");
       } else if (message === "EMPTY_RECORDING") {
         setErrorMessage("لم نسمع شيء — حاول مرة ثانية");
+      } else if (message === "WHISPER_FAILED") {
+        setErrorMessage("تعذّر تحليل التسجيل — تحقق من اتصالك وحاول مجدداً");
       } else if (message === "WHISPER_NOT_CONFIGURED") {
         setErrorMessage("خدمة النص الصوتي غير مفعّلة — تحقق من إعدادات VITE_MOCK_WHISPER");
       } else {

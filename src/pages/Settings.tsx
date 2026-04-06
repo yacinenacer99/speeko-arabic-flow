@@ -10,7 +10,9 @@ import { supabase } from "@/lib/supabase";
 const Settings = () => {
   const navigate = useNavigate();
   const { session } = useAuth();
-  const [notifications, setNotifications] = useState(true);
+  const [notifications, setNotifications] = useState(() => {
+    return localStorage.getItem("mlasoon_notifications") !== "false";
+  });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [displayName, setDisplayName] = useState<string>("");
   const [displayEmail, setDisplayEmail] = useState<string>("");
@@ -53,6 +55,12 @@ const Settings = () => {
     setPasswordMessage("تم إرسال رابط تغيير كلمة المرور إلى بريدك");
   };
 
+  const handleNotificationsToggle = (value: boolean) => {
+    setNotifications(value);
+    localStorage.setItem("mlasoon_notifications", String(value));
+    console.log("[MLASOON] Notifications preference saved:", value);
+  };
+
   const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <div style={{ marginBottom: 24 }}>
       <p className="font-cairo font-bold" style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", marginBottom: 8, paddingRight: 4 }}>{title}</p>
@@ -60,7 +68,7 @@ const Settings = () => {
     </div>
   );
 
-  const Row = ({ label, right, onClick, danger }: { label: string; right?: React.ReactNode; onClick?: () => void; danger?: boolean }) => (
+  const Row = ({ label, right, onClick, danger, isLast }: { label: string; right?: React.ReactNode; onClick?: () => void; danger?: boolean; isLast?: boolean }) => (
     <button
       type="button"
       onClick={onClick}
@@ -71,7 +79,7 @@ const Settings = () => {
         color: danger ? "#FF6B6B" : "hsl(var(--foreground))",
         background: "none",
         border: "none",
-        borderBottom: "1px solid hsl(var(--border))",
+        borderBottom: isLast ? "none" : "1px solid hsl(var(--border))",
         cursor: onClick ? "pointer" : "default",
         minHeight: 44,
       }}
@@ -139,7 +147,7 @@ const Settings = () => {
         <Section title="الحساب">
           <Row label="الاسم" right={<span className="font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))" }}>{displayName || "—"}</span>} />
           <Row label="البريد الإلكتروني" right={<span className="font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))" }}>{displayEmail || "—"}</span>} />
-          <Row label="كلمة المرور" onClick={() => void handlePasswordReset()} />
+          <Row label="كلمة المرور" onClick={() => void handlePasswordReset()} isLast />
         </Section>
 
         <Section title="التفضيلات">
@@ -157,27 +165,26 @@ const Settings = () => {
               padding: "14px 16px",
               fontSize: 14,
               color: "hsl(var(--foreground))",
-              borderBottom: "1px solid hsl(var(--border))",
               minHeight: 44,
             }}
           >
             <span>الإشعارات</span>
-            <Toggle on={notifications} onToggle={() => setNotifications(!notifications)} />
+            <Toggle on={notifications} onToggle={() => handleNotificationsToggle(!notifications)} />
           </div>
         </Section>
 
         <Section title="الاشتراك">
-          <Row label="اشتراكي" right={<span className="font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))" }}>مجاني</span>} onClick={() => navigate("/subscribe")} />
+          <Row label="اشتراكي" right={<span className="font-cairo font-light" style={{ fontSize: 13, color: "hsl(var(--muted-foreground))" }}>مجاني</span>} onClick={() => navigate("/subscribe")} isLast />
         </Section>
 
         <Section title="الدعم">
           <Row label="تواصل معنا" onClick={() => navigate("/contact")} />
           <Row label="سياسة الخصوصية" onClick={() => navigate("/privacy")} />
-          <Row label="الشروط والأحكام" onClick={() => navigate("/privacy")} />
+          <Row label="الشروط والأحكام" onClick={() => navigate("/privacy")} isLast />
         </Section>
 
         <div className="glass-card-light" style={{ overflow: "hidden", marginBottom: 40, padding: 0 }}>
-          <Row label="حذف الحساب" danger onClick={() => setShowDeleteConfirm(true)} />
+          <Row label="حذف الحساب" danger onClick={() => setShowDeleteConfirm(true)} isLast />
         </div>
 
         {showDeleteConfirm && (

@@ -121,34 +121,6 @@ const AnalysisLoading = ({ processingDone, visible, onComplete }: AnalysisLoadin
   }, [onComplete]);
 
   useEffect(() => {
-    if (!hasStartedRef.current) return;
-    if (!processingDone) return;
-    if (completedRef.current) return;
-    if (progressRef.current < HOLD_AT_PCT) return;
-
-    const from = progressRef.current;
-    const start = performance.now();
-    let rafId = 0;
-    const step = (now: number) => {
-      const elapsed = now - start;
-      const ratio = Math.min(elapsed / FINISH_ANIMATION_MS, 1);
-      const value = from + (100 - from) * ratio;
-      progressRef.current = value;
-      setProgress(value);
-      if (ratio < 1) {
-        rafId = requestAnimationFrame(step);
-        return;
-      }
-      if (!completedRef.current) {
-        completedRef.current = true;
-        window.setTimeout(() => onComplete?.(), COMPLETE_DELAY_MS);
-      }
-    };
-    rafId = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(rafId);
-  }, [processingDone, onComplete]);
-
-  useEffect(() => {
     const nextAffirmation = getAffirmationForProgress(Math.floor(progress));
     if (nextAffirmation === affirmation) return;
     setAffirmationOpacity(0);

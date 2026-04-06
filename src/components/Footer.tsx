@@ -54,7 +54,6 @@ const Footer = () => {
           <div>
             <h5 style={headingStyle}>الصفحات</h5>
             <LinkButton label="الرئيسية" path="/" />
-            <LinkButton label="من نحن" path="/contact" />
             <LinkButton label="المدونة" path="/blog" />
             <LinkButton label="الاشتراك" path="/subscribe" />
           </div>

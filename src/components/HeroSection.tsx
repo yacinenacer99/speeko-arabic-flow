@@ -11,7 +11,7 @@ import { supabase } from "@/lib/supabase";
 import { transcribeAudio } from "@/lib/whisperService";
 import { analyzeTranscript } from "@/lib/speechAnalysis";
 import { CONSTANTS } from "@/lib/constants";
-import { selectTopic, type Topic } from "@/lib/topics";
+import { selectTopic, TOPICS, type Topic } from "@/lib/topics";
 import type { SessionResult, XPBreakdown, StageAdvancement } from "@/types/session";
 
 interface HeroSectionProps {
@@ -70,6 +70,7 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
   );
   const [showSummary, setShowSummary] = useState(false);
   const [summaryData, setSummaryData] = useState<{ duration: number; topic: Topic } | null>(null);
+  const [usedTopicIds, setUsedTopicIds] = useState<number[]>([]);
 
   /**
    * Pick a topic using stage/interests and optionally avoid one topic id.
@@ -78,14 +79,10 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
    */
   const pickTopic = useCallback(
     (excludeId?: number) => {
-      const selected = selectTopic(userStage, userInterests, []);
-      if (excludeId && selected.id === excludeId) {
-        const retry = selectTopic(userStage, userInterests, [excludeId]);
-        return retry;
-      }
-      return selected;
+      const excluded = excludeId ? [...usedTopicIds, excludeId] : usedTopicIds;
+      return selectTopic(userStage, userInterests, excluded);
     },
-    [userStage, userInterests],
+    [userStage, userInterests, usedTopicIds],
   );
 
   const clearTimer = useCallback(() => {
@@ -146,6 +143,29 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
       }
     })();
   }, [session]);
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    void (async () => {
+      try {
+        const { data } = await supabase
+          .from("sessions")
+          .select("topic")
+          .eq("user_id", session.user.id)
+          .order("created_at", { ascending: false })
+          .limit(20);
+        if (data) {
+          const usedQuestions = data.map((s: { topic: string | null }) => s.topic).filter(Boolean);
+          const matchedIds = TOPICS.filter(t => usedQuestions.includes(t.question)).map(t => t.id);
+          setUsedTopicIds(matchedIds);
+          console.log("[MLASOON] Loaded", matchedIds.length, "used topic IDs");
+        }
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.log("[MLASOON] Failed to load used topics:", message);
+      }
+    })();
+  }, [session?.user?.id]);
 
   useEffect(() => {
     if (state === "sport") {

@@ -29,6 +29,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(s);
         setIsLoading(false);
       }
+    }).catch((err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.log("[MLASOON] getSession error:", msg);
+      if (mounted) setIsLoading(false);
     });
 
     const {

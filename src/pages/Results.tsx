@@ -140,6 +140,7 @@ const Results = () => {
   const [loadError, setLoadError] = useState(false);
   const [openTooltip, setOpenTooltip] = useState<string | null>(null);
   const [userPlan, setUserPlan] = useState<"free" | "pro">("free");
+  const [shareCopied, setShareCopied] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -249,6 +250,26 @@ const Results = () => {
     const m = Math.floor(s / 60);
     const rem = s % 60;
     return `${m}:${rem.toString().padStart(2, "0")}`;
+  };
+
+  const handleShare = async () => {
+    const score = session ? safeNum(session.analysis.flowScore) : 0;
+    const text = `حصلت على ${score}/100 في ملسون — دوّر قدرتك على الكلام 🎙`;
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share({ text });
+        return;
+      } catch {
+        // user dismissed — fall through to clipboard
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      console.log("[MLASOON] clipboard write failed");
+    }
   };
 
   if (loadError) {
@@ -579,9 +600,14 @@ const Results = () => {
               >
                 تدرب مرة ثانية
               </button>
-              <span className="font-cairo font-light" style={{ fontSize: 13, color: "#9090A8", textAlign: "center" }}>
-                شارك نتيجتك
-              </span>
+              <button
+                type="button"
+                onClick={() => void handleShare()}
+                className="font-cairo font-light"
+                style={{ fontSize: 13, color: "#9090A8", background: "none", border: "none", cursor: "pointer", minHeight: 44 }}
+              >
+                {shareCopied ? "تم النسخ!" : "شارك نتيجتك"}
+              </button>
             </>
           )}
         </div>

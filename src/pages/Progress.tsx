@@ -47,6 +47,7 @@ const Progress = () => {
   const [progressData, setProgressData] = useState<ProgressRow | null>(null);
   const [recentSessions, setRecentSessions] = useState<RecentSessionRow[]>([]);
   const [totalSessionCount, setTotalSessionCount] = useState<number>(0);
+  const [userPlan, setUserPlan] = useState<"free" | "pro">("free");
 
   useEffect(() => {
     if (!session?.user?.id) {
@@ -59,7 +60,7 @@ const Progress = () => {
     void (async () => {
       setLoading(true);
       try {
-        const [{ data: progress }, { data: sessions }, { count }] = await Promise.all([
+        const [{ data: progress }, { data: sessions }, { count }, { data: sub }] = await Promise.all([
           supabase
             .from("progress")
             .select("stage, xp, streak, last_session_date")
@@ -75,12 +76,18 @@ const Progress = () => {
             .from("sessions")
             .select("id", { count: "exact", head: true })
             .eq("user_id", session.user.id),
+          supabase
+            .from("subscriptions")
+            .select("plan")
+            .eq("user_id", session.user.id)
+            .maybeSingle(),
         ]);
 
         if (cancelled) return;
         if (progress) setProgressData(progress as ProgressRow);
         if (sessions) setRecentSessions(sessions as RecentSessionRow[]);
         setTotalSessionCount(count ?? 0);
+        setUserPlan((sub as { plan: string } | null)?.plan === "pro" ? "pro" : "free");
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
         console.log("[MLASOON] progress load error:", message);
@@ -232,7 +239,7 @@ const Progress = () => {
               نقاط ضعفك
             </h2>
             <div className="relative" style={{ borderRadius: 20, overflow: "hidden" }}>
-              <div className="glass-card-light" style={{ filter: "blur(5px)", padding: 16 }}>
+              <div className="glass-card-light" style={{ filter: userPlan === "free" ? "blur(5px)" : "none", padding: 16 }}>
                 <p className="font-cairo font-light" style={{ fontSize: 14, color: "hsl(var(--muted-foreground))" }}>
                   كلمات الحشو الأكثر استخداماً
                 </p>
@@ -243,26 +250,28 @@ const Progress = () => {
                   الكلمات الممنوعة المتكررة
                 </p>
               </div>
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                <Lock size={20} color="hsl(var(--primary-soft))" />
-                <button
-                  type="button"
-                  onClick={() => setProModal(true)}
-                  className="font-cairo font-bold text-white"
-                  style={{
-                    background: "hsl(var(--primary))",
-                    border: "none",
-                    borderRadius: 999,
-                    padding: "10px 24px",
-                    fontSize: 13,
-                    cursor: "pointer",
-                    boxShadow: "0 0 20px rgba(108,99,255,0.4)",
-                    minHeight: 44,
-                  }}
-                >
-                  افتح التحليل الكامل
-                </button>
-              </div>
+              {userPlan === "free" && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                  <Lock size={20} color="hsl(var(--primary-soft))" />
+                  <button
+                    type="button"
+                    onClick={() => setProModal(true)}
+                    className="font-cairo font-bold text-white"
+                    style={{
+                      background: "hsl(var(--primary))",
+                      border: "none",
+                      borderRadius: 999,
+                      padding: "10px 24px",
+                      fontSize: 13,
+                      cursor: "pointer",
+                      boxShadow: "0 0 20px rgba(108,99,255,0.4)",
+                      minHeight: 44,
+                    }}
+                  >
+                    افتح التحليل الكامل
+                  </button>
+                </div>
+              )}
             </div>
           </>
         )}

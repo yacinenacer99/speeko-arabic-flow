@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { Clock } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BackButton from "@/components/BackButton";
@@ -39,20 +39,24 @@ const Blog = () => {
 
         <div className="flex flex-col gap-4">
           {articles.map((a, i) => (
-            <div key={i} className="flex flex-col cursor-pointer glass-card-light" style={{ padding: 20 }}>
-              <span
-                className="font-cairo font-bold self-start"
-                style={{
-                  fontSize: 11,
-                  color: "white",
-                  background: "hsl(var(--primary))",
-                  borderRadius: 999,
-                  padding: "3px 10px",
-                  marginBottom: 12,
-                }}
-              >
-                {a.category}
-              </span>
+            <div key={i} className="flex flex-col glass-card-light" style={{ padding: 20 }}>
+              <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
+                <span
+                  className="font-cairo font-bold"
+                  style={{
+                    fontSize: 11,
+                    color: "white",
+                    background: "hsl(var(--primary))",
+                    borderRadius: 999,
+                    padding: "3px 10px",
+                  }}
+                >
+                  {a.category}
+                </span>
+                <span className="font-cairo font-bold" style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", background: "hsl(var(--muted))", borderRadius: 999, padding: "3px 10px" }}>
+                  قريباً
+                </span>
+              </div>
               <p className="font-cairo font-bold" style={{ fontSize: 18, color: "hsl(var(--foreground))", marginBottom: 8 }}>{a.title}</p>
               <p
                 className="font-cairo font-light"
@@ -68,11 +72,11 @@ const Blog = () => {
               >
                 {a.excerpt}
               </p>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <Clock size={12} color="hsl(var(--muted-foreground))" />
                 <span className="font-cairo font-light" style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>
                   {a.date} · {a.readTime}
                 </span>
-                <ArrowLeft size={16} color="hsl(var(--muted-foreground))" />
               </div>
             </div>
           ))}

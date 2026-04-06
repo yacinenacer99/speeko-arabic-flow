@@ -14,6 +14,10 @@ import { CONSTANTS } from "@/lib/constants";
 import { selectTopic, type Topic } from "@/lib/topics";
 import type { SessionResult, XPBreakdown, StageAdvancement } from "@/types/session";
 
+interface HeroSectionProps {
+  autoStart?: boolean;
+}
+
 type State = "landing" | "sport" | "topic" | "recording";
 
 const formatTime = (t: number) =>
@@ -33,7 +37,7 @@ const WAVE_BARS = [
 
 const FILLER_PREVIEW = ["يعني", "أأأأء", "حرفياً", "بصراحة"] as const;
 
-const HeroSection = () => {
+const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
   const navigate = useNavigate();
   const { session } = useAuth();
   const { setIsRecording } = useRecordingContext();
@@ -52,6 +56,7 @@ const HeroSection = () => {
   const recordingRef = useRef<RecordingHandle | null>(null);
   const micStreamRef = useRef<MediaStream | null>(null);
   const isProcessingRef = useRef(false);
+  const pendingBlobRef = useRef<Blob | null>(null);
   const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null);
   const [waveHeights, setWaveHeights] = useState<number[]>(() => Array(7).fill(10));
   const [showLoading, setShowLoading] = useState(false);
@@ -63,6 +68,8 @@ const HeroSection = () => {
   const [currentTopic, setCurrentTopic] = useState<Topic>(() =>
     selectTopic(1, [], []),
   );
+  const [showSummary, setShowSummary] = useState(false);
+  const [summaryData, setSummaryData] = useState<{ duration: number; topic: Topic } | null>(null);
 
   /**
    * Pick a topic using stage/interests and optionally avoid one topic id.
@@ -293,6 +300,16 @@ const HeroSection = () => {
       });
   };
 
+  useEffect(() => {
+    if (!autoStart) return;
+    const id = setTimeout(() => {
+      beginRecordingFromLanding();
+    }, 300);
+    return () => clearTimeout(id);
+    // autoStart is stable; beginRecordingFromLanding only uses stable refs/setters
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStart]);
+
   const swapTopic = () => {
     if (swapCount >= 2) return;
     setTopicFadeIn(false);
@@ -391,51 +408,76 @@ const HeroSection = () => {
       console.log("[MLASOON] stopRecordingAndProcess already running — skipping");
       return;
     }
+    isProcessingRef.current = true;
     try {
-      isProcessingRef.current = true;
-      console.log("[MLASOON] step 1: guard passed, isProcessingRef set");
-
       const handle = recordingRef.current;
-      console.log("[MLASOON] step 2: handle =", handle ? "exists" : "null");
-      if (!handle) {
-        throw new Error("EMPTY_RECORDING");
-      }
+      if (!handle) throw new Error("EMPTY_RECORDING");
 
-      console.log("[MLASOON] step 3: calling handle.stop()");
+      console.log("[MLASOON] step 1: calling handle.stop()");
       const blob = await handle.stop();
-      console.log("[MLASOON] step 4: blob received, size =", blob.size);
+      console.log("[MLASOON] step 2: blob received, size =", blob.size);
 
       recordingRef.current = null;
       micStreamRef.current = null;
       setAnalyserNode(null);
-      setShowLoading(true);
-      setProcessingDone(false);
-      console.log("[MLASOON] step 5: showLoading = true");
 
-      const challengeForbiddenForAuth =
-        userStage >= 3 ? currentTopic.forbiddenWords : [];
-      console.log("[MLASOON] step 6: userId =", session?.user?.id ?? "guest", "stage =", userStage);
+      const rawDuration = await getAudioDuration(blob);
+      const duration = rawDuration > 0 ? rawDuration : 60;
 
-      const result: SessionResult =
-        session?.user?.id
-          ? await processSession(
-              blob,
-              currentTopic.question,
-              challengeForbiddenForAuth,
-              session.user.id,
-              userStage,
-            )
-          : await processTrial(blob, currentTopic.question, currentTopic.forbiddenWords);
-
-      console.log("[MLASOON] step 7: result received, flowScore =", result.analysis.flowScore);
-      setLatestSession(result);
-      setProcessingDone(true);
-      console.log("[MLASOON] step 8: processingDone = true");
+      pendingBlobRef.current = blob;
+      setSummaryData({ duration, topic: currentTopic });
+      setShowSummary(true);
+      setState("landing");
+      console.log("[MLASOON] step 3: summary card shown, duration =", duration);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       const stack = err instanceof Error ? err.stack : "no stack";
       console.log("[MLASOON] ERROR MESSAGE:", message);
       console.log("[MLASOON] ERROR STACK:", stack);
+      if (message === "EMPTY_RECORDING") {
+        setErrorMessage("لم نسمع شيء — حاول مرة ثانية");
+      } else {
+        setErrorMessage("حدث خطأ أثناء معالجة التسجيل");
+      }
+      setState("landing");
+    } finally {
+      isProcessingRef.current = false;
+      console.log("[MLASOON] isProcessingRef reset");
+    }
+  };
+
+  const handleShowFullAnalysis = async () => {
+    const blob = pendingBlobRef.current;
+    if (!blob || !summaryData) return;
+
+    const topic = summaryData.topic;
+    pendingBlobRef.current = null;
+    setShowSummary(false);
+    setShowLoading(true);
+    setProcessingDone(false);
+    isProcessingRef.current = true;
+
+    try {
+      const challengeForbidden = userStage >= 3 ? topic.forbiddenWords : [];
+      console.log("[MLASOON] processing started, topic:", topic.question);
+
+      const result: SessionResult =
+        session?.user?.id
+          ? await processSession(
+              blob,
+              topic.question,
+              challengeForbidden,
+              session.user.id,
+              userStage,
+            )
+          : await processTrial(blob, topic.question, topic.forbiddenWords);
+
+      console.log("[MLASOON] processing complete, flowScore:", result.analysis.flowScore);
+      setLatestSession(result);
+      setProcessingDone(true);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.log("[MLASOON] processing error:", message);
       if (message === "SESSION_SAVE_FAILED") {
         setErrorMessage("تعذّر حفظ الجلسة — تحقق من اتصالك وحاول مجدداً");
       } else if (message === "EMPTY_RECORDING") {
@@ -836,6 +878,98 @@ const HeroSection = () => {
             </button>
           )}
         </div>
+
+        {showSummary && summaryData && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 9997,
+              backgroundColor: "#F5F4F0",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              direction: "rtl",
+              padding: "0 24px",
+            }}
+          >
+            <div
+              style={{
+                width: "100%",
+                maxWidth: 360,
+                background: "#FFFFFF",
+                borderRadius: 20,
+                padding: 28,
+                boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
+              }}
+            >
+              <p
+                className="font-cairo font-bold"
+                style={{ fontSize: 20, color: "#1A1A2E", marginBottom: 4, textAlign: "center" }}
+              >
+                انتهت الجلسة
+              </p>
+              <p
+                className="font-cairo font-light"
+                style={{ fontSize: 13, color: "#9090A8", marginBottom: 24, textAlign: "center" }}
+              >
+                {summaryData.topic.question}
+              </p>
+
+              <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 28 }}>
+                <div style={{ textAlign: "center" }}>
+                  <p className="font-cairo font-bold" style={{ fontSize: 24, color: "#6C63FF" }}>
+                    {Math.round(summaryData.duration)}
+                  </p>
+                  <p className="font-cairo font-light" style={{ fontSize: 11, color: "#9090A8" }}>ثانية</p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => void handleShowFullAnalysis()}
+                className="font-cairo font-bold w-full"
+                style={{
+                  background: "#6C63FF",
+                  color: "#FFFFFF",
+                  border: "none",
+                  borderRadius: 999,
+                  padding: "16px 0",
+                  fontSize: 15,
+                  cursor: "pointer",
+                  minHeight: 52,
+                  width: "100%",
+                }}
+              >
+                عرض التحليل الكامل
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSummary(false);
+                  pendingBlobRef.current = null;
+                  setState("landing");
+                  console.log("[MLASOON] User dismissed summary");
+                }}
+                className="font-cairo font-light w-full"
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#9090A8",
+                  fontSize: 13,
+                  cursor: "pointer",
+                  marginTop: 12,
+                  minHeight: 44,
+                  width: "100%",
+                }}
+              >
+                تجاهل
+              </button>
+            </div>
+          </div>
+        )}
 
         <AnalysisLoading
           processingDone={processingDone}

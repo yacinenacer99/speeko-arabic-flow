@@ -44,7 +44,7 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
   const { setLatestSession } = useSessionContext();
   const [userStage, setUserStage] = useState<number>(1);
   const [userInterests, setUserInterests] = useState<string[]>([]);
-  const [state, setState] = useState<State>("landing");
+  const [state, setState] = useState<State>(autoStart ? "sport" : "landing");
   const [timeLeft, setTimeLeft] = useState(60);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -302,10 +302,7 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
 
   useEffect(() => {
     if (!autoStart) return;
-    const id = setTimeout(() => {
-      beginRecordingFromLanding();
-    }, 300);
-    return () => clearTimeout(id);
+    beginRecordingFromLanding();
     // autoStart is stable; beginRecordingFromLanding only uses stable refs/setters
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoStart]);

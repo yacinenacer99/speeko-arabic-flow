@@ -1,11 +1,20 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BackButton from "@/components/BackButton";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
+
+// TODO: Replace this entire flow with real Stripe payment before launch
+// This is a placeholder that grants pro access without payment
 
 const Subscribe = () => {
   const navigate = useNavigate();
+  const { session } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const Feature = ({ text, included }: { text: string; included: boolean }) => (
     <div className="flex items-center gap-2" style={{ marginBottom: 8 }}>
@@ -22,6 +31,42 @@ const Subscribe = () => {
       </span>
     </div>
   );
+
+  const handleSubscribe = async () => {
+    if (!session?.user?.id) {
+      navigate("/login");
+      return;
+    }
+    setLoading(true);
+    setErrorMessage(null);
+    try {
+      const now = new Date();
+      const expiresAt = new Date();
+      expiresAt.setMonth(expiresAt.getMonth() + 1);
+
+      const { error } = await supabase
+        .from("subscriptions")
+        .upsert(
+          {
+            user_id: session.user.id,
+            plan: "pro",
+            started_at: now.toISOString(),
+            expires_at: expiresAt.toISOString(),
+          },
+          { onConflict: "user_id" },
+        );
+
+      if (error) throw error;
+      console.log("[MLASOON] Pro subscription written (placeholder — no real payment)");
+      navigate("/success");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.log("[MLASOON] Subscribe error:", msg);
+      setErrorMessage("تعذّر تفعيل الاشتراك — حاول مجدداً");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="relative" style={{ background: "hsl(var(--background))", minHeight: "100dvh", direction: "rtl", paddingBottom: 40 }}>
@@ -70,7 +115,9 @@ const Subscribe = () => {
             <Feature text="تاريخ الجلسات كامل" included />
 
             <button
-              onClick={() => navigate("/success")}
+              type="button"
+              onClick={() => void handleSubscribe()}
+              disabled={loading}
               className="font-cairo font-bold text-white w-full"
               style={{
                 background: "hsl(var(--primary))",
@@ -78,13 +125,24 @@ const Subscribe = () => {
                 borderRadius: 999,
                 padding: "16px 0",
                 fontSize: 15,
-                cursor: "pointer",
+                cursor: loading ? "not-allowed" : "pointer",
                 marginTop: 16,
                 height: 50,
+                opacity: loading ? 0.75 : 1,
               }}
             >
-              اشترك الآن
+              {loading ? "جاري التفعيل..." : "اشترك الآن"}
             </button>
+
+            {errorMessage && (
+              <p className="font-cairo font-light" style={{ fontSize: 13, color: "#FF6B6B", textAlign: "center", marginTop: 10 }} role="alert">
+                {errorMessage}
+              </p>
+            )}
+
+            <p className="font-cairo font-light" style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", textAlign: "center", marginTop: 12 }}>
+              سيتم تفعيل الدفع الفعلي قريباً
+            </p>
           </div>
         </div>
       </div>

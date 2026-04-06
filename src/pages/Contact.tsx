@@ -4,6 +4,19 @@ import { Check } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BackButton from "@/components/BackButton";
+import { supabase } from "@/lib/supabase";
+
+// TODO: create contact_messages table in Supabase with fields: id, name, email, message, created_at
+// Run this SQL in Supabase dashboard:
+// create table contact_messages (
+//   id uuid default gen_random_uuid() primary key,
+//   name text,
+//   email text not null,
+//   message text not null,
+//   created_at timestamptz default now()
+// );
+// alter table contact_messages enable row level security;
+// create policy "Anyone can insert" on contact_messages for insert with check (true);
 
 const Contact = () => {
   const [searchParams] = useSearchParams();
@@ -11,6 +24,8 @@ const Contact = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const subject = searchParams.get("subject");
@@ -36,9 +51,29 @@ const Contact = () => {
     height: 48,
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSent(true);
+    if (!message.trim() || !email.trim()) return;
+    setLoading(true);
+    setErrorMessage(null);
+    try {
+      const { error } = await supabase
+        .from("contact_messages")
+        .insert({
+          name: name.trim() || null,
+          email: email.trim(),
+          message: message.trim(),
+        });
+      if (error) throw error;
+      setSent(true);
+      console.log("[MLASOON] Contact message saved");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.log("[MLASOON] Contact save error:", msg);
+      setErrorMessage("تعذّر إرسال رسالتك — تحقق من اتصالك وحاول مجدداً");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -60,20 +95,28 @@ const Contact = () => {
               >
                 <Check size={24} color="hsl(var(--success))" />
               </div>
-              <p className="font-cairo font-bold" style={{ fontSize: 18, color: "hsl(var(--foreground))" }}>تم الإرسال، شكراً!</p>
+              <p className="font-cairo font-bold" style={{ fontSize: 18, color: "hsl(var(--foreground))" }}>تم إرسال رسالتك — سنرد عليك قريباً</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-              <input style={inputStyle} placeholder="الاسم" value={name} onChange={(e) => setName(e.target.value)} />
-              <input style={inputStyle} placeholder="البريد الإلكتروني" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-3">
+              <input style={inputStyle} placeholder="الاسم" value={name} onChange={(e) => setName(e.target.value)} disabled={loading} />
+              <input style={inputStyle} placeholder="البريد الإلكتروني" type="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} required />
               <textarea
                 style={{ ...inputStyle, minHeight: 120, resize: "none", height: "auto" }}
                 placeholder="رسالتك"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
+                disabled={loading}
+                required
               />
+              {errorMessage && (
+                <p className="font-cairo font-light" style={{ fontSize: 13, color: "#FF6B6B", textAlign: "center" }} role="alert">
+                  {errorMessage}
+                </p>
+              )}
               <button
                 type="submit"
+                disabled={loading}
                 className="font-cairo font-bold text-white w-full"
                 style={{
                   background: "hsl(var(--primary))",
@@ -81,12 +124,13 @@ const Contact = () => {
                   borderRadius: 999,
                   padding: "14px 0",
                   fontSize: 15,
-                  cursor: "pointer",
+                  cursor: loading ? "not-allowed" : "pointer",
                   marginTop: 8,
                   height: 50,
+                  opacity: loading ? 0.75 : 1,
                 }}
               >
-                أرسل
+                {loading ? "جاري الإرسال..." : "أرسل"}
               </button>
             </form>
           )}

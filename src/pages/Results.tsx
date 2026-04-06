@@ -178,6 +178,30 @@ const Results = () => {
   }, [sessionIdFromUrl, latestSession, loadSessionById, navigate]);
 
   useEffect(() => {
+    if (!session || sessionIdFromUrl) return;
+    let timer: number | undefined;
+    if (session.stageAdvancement?.advanced === true) {
+      timer = window.setTimeout(() => {
+        navigate("/level-up", {
+          state: {
+            newStage: session.stageAdvancement.newStage,
+            newStageName: session.stageAdvancement.newStageName,
+          },
+        });
+      }, 2000);
+    } else if (session.streakLost === true) {
+      timer = window.setTimeout(() => {
+        navigate("/streak-lost", {
+          state: { prevStreak: session.previousStreak },
+        });
+      }, 2000);
+    }
+    return () => {
+      if (timer) window.clearTimeout(timer);
+    };
+  }, [session, sessionIdFromUrl, navigate]);
+
+  useEffect(() => {
     if (!authSession?.user?.id) {
       setUserPlan("free");
       return;

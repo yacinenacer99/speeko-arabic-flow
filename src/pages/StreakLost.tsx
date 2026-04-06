@@ -1,13 +1,20 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Flame, X, Loader2 } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 
+type StreakLostState = {
+  prevStreak?: number;
+};
+
 const StreakLost = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { session } = useAuth();
+  const state = location.state as StreakLostState | null;
+  const prevStreak = state?.prevStreak ?? 0;
   const [busy, setBusy] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -92,7 +99,9 @@ const StreakLost = () => {
       </div>
 
       <p className="font-cairo font-bold text-white" style={{ fontSize: 24 }}>انقطع سترك</p>
-      <p className="font-cairo font-light" style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", marginTop: 8 }}>كان عندك 12 يوم</p>
+      <p className="font-cairo font-light" style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", marginTop: 8 }}>
+        {prevStreak > 0 ? `كان عندك ${prevStreak} يوم` : "انقطع تسلسلك"}
+      </p>
 
       <div
         className="flex flex-col items-center w-full glass-card-dark"

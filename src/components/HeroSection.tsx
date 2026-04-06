@@ -396,6 +396,8 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
       xp: zeroXP,
       stageAdvancement: zeroAdv,
       streakCount: 0,
+      streakLost: false,
+      previousStreak: 0,
       timestamp: new Date().toISOString(),
     };
   };

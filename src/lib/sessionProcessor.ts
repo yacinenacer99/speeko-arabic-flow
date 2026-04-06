@@ -124,7 +124,7 @@ function meetsStageCriterion(stage: number, analysis: AnalysisResult): boolean {
 async function updateProgress(
   userId: string,
   analysis: AnalysisResult,
-): Promise<{ stageAdvancement: StageAdvancement; streakCount: number; stage: number; xp: XPBreakdown }> {
+): Promise<{ stageAdvancement: StageAdvancement; streakCount: number; stage: number; xp: XPBreakdown; streakLost: boolean; previousStreak: number }> {
   const today = currentDate();
   let row: ProgressRow | null = null;
 
@@ -162,6 +162,9 @@ async function updateProgress(
   let { stage, xp: currentXP, streak, stage_progress_count, stage_progress_required, last_session_date, freeze_tokens } =
     row;
 
+  const prevStreak = streak;
+  let streakWasLost = false;
+
   if (last_session_date === today) {
     // keep streak as is
   } else if (last_session_date) {
@@ -174,6 +177,7 @@ async function updateProgress(
       if (freeze_tokens > 0) {
         freeze_tokens -= 1;
       } else {
+        if (prevStreak >= 2) streakWasLost = true;
         streak = 1;
       }
     }
@@ -251,7 +255,7 @@ async function updateProgress(
     console.log("[MLASOON:DB_ERROR] progress:", message);
   }
 
-  return { stageAdvancement, streakCount: streak, stage, xp };
+  return { stageAdvancement, streakCount: streak, stage, xp, streakLost: streakWasLost, previousStreak: prevStreak };
 }
 
 /**
@@ -317,7 +321,7 @@ export async function processSession(
   );
   console.log("[MLASOON] Analysis complete, flow score:", analysis.flowScore);
 
-  const { stageAdvancement, streakCount, stage, xp } = await updateProgress(
+  const { stageAdvancement, streakCount, stage, xp, streakLost, previousStreak } = await updateProgress(
     userId,
     analysis,
   );
@@ -361,6 +365,8 @@ export async function processSession(
     xp,
     stageAdvancement,
     streakCount,
+    streakLost,
+    previousStreak,
     timestamp: nowIso,
   };
 }

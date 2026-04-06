@@ -339,6 +339,32 @@ const Home = () => {
         )}
       </div>
 
+      {showContent && (
+        <div className="flex justify-center" style={{ padding: "0 var(--page-padding-mobile)", paddingBottom: 48 }}>
+          <button
+            type="button"
+            onClick={() => navigate("/weekly-report")}
+            className="font-cairo font-light"
+            style={{
+              maxWidth: "calc(100% - 32px)",
+              width: 340,
+              background: "rgba(255,255,255,0.5)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              border: "1px solid rgba(255,255,255,0.6)",
+              borderRadius: 20,
+              padding: "14px 20px",
+              fontSize: 14,
+              color: "#6C63FF",
+              cursor: "pointer",
+              textAlign: "right",
+            }}
+          >
+            التقرير الأسبوعي
+          </button>
+        </div>
+      )}
+
         </>
       )}
 

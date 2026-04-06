@@ -1,9 +1,34 @@
-import { useNavigate } from "react-router-dom";
+import { useMemo } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Star } from "lucide-react";
 import BackButton from "@/components/BackButton";
 
+type LevelUpState = {
+  newStage?: number;
+  newStageName?: string;
+};
+
+const CONFETTI_COLORS = ["#6C63FF", "#A89CFF", "#FF9DC4", "#5DBE8A", "#F59E0B"];
+
 const LevelUp = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as LevelUpState | null;
+  const newStage = state?.newStage ?? 2;
+  const newStageName = state?.newStageName ?? "متحدث";
+
+  const confettiItems = useMemo(
+    () =>
+      Array.from({ length: 20 }, (_, i) => ({
+        width: 6 + Math.random() * 6,
+        height: 6 + Math.random() * 6,
+        color: CONFETTI_COLORS[i % 5],
+        left: Math.random() * 100,
+        duration: 2 + Math.random() * 3,
+        delay: Math.random() * 2,
+      })),
+    [],
+  );
 
   return (
     <div
@@ -11,19 +36,19 @@ const LevelUp = () => {
       style={{ minHeight: "100dvh", overflow: "hidden", background: "#0F0F14", direction: "rtl", padding: "0 var(--page-padding-mobile)" }}
     >
       <BackButton variant="dark" />
-      {/* CSS confetti */}
+
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 20 }).map((_, i) => (
+        {confettiItems.map((item, i) => (
           <div
             key={i}
             className="absolute rounded-full"
             style={{
-              width: 6 + Math.random() * 6,
-              height: 6 + Math.random() * 6,
-              background: ["#6C63FF", "#A89CFF", "#FF9DC4", "#5DBE8A", "#F59E0B"][i % 5],
-              left: `${Math.random() * 100}%`,
+              width: item.width,
+              height: item.height,
+              background: item.color,
+              left: `${item.left}%`,
               top: -10,
-              animation: `confettiFall ${2 + Math.random() * 3}s linear ${Math.random() * 2}s infinite`,
+              animation: `confettiFall ${item.duration}s linear ${item.delay}s infinite`,
             }}
           />
         ))}
@@ -46,8 +71,8 @@ const LevelUp = () => {
         <Star size={40} color="hsl(var(--primary-soft))" />
       </div>
       <p className="font-cairo font-bold text-white" style={{ fontSize: 28, marginTop: 16 }}>ترقيت!</p>
-      <p className="font-cairo font-bold" style={{ fontSize: 40, color: "hsl(var(--primary-soft))", marginTop: 8 }}>متحدث</p>
-      <p className="font-cairo font-light" style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", marginTop: 8 }}>وصلت للمرحلة الثانية</p>
+      <p className="font-cairo font-bold" style={{ fontSize: 40, color: "hsl(var(--primary-soft))", marginTop: 8 }}>{newStageName}</p>
+      <p className="font-cairo font-light" style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", marginTop: 8 }}>وصلت للمرحلة {newStage}</p>
 
       <div
         className="flex flex-col items-center glass-card-dark"
@@ -62,6 +87,7 @@ const LevelUp = () => {
       </p>
 
       <button
+        type="button"
         onClick={() => navigate("/home")}
         className="font-cairo font-bold text-white w-full"
         style={{

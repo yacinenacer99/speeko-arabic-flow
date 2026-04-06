@@ -44,6 +44,8 @@ export interface SessionResult {
   xp: XPBreakdown;
   stageAdvancement: StageAdvancement;
   streakCount: number;
+  streakLost: boolean;
+  previousStreak: number;
   timestamp: string;
 }
 

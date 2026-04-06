@@ -58,6 +58,8 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         xp,
         stageAdvancement,
         streakCount: data.streak_count ?? 0,
+        streakLost: false,
+        previousStreak: 0,
         timestamp: data.created_at ?? new Date().toISOString(),
       };
     } catch (err: unknown) {

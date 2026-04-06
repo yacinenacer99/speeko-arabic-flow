@@ -10,10 +10,6 @@ const BackButton = ({ variant = "light" }: BackButtonProps) => {
   const iconColor = variant === "dark" ? "#FFFFFF" : "#1A1A2E";
 
   const onBack = () => {
-    if (window.history.length <= 1) {
-      navigate("/home");
-      return;
-    }
     navigate(-1);
   };
 

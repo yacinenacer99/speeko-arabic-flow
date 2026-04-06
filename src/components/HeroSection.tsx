@@ -521,28 +521,26 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
             }
             setAnalyserNode(null);
             setIsRecording(false);
-            isProcessingRef.current = false;
             setShowLoading(false);
             setProcessingDone(false);
-            setState("landing");
-            console.log("[MLASOON] Back pressed — recorder stopped, stream released");
+            isProcessingRef.current = false;
+            navigate(-1);
+            console.log("[MLASOON] Back pressed — navigating to previous page");
           }}
           style={{
             position: "fixed",
-            top: 20,
-            right: 20,
+            top: 24,
+            right: 16,
             zIndex: 1100,
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.12)",
-            borderRadius: 999,
-            width: 44,
-            height: 44,
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: 8,
+            minWidth: 44,
+            minHeight: 44,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            cursor: "pointer",
-            backdropFilter: "blur(8px)",
-            WebkitBackdropFilter: "blur(8px)",
           }}
           aria-label="رجوع"
         >

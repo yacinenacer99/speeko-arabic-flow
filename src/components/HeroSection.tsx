@@ -8,11 +8,8 @@ import { useSessionContext } from "@/contexts/SessionContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRecordingContext } from "@/contexts/RecordingContext";
 import { supabase } from "@/lib/supabase";
-import { transcribeAudio } from "@/lib/whisperService";
-import { analyzeTranscript } from "@/lib/speechAnalysis";
-import { CONSTANTS } from "@/lib/constants";
 import { selectTopic, TOPICS, type Topic } from "@/lib/topics";
-import type { SessionResult, XPBreakdown, StageAdvancement } from "@/types/session";
+import type { SessionResult } from "@/types/session";
 
 interface HeroSectionProps {
   autoStart?: boolean;
@@ -360,68 +357,6 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
     }
   };
 
-  /**
-   * Run a trial session pipeline without DB writes (no XP/progress updates).
-   * @param audioBlob Recorded audio.
-   * @param topic Topic label.
-   * @param forbiddenWords Forbidden words for this session.
-   * @returns SessionResult with sessionId="trial" and analysis-only fields.
-   */
-  const processTrial = async (
-    audioBlob: Blob,
-    topic: string,
-    forbiddenWords: string[],
-  ): Promise<SessionResult> => {
-    const safeDuration = (d: number): number =>
-      (typeof d === "number" && Number.isFinite(d) && d > 0)
-        ? d
-        : CONSTANTS.SESSION_DURATION_SECONDS;
-
-    const whisper = await transcribeAudio(audioBlob, forbiddenWords);
-    const rawDuration = await getAudioDuration(audioBlob);
-    const duration = safeDuration(rawDuration);
-
-    const wordCount = whisper.transcript.trim().split(/\s+/).filter(Boolean).length;
-    if (wordCount < CONSTANTS.MIN_WORD_COUNT) {
-      throw new Error("EMPTY_RECORDING");
-    }
-
-    const analysis = analyzeTranscript(
-      whisper.transcript,
-      whisper.words,
-      forbiddenWords,
-      duration,
-      1,
-    );
-
-    const zeroXP: XPBreakdown = {
-      sessionComplete: 0,
-      beatPersonalBest: 0,
-      zeroFillers: 0,
-      zeroForbidden: 0,
-      streakBonus: 0,
-      total: 0,
-    };
-
-    const zeroAdv: StageAdvancement = {
-      advanced: false,
-      newStage: null,
-      newStageName: null,
-    };
-
-    return {
-      sessionId: "trial",
-      topic,
-      analysis,
-      xp: zeroXP,
-      stageAdvancement: zeroAdv,
-      streakCount: 0,
-      streakLost: false,
-      previousStreak: 0,
-      timestamp: new Date().toISOString(),
-    };
-  };
-
   const stopRecordingAndProcess = async () => {
     if (isProcessingRef.current) {
       console.log("[MLASOON] stopRecordingAndProcess already running — skipping");
@@ -465,54 +400,65 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
     }
   };
 
-  const handleShowFullAnalysis = async () => {
+  const handleShowFullAnalysis = () => {
     const blob = pendingBlobRef.current;
     if (!blob || !summaryData) return;
 
     const topic = summaryData.topic;
+
+    if (!session?.user?.id) {
+      pendingBlobRef.current = null;
+      setShowSummary(false);
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        sessionStorage.setItem("mlasoon_pending_blob", base64);
+        sessionStorage.setItem(
+          "mlasoon_pending_topic",
+          JSON.stringify({ question: topic.question, forbiddenWords: topic.forbiddenWords }),
+        );
+        console.log("[MLASOON] Trial blob saved to sessionStorage, navigating to login");
+        navigate("/login", { state: { fromTrial: true } });
+      };
+      return;
+    }
+
     pendingBlobRef.current = null;
     setShowSummary(false);
     setShowLoading(true);
     setProcessingDone(false);
     isProcessingRef.current = true;
 
-    try {
-      const challengeForbidden = userStage >= 3 ? topic.forbiddenWords : [];
-      console.log("[MLASOON] processing started, topic:", topic.question);
+    const challengeForbidden = userStage >= 3 ? topic.forbiddenWords : [];
+    console.log("[MLASOON] processing started, topic:", topic.question);
 
-      const result: SessionResult =
-        session?.user?.id
-          ? await processSession(
-              blob,
-              topic.question,
-              challengeForbidden,
-              session.user.id,
-              userStage,
-            )
-          : await processTrial(blob, topic.question, topic.forbiddenWords);
-
-      console.log("[MLASOON] processing complete, flowScore:", result.analysis.flowScore);
-      setLatestSession(result);
-      setProcessingDone(true);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.log("[MLASOON] processing error:", message);
-      if (message === "SESSION_SAVE_FAILED") {
-        setErrorMessage("تعذّر حفظ الجلسة — تحقق من اتصالك وحاول مجدداً");
-      } else if (message === "EMPTY_RECORDING") {
-        setErrorMessage("لم نسمع شيء — حاول مرة ثانية");
-      } else if (message === "WHISPER_FAILED") {
-        setErrorMessage("تعذّر تحليل التسجيل — تحقق من اتصالك وحاول مجدداً");
-      } else if (message === "WHISPER_NOT_CONFIGURED") {
-        setErrorMessage("خدمة النص الصوتي غير مفعّلة — تحقق من إعدادات VITE_MOCK_WHISPER");
-      } else {
-        setErrorMessage("حدث خطأ أثناء تحليل الجلسة");
-      }
-      setShowLoading(false);
-    } finally {
-      isProcessingRef.current = false;
-      console.log("[MLASOON] isProcessingRef reset");
-    }
+    processSession(blob, topic.question, challengeForbidden, session.user.id, userStage)
+      .then((result: SessionResult) => {
+        console.log("[MLASOON] processing complete, flowScore:", result.analysis.flowScore);
+        setLatestSession(result);
+        setProcessingDone(true);
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        console.log("[MLASOON] processing error:", message);
+        if (message === "SESSION_SAVE_FAILED") {
+          setErrorMessage("تعذّر حفظ الجلسة — تحقق من اتصالك وحاول مجدداً");
+        } else if (message === "EMPTY_RECORDING") {
+          setErrorMessage("لم نسمع شيء — حاول مرة ثانية");
+        } else if (message === "WHISPER_FAILED") {
+          setErrorMessage("تعذّر تحليل التسجيل — تحقق من اتصالك وحاول مجدداً");
+        } else if (message === "WHISPER_NOT_CONFIGURED") {
+          setErrorMessage("خدمة النص الصوتي غير مفعّلة — تحقق من إعدادات VITE_MOCK_WHISPER");
+        } else {
+          setErrorMessage("حدث خطأ أثناء تحليل الجلسة");
+        }
+        setShowLoading(false);
+      })
+      .finally(() => {
+        isProcessingRef.current = false;
+        console.log("[MLASOON] isProcessingRef reset");
+      });
   };
 
   return (

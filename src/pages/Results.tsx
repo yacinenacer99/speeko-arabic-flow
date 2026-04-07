@@ -558,6 +558,26 @@ const Results = () => {
       >
         <div style={{ maxWidth: 400, margin: "0 auto", display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
           {!isLoggedIn ? (
+            <button
+              type="button"
+              onClick={() => navigate("/onboarding")}
+              className="font-cairo"
+              style={{
+                width: "100%",
+                background: "#6C63FF",
+                color: "white",
+                fontSize: 15,
+                fontWeight: 700,
+                borderRadius: 999,
+                padding: "16px 32px",
+                border: "none",
+                cursor: "pointer",
+                minHeight: 52,
+              }}
+            >
+              ابدأ خطة التعلم اليوم
+            </button>
+          ) : session.streakCount === 1 ? (
             <>
               <button
                 type="button"
@@ -576,7 +596,15 @@ const Results = () => {
                   minHeight: 52,
                 }}
               >
-                ابدأ خطة التعلم اليوم
+                ابدأ رحلة التعلم
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/home")}
+                className="font-cairo font-light"
+                style={{ fontSize: 13, color: "#9090A8", background: "none", border: "none", cursor: "pointer", minHeight: 44 }}
+              >
+                تخطي
               </button>
             </>
           ) : (

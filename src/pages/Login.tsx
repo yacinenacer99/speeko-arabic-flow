@@ -6,12 +6,15 @@ import { supabase } from "@/lib/supabase";
 import { getAuthErrorMessageAr } from "@/lib/authErrors";
 import { upsertUserProfile, defaultSignupProfile } from "@/lib/userProfile";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSessionContext } from "@/contexts/SessionContext";
+import type { SessionResult } from "@/types/session";
 
 type Mode = "login" | "signup";
 
 const Login = () => {
   const navigate = useNavigate();
   const { isLoggedIn, isLoading: authLoading } = useAuth();
+  const { setLatestSession } = useSessionContext();
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -90,6 +93,12 @@ const Login = () => {
         setError("تعذر حفظ الملف الشخصي، راجع الاتصال");
         return;
       }
+      const trialResult = await processPendingTrial(uid);
+      if (trialResult) {
+        setLatestSession(trialResult);
+        navigate("/results");
+        return;
+      }
     }
     navigate("/home");
   };
@@ -97,6 +106,9 @@ const Login = () => {
   const handleGoogle = async () => {
     setError(null);
     setGoogleLoading(true);
+    if (sessionStorage.getItem("mlasoon_pending_blob")) {
+      sessionStorage.setItem("mlasoon_post_oauth_trial", "true");
+    }
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -105,7 +117,27 @@ const Login = () => {
     });
     if (oauthError) {
       setGoogleLoading(false);
+      sessionStorage.removeItem("mlasoon_post_oauth_trial");
       setError(getAuthErrorMessageAr(oauthError, mode === "login" ? "login" : "signup"));
+    }
+  };
+
+  const processPendingTrial = async (userId: string): Promise<SessionResult | false> => {
+    const base64 = sessionStorage.getItem("mlasoon_pending_blob");
+    const topicRaw = sessionStorage.getItem("mlasoon_pending_topic");
+    if (!base64 || !topicRaw) return false;
+    try {
+      const topic = JSON.parse(topicRaw) as { question: string; forbiddenWords: string[] };
+      const res = await fetch(base64);
+      const blob = await res.blob();
+      sessionStorage.removeItem("mlasoon_pending_blob");
+      sessionStorage.removeItem("mlasoon_pending_topic");
+      const { processSession } = await import("@/lib/sessionProcessor");
+      const result = await processSession(blob, topic.question, topic.forbiddenWords, userId, 1);
+      return result;
+    } catch (err) {
+      console.log("[MLASOON] Failed to process pending trial:", err);
+      return false;
     }
   };
 

@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useSessionContext } from "@/contexts/SessionContext";
 import { toast } from "sonner";
 import { Flame, Mic, Clock } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -33,6 +34,7 @@ const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { session, isLoading: authLoading } = useAuth();
+  const { setLatestSession } = useSessionContext();
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [data, setData] = useState<HomeData | null>(null);
   const [retryKey, setRetryKey] = useState(0);
@@ -121,6 +123,32 @@ const Home = () => {
       navigate("/home", { replace: true, state: {} });
     }
   }, [location.state, navigate]);
+
+  useEffect(() => {
+    if (authLoading || !uid) return;
+    const flag = sessionStorage.getItem("mlasoon_post_oauth_trial");
+    if (!flag) return;
+    sessionStorage.removeItem("mlasoon_post_oauth_trial");
+    void (async () => {
+      const base64 = sessionStorage.getItem("mlasoon_pending_blob");
+      const topicRaw = sessionStorage.getItem("mlasoon_pending_topic");
+      if (!base64 || !topicRaw) return;
+      try {
+        const topic = JSON.parse(topicRaw) as { question: string; forbiddenWords: string[] };
+        const res = await fetch(base64);
+        const blob = await res.blob();
+        sessionStorage.removeItem("mlasoon_pending_blob");
+        sessionStorage.removeItem("mlasoon_pending_topic");
+        const { processSession } = await import("@/lib/sessionProcessor");
+        const result = await processSession(blob, topic.question, topic.forbiddenWords, uid, 1);
+        console.log("[MLASOON] Post-OAuth trial processed, flowScore:", result.analysis.flowScore);
+        setLatestSession(result);
+        navigate("/results");
+      } catch (err) {
+        console.log("[MLASOON] Failed to process post-OAuth trial:", err);
+      }
+    })();
+  }, [uid, authLoading]);
 
   const handleRetry = useCallback(() => {
     setRetryKey((k) => k + 1);

@@ -46,12 +46,6 @@ const Onboarding = () => {
   const [level, setLevel] = useState<string | null>(null);
 
 
-  useEffect(() => {
-    if (!authLoading && isLoggedIn) {
-      navigate("/home", { replace: true });
-    }
-  }, [authLoading, isLoggedIn, navigate]);
-
   const currentStep = steps[step];
 
   const canNext =

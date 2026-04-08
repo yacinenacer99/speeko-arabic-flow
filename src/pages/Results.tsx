@@ -560,7 +560,7 @@ const Results = () => {
           {!isLoggedIn ? (
             <button
               type="button"
-              onClick={() => navigate("/onboarding")}
+              onClick={() => navigate("/login")}
               className="font-cairo"
               style={{
                 width: "100%",
@@ -575,7 +575,7 @@ const Results = () => {
                 minHeight: 52,
               }}
             >
-              ابدأ خطة التعلم اليوم
+              سجل حسابك لحفظ نتيجتك
             </button>
           ) : session.streakCount === 1 ? (
             <>

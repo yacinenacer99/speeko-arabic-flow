@@ -1,5 +1,5 @@
 import { useState, FormEvent, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/lib/supabase";
@@ -13,9 +13,11 @@ type Mode = "login" | "signup";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromTrial = (location.state as { fromTrial?: boolean } | null)?.fromTrial === true;
   const { isLoggedIn, isLoading: authLoading } = useAuth();
   const { setLatestSession } = useSessionContext();
-  const [mode, setMode] = useState<Mode>("login");
+  const [mode, setMode] = useState<Mode>(fromTrial ? "signup" : "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);

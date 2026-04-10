@@ -28,9 +28,12 @@ const Login = () => {
 
   useEffect(() => {
     if (!authLoading && isLoggedIn) {
+      // Do not auto-redirect during trial flow — handleEmailSubmit owns navigation
+      const hasPendingBlob = !!sessionStorage.getItem("mlasoon_pending_blob");
+      if (fromTrial || hasPendingBlob) return;
       navigate("/home", { replace: true });
     }
-  }, [authLoading, isLoggedIn, navigate]);
+  }, [authLoading, isLoggedIn, navigate, fromTrial]);
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
@@ -90,22 +93,37 @@ const Login = () => {
     }
     const uid = data.user?.id;
     console.log("[MLASOON] signup success, uid:", uid);
-    if (uid) {
-      const { error: upError } = await upsertUserProfile(supabase, defaultSignupProfile(uid));
-      if (upError) {
-        setError("تعذر حفظ الملف الشخصي، راجع الاتصال");
+    if (!uid) {
+      if (fromTrial) {
+        setError("تعذر تحديد الحساب — حاول مجدداً");
         return;
       }
-      console.log("[MLASOON] checking pending blob:", sessionStorage.getItem("mlasoon_pending_blob")?.slice(0, 50));
-      const trialResult = await processPendingTrial(uid);
-      if (trialResult) {
-        setLatestSession(trialResult);
-        console.log("[MLASOON] navigating to /results");
-        navigate("/results");
-        return;
-      }
-      console.log("[MLASOON] no pending trial, going to /home");
+      navigate("/home");
+      return;
     }
+
+    const { error: upError } = await upsertUserProfile(supabase, defaultSignupProfile(uid));
+    if (upError) {
+      setError("تعذر حفظ الملف الشخصي، راجع الاتصال");
+      return;
+    }
+
+    console.log("[MLASOON] checking pending blob:", sessionStorage.getItem("mlasoon_pending_blob")?.slice(0, 50));
+    const trialResult = await processPendingTrial(uid);
+    if (trialResult) {
+      setLatestSession(trialResult);
+      console.log("[MLASOON] navigating to /results");
+      navigate("/results");
+      return;
+    }
+
+    if (fromTrial) {
+      console.log("[MLASOON] processPendingTrial returned false on trial flow");
+      setError("تعذر معالجة التسجيل الصوتي — يمكنك المحاولة مجدداً من الصفحة الرئيسية");
+      return;
+    }
+
+    console.log("[MLASOON] no pending trial, going to /home");
     navigate("/home");
   };
 

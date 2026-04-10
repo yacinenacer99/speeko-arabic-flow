@@ -418,6 +418,7 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
           "mlasoon_pending_topic",
           JSON.stringify({ question: topic.question, forbiddenWords: topic.forbiddenWords }),
         );
+        console.log("[MLASOON] blob in sessionStorage before navigate:", !!sessionStorage.getItem("mlasoon_pending_blob"));
         console.log("[MLASOON] Trial blob saved to sessionStorage, navigating to login");
         navigate("/login", { state: { fromTrial: true } });
       };

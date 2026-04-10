@@ -27,9 +27,10 @@ const Login = () => {
   const [confirmationSent, setConfirmationSent] = useState(false);
   const processingTrialRef = useRef(false);
 
-  // Clear any stale error on mount
+  // Clear any stale error on mount and verify blob survival across navigation
   useEffect(() => {
     setError(null);
+    console.log("[MLASOON] blob in sessionStorage on login mount:", !!sessionStorage.getItem("mlasoon_pending_blob"));
   }, []);
 
   useEffect(() => {
@@ -114,9 +115,9 @@ const Login = () => {
 
     const { error: upError } = await upsertUserProfile(supabase, defaultSignupProfile(uid));
     if (upError) {
-      processingTrialRef.current = false;
-      setError("تعذر حفظ الملف الشخصي، راجع الاتصال");
-      return;
+      // Non-fatal: DB trigger already created user/progress/subscriptions rows.
+      // Log and continue — do not block the trial flow on a profile upsert conflict.
+      console.log("[MLASOON] upsertUserProfile error (non-fatal, DB trigger handles row):", upError.message);
     }
 
     console.log("[MLASOON] checking pending blob:", sessionStorage.getItem("mlasoon_pending_blob")?.slice(0, 50));

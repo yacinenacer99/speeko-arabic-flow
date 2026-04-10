@@ -119,54 +119,69 @@ export function analyzeTranscript(
 
   const speakingDuration = Math.max(safeDuration - pauseSum, 0);
 
-  // 0–100 score components
-  const continuity = (speakingDuration / safeDuration) * 100;
+  // ── 5-Dimension Flow Score ─────────────────────────────────────────────
 
-  // Short sessions are penalized — 60s = 100, 30s = 50, 18s = 30
-  const durationScore = Math.min(100, (safeDuration / CONSTANTS.SESSION_DURATION_SECONDS) * 100);
+  // Dimension 1: Speaking Duration (25 pts max)
+  // Measures how much of the session the user actually filled with speech.
+  const speakingRatio = speakingDuration / CONSTANTS.SESSION_DURATION_SECONDS;
+  let durationScore: number;
+  if (speakingRatio >= 0.90) durationScore = 25;
+  else if (speakingRatio >= 0.75) durationScore = 20;
+  else if (speakingRatio >= 0.60) durationScore = 15;
+  else if (speakingRatio >= 0.45) durationScore = 10;
+  else if (speakingRatio >= 0.30) durationScore = 5;
+  else durationScore = 0;
 
-  // 12 points deducted per filler (was 8) — more aggressive
-  const fillerPenalty = Math.max(0, 100 - fillerCount * 12);
+  // Dimension 2: Pace (20 pts max)
+  // WPM based on speakingDuration (pauses excluded) — 120-140 is optimal Arabic pace.
+  const wpm = speakingDuration > 0 ? (wordCount / speakingDuration) * 60 : 0;
+  let paceScore: number;
+  if (wpm >= 120 && wpm <= 140) paceScore = 20;
+  else if ((wpm >= 100 && wpm < 120) || (wpm > 140 && wpm <= 160)) paceScore = 16;
+  else if ((wpm >= 80 && wpm < 100) || (wpm > 160 && wpm <= 180)) paceScore = 10;
+  else if ((wpm >= 60 && wpm < 80) || (wpm > 180 && wpm <= 200)) paceScore = 5;
+  else paceScore = 0;
 
-  let paceScore = 100;
-  if (pace < CONSTANTS.PACE_MIN) {
-    paceScore = Math.max(0, 100 - (CONSTANTS.PACE_MIN - pace) * 3);
-  } else if (pace > CONSTANTS.PACE_MAX) {
-    paceScore = Math.max(0, 100 - (pace - CONSTANTS.PACE_MAX) * 3);
-  }
+  // Dimension 3: Filler Density (25 pts max)
+  // Fillers per minute of speaking — rate matters more than raw count.
+  const fillerDensity = speakingDuration > 0 ? (fillerCount / speakingDuration) * 60 : 0;
+  let fillerScore: number;
+  if (fillerDensity === 0) fillerScore = 25;
+  else if (fillerDensity <= 1) fillerScore = 20;
+  else if (fillerDensity <= 2) fillerScore = 14;
+  else if (fillerDensity <= 4) fillerScore = 8;
+  else if (fillerDensity <= 6) fillerScore = 3;
+  else fillerScore = 0;
 
-  // 25 points deducted per forbidden word — only applied to score at stage 3+
-  const forbiddenPenalty =
-    userStage >= 3 ? Math.max(0, 100 - forbiddenUsed.length * 25) : 100;
+  // Dimension 4: Sustained Speech (20 pts max)
+  // Longest pause indicates hesitation and loss of flow.
+  // Neutral fallback (10 pts) when no word timestamps are available.
+  let sustainedScore: number;
+  if (wordTimestamps.length < 2) {
+    sustainedScore = 10;
+  } else if (longestPause <= 1.0) sustainedScore = 20;
+  else if (longestPause <= 2.0) sustainedScore = 16;
+  else if (longestPause <= 3.5) sustainedScore = 10;
+  else if (longestPause <= 5.0) sustainedScore = 5;
+  else sustainedScore = 0;
 
-  console.log("[MLASOON] score inputs — continuity:", Math.round(continuity), "duration:", Math.round(durationScore), "filler:", Math.round(fillerPenalty), "pace:", Math.round(paceScore), "forbidden:", Math.round(forbiddenPenalty));
+  // Dimension 5: Cognitive Control (10 pts max)
+  // Stage 1-2: full points — not yet trained on forbidden word avoidance.
+  // Stage 3+: deducted per forbidden word used.
+  let cognitiveScore: number;
+  if (userStage < 3) {
+    cognitiveScore = 10;
+  } else if (forbiddenUsed.length === 0) cognitiveScore = 10;
+  else if (forbiddenUsed.length === 1) cognitiveScore = 6;
+  else if (forbiddenUsed.length === 2) cognitiveScore = 2;
+  else cognitiveScore = 0;
 
-  let flowScore: number;
-  if (userStage <= 1) {
-    // Stage 1: reward speaking at all — duration and continuity dominate
-    flowScore =
-      continuity * 0.4 +
-      durationScore * 0.4 +
-      paceScore * 0.2;
-  } else if (userStage === 2) {
-    // Stage 2: add filler penalty
-    flowScore =
-      continuity * 0.3 +
-      durationScore * 0.25 +
-      fillerPenalty * 0.3 +
-      paceScore * 0.15;
-  } else {
-    // Stage 3+: all factors including forbidden
-    flowScore =
-      continuity * 0.25 +
-      durationScore * 0.2 +
-      fillerPenalty * 0.25 +
-      paceScore * 0.15 +
-      forbiddenPenalty * 0.15;
-  }
+  console.log("[MLASOON] flow dimensions:", { durationScore, paceScore, fillerScore, sustainedScore, cognitiveScore });
 
-  const rawScore = Number.isFinite(flowScore) ? flowScore : 0;
-  const roundedFlow = Math.round(Math.min(100, Math.max(0, rawScore)));
+  const rawScore = durationScore + paceScore + fillerScore + sustainedScore + cognitiveScore;
+  const flowScore = Math.min(100, Math.max(0, Math.round(rawScore)));
+
+  console.log("[MLASOON] final flowScore:", flowScore);
 
   return {
     fillerCount,
@@ -176,7 +191,7 @@ export function analyzeTranscript(
     forbiddenUsed,
     longestPause: longestPause > 0 ? Number(longestPause.toFixed(1)) : 0,
     speakingDuration,
-    flowScore: roundedFlow,
+    flowScore,
   };
 }
 

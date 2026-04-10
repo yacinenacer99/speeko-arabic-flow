@@ -84,6 +84,7 @@ export function analyzeTranscript(
 
   for (const token of words) {
     // Hesitation sounds — exact list match OR regex-based detection
+    console.log("[MLASOON] checking token for hesitation:", token, "isHesitation:", isHesitation(token));
     if (normalizedHesitations.includes(token) || isHesitation(token)) {
       fillerMap.set(normalizedAAALabel, (fillerMap.get(normalizedAAALabel) ?? 0) + 1);
       continue;

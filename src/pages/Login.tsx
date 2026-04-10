@@ -70,6 +70,7 @@ const Login = () => {
 
   const handleEmailSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setError(null);
     setLoading(true);
     if (mode === "login") {

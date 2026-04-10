@@ -134,9 +134,16 @@ const Login = () => {
       const blob = await res.blob();
       sessionStorage.removeItem("mlasoon_pending_blob");
       sessionStorage.removeItem("mlasoon_pending_topic");
+      await new Promise(r => setTimeout(r, 1500));
       const { processSession } = await import("@/lib/sessionProcessor");
-      const result = await processSession(blob, topic.question, topic.forbiddenWords, userId, 1);
-      return result;
+      try {
+        const result = await processSession(blob, topic.question, topic.forbiddenWords, userId, 1);
+        return result;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.log("[MLASOON] processPendingTrial failed:", msg);
+        return false;
+      }
     } catch (err) {
       console.log("[MLASOON] Failed to process pending trial:", err);
       return false;

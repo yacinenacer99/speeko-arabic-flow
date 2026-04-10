@@ -89,18 +89,22 @@ const Login = () => {
       return;
     }
     const uid = data.user?.id;
+    console.log("[MLASOON] signup success, uid:", uid);
     if (uid) {
       const { error: upError } = await upsertUserProfile(supabase, defaultSignupProfile(uid));
       if (upError) {
         setError("تعذر حفظ الملف الشخصي، راجع الاتصال");
         return;
       }
+      console.log("[MLASOON] checking pending blob:", sessionStorage.getItem("mlasoon_pending_blob")?.slice(0, 50));
       const trialResult = await processPendingTrial(uid);
       if (trialResult) {
         setLatestSession(trialResult);
+        console.log("[MLASOON] navigating to /results");
         navigate("/results");
         return;
       }
+      console.log("[MLASOON] no pending trial, going to /home");
     }
     navigate("/home");
   };
@@ -127,6 +131,7 @@ const Login = () => {
   const processPendingTrial = async (userId: string): Promise<SessionResult | false> => {
     const base64 = sessionStorage.getItem("mlasoon_pending_blob");
     const topicRaw = sessionStorage.getItem("mlasoon_pending_topic");
+    console.log("[MLASOON] base64 exists:", !!base64, "topic exists:", !!topicRaw);
     if (!base64 || !topicRaw) return false;
     try {
       const topic = JSON.parse(topicRaw) as { question: string; forbiddenWords: string[] };
@@ -135,13 +140,15 @@ const Login = () => {
       sessionStorage.removeItem("mlasoon_pending_blob");
       sessionStorage.removeItem("mlasoon_pending_topic");
       await new Promise(r => setTimeout(r, 1500));
+      console.log("[MLASOON] delay done, calling processSession");
       const { processSession } = await import("@/lib/sessionProcessor");
       try {
         const result = await processSession(blob, topic.question, topic.forbiddenWords, userId, 1);
+        console.log("[MLASOON] processSession result:", !!result);
         return result;
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        console.log("[MLASOON] processPendingTrial failed:", msg);
+        console.log("[MLASOON] processPendingTrial error:", msg);
         return false;
       }
     } catch (err) {

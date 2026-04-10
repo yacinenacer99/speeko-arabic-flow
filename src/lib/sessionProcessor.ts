@@ -346,11 +346,11 @@ export async function processSession(
     .insert({
       user_id: userId,
       topic,
-      duration,
+      duration: Math.round(duration),
       flow_score: analysis.flowScore,
       filler_count: analysis.fillerCount,
       forbidden_used: analysis.forbiddenUsed.length,
-      pace: analysis.pace,
+      pace: Math.round(analysis.pace),
       longest_pause: analysis.longestPause,
       word_count: analysis.wordCount,
       transcript: whisper.transcript,

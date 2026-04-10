@@ -481,6 +481,71 @@ const Results = () => {
           })}
         </div>
 
+        <div style={{ background: "rgba(255,255,255,0.6)", borderRadius: 20, padding: 20, marginTop: 20 }}>
+          <p className="font-cairo font-bold" style={{ fontSize: 14, color: "#1A1A2E", marginBottom: 12 }}>
+            الكلمات الممنوعة التي قلتها
+          </p>
+          {session.analysis.forbiddenUsed.length === 0 ? (
+            <p className="font-cairo font-light" style={{ fontSize: 13, color: "#5DBE8A", margin: 0 }}>
+              ممتاز — لم تستخدم أي كلمة ممنوعة
+            </p>
+          ) : (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {session.analysis.forbiddenUsed.map((word) => (
+                <span
+                  key={word}
+                  className="font-cairo font-bold"
+                  style={{
+                    background: "rgba(255,107,107,0.15)",
+                    color: "#FF6B6B",
+                    borderRadius: 999,
+                    padding: "4px 12px",
+                    fontSize: 13,
+                    border: "1px solid rgba(255,107,107,0.3)",
+                  }}
+                >
+                  {word}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <div style={{ height: 1, background: "rgba(0,0,0,0.06)", margin: "16px 0" }} />
+
+          <p className="font-cairo font-bold" style={{ fontSize: 14, color: "#1A1A2E", marginBottom: 12 }}>
+            كلمات الحشو
+          </p>
+          {fillerCount === 0 ? (
+            <p className="font-cairo font-light" style={{ fontSize: 13, color: "#5DBE8A", margin: 0 }}>
+              رائع — لا كلمات حشو
+            </p>
+          ) : (
+            <>
+              <p className="font-cairo font-light" style={{ fontSize: 13, color: "#9090A8", marginBottom: 10 }}>
+                المجموع: {fillerCount}
+              </p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {session.analysis.fillerWords.map((fw) => (
+                  <span
+                    key={fw.word}
+                    className="font-cairo font-bold"
+                    style={{
+                      background: "rgba(245,158,11,0.15)",
+                      color: "#F59E0B",
+                      borderRadius: 999,
+                      padding: "4px 12px",
+                      fontSize: 13,
+                      border: "1px solid rgba(245,158,11,0.3)",
+                    }}
+                  >
+                    {fw.word} ({fw.count})
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
         <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "28px 0 12px" }}>
           <span className="font-cairo" style={{ fontSize: 17, fontWeight: 700, color: "#1A1A2E" }}>
             ملاحظات المدرب

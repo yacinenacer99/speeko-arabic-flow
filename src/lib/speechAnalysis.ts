@@ -99,11 +99,10 @@ export function analyzeTranscript(
     return regex.test(text);
   };
 
-  let forbiddenUsed: string[] = [];
-  if (userStage >= 3) {
-    const normalizedForbidden = forbiddenWords.map((w) => normalize(w));
-    forbiddenUsed = normalizedForbidden.filter((w) => wordBoundaryMatch(normalizedText, w));
-  }
+  // Always detect forbidden words regardless of stage.
+  // Stage gate only controls whether they count against scoring/advancement.
+  const normalizedForbidden = forbiddenWords.map((w) => normalize(w));
+  const forbiddenUsed = normalizedForbidden.filter((w) => wordBoundaryMatch(normalizedText, w));
   console.log("[MLASOON] forbidden found:", forbiddenUsed.length);
 
   let longestPause = 0;
@@ -120,8 +119,14 @@ export function analyzeTranscript(
 
   const speakingDuration = Math.max(safeDuration - pauseSum, 0);
 
+  // 0–100 score components
   const continuity = (speakingDuration / safeDuration) * 100;
-  const fillerPenalty = Math.max(0, 100 - fillerCount * 8);
+
+  // Short sessions are penalized — 60s = 100, 30s = 50, 18s = 30
+  const durationScore = Math.min(100, (safeDuration / CONSTANTS.SESSION_DURATION_SECONDS) * 100);
+
+  // 12 points deducted per filler (was 8) — more aggressive
+  const fillerPenalty = Math.max(0, 100 - fillerCount * 12);
 
   let paceScore = 100;
   if (pace < CONSTANTS.PACE_MIN) {
@@ -130,26 +135,34 @@ export function analyzeTranscript(
     paceScore = Math.max(0, 100 - (pace - CONSTANTS.PACE_MAX) * 3);
   }
 
+  // 25 points deducted per forbidden word — only applied to score at stage 3+
   const forbiddenPenalty =
-    userStage >= 3 ? Math.max(0, 100 - forbiddenUsed.length * 20) : 100;
+    userStage >= 3 ? Math.max(0, 100 - forbiddenUsed.length * 25) : 100;
+
+  console.log("[MLASOON] score inputs — continuity:", Math.round(continuity), "duration:", Math.round(durationScore), "filler:", Math.round(fillerPenalty), "pace:", Math.round(paceScore), "forbidden:", Math.round(forbiddenPenalty));
 
   let flowScore: number;
   if (userStage <= 1) {
-    flowScore =
-      continuity * 0.7 +
-      paceScore * 0.15 +
-      100 * 0.15;
-  } else if (userStage === 2) {
+    // Stage 1: reward speaking at all — duration and continuity dominate
     flowScore =
       continuity * 0.4 +
-      fillerPenalty * 0.35 +
-      paceScore * 0.25;
-  } else {
+      durationScore * 0.4 +
+      paceScore * 0.2;
+  } else if (userStage === 2) {
+    // Stage 2: add filler penalty
     flowScore =
-      continuity * 0.35 +
+      continuity * 0.3 +
+      durationScore * 0.25 +
+      fillerPenalty * 0.3 +
+      paceScore * 0.15;
+  } else {
+    // Stage 3+: all factors including forbidden
+    flowScore =
+      continuity * 0.25 +
+      durationScore * 0.2 +
       fillerPenalty * 0.25 +
-      paceScore * 0.2 +
-      forbiddenPenalty * 0.2;
+      paceScore * 0.15 +
+      forbiddenPenalty * 0.15;
   }
 
   const rawScore = Number.isFinite(flowScore) ? flowScore : 0;

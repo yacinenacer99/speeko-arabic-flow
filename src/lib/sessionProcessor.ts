@@ -364,7 +364,8 @@ export async function processSession(
     .single();
 
   if (sessionError || !sessionRow) {
-    console.log("[MLASOON] session insert failed:", sessionError?.message);
+    console.log("[MLASOON] SESSION INSERT ERROR:", JSON.stringify(sessionError));
+    console.log("[MLASOON] SESSION INSERT DATA:", JSON.stringify(sessionRow));
     throw new Error("SESSION_SAVE_FAILED");
   }
 

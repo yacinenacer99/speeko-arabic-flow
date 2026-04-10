@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import type { LucideIcon } from "lucide-react";
 import {
   CheckCircle,
   Clock,
@@ -11,15 +10,13 @@ import {
   XCircle,
   Zap,
   Target,
-  Lock,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BackButton from "@/components/BackButton";
 import { useSessionContext } from "@/contexts/SessionContext";
-import type { AnalysisResult, SessionResult } from "@/types/session";
+import type { SessionResult } from "@/types/session";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
 
 const safeNum = (n: unknown, fallback = 0): number =>
   (typeof n === "number" && Number.isFinite(n)) ? n : fallback;
@@ -55,26 +52,6 @@ function getMetricColor(metricName: string, value: number): string {
   return "#1A1A2E";
 }
 
-const COACHING_ITEMS = [
-  {
-    title: "وش سويت صح",
-    body: "هذا المحتوى متاح لمشتركي برو — افتح التحليل الكامل لمعرفة التفاصيل",
-    Icon: CheckCircle,
-    bg: "rgba(93,190,138,0.1)",
-  },
-  {
-    title: "وين تعثرت",
-    body: "هذا المحتوى متاح لمشتركي برو — افتح التحليل الكامل لمعرفة التفاصيل",
-    Icon: Zap,
-    bg: "rgba(245,158,11,0.1)",
-  },
-  {
-    title: "وش تركز عليه الجلسة الجاية",
-    body: "هذا المحتوى متاح لمشتركي برو — افتح التحليل الكامل لمعرفة التفاصيل",
-    Icon: Target,
-    bg: "rgba(255,107,107,0.1)",
-  },
-] as const;
 
 const METRIC_INFO: Record<string, string> = {
   المدة: "مدة حديثك الفعلي مقارنة بوقت الجلسة الكامل",
@@ -85,61 +62,18 @@ const METRIC_INFO: Record<string, string> = {
   الممنوعة: "عدد الكلمات الممنوعة اللي استخدمتها في هذا التحدي",
 };
 
-type CoachingDisplayItem = {
-  title: string;
-  body: string;
-  Icon: LucideIcon;
-  bg: string;
-};
-
-function buildProCoaching(analysis: AnalysisResult): CoachingDisplayItem[] {
-  const flow = analysis.flowScore;
-  const filler = analysis.fillerCount;
-  const pause = analysis.longestPause;
-  const forbidden = Array.isArray(analysis.forbiddenUsed) ? analysis.forbiddenUsed.length : 0;
-
-  const strengths: string[] = [];
-  if (flow >= 70) strengths.push("نقاط التدفق قوية وثابتة.");
-  if (filler <= 2) strengths.push("استخدام قليل لكلمات الحشو.");
-  if (pause <= 3) strengths.push("انسيابية جيدة مع غياب توقفات طويلة.");
-  if (forbidden === 0) strengths.push("احترام قواعد الكلمات الممنوعة في الموضوع.");
-  if (strengths.length === 0) {
-    strengths.push("أكملت الجلسة بثبات — الاستمرار يبني الثقة.");
-  }
-
-  const struggles: string[] = [];
-  if (filler > 4) struggles.push("كلمات الحشو تحتاج تقليلاً تدريجياً.");
-  if (pause > 3) struggles.push("فترات الصمت الطويلة تؤثر على الإيقاع.");
-  if (forbidden > 0) struggles.push("راجع استخدام الكلمات الممنوعة في السؤال.");
-  if (flow < 55) struggles.push("التركيز على طلاقة الأفكار يعزز النتيجة.");
-  if (struggles.length === 0) {
-    struggles.push("لا تعثّر واضح — راقب التفاصيل في الجلسة القادمة.");
-  }
-
-  let nextFocus = "ركّز على تقسيم الفكرة إلى جمل قصيرة واضحة.";
-  if (filler > 3) nextFocus = "تدرب على التوقف بدل الحشو بين الجمل.";
-  else if (pause > 3) nextFocus = "اختصر الثواني بين الأفكار بربط عبارات بسيطة.";
-  else if (forbidden > 0) nextFocus = "خطط لبدائل قبل التحدي لتجنب الكلمات الممنوعة.";
-
-  return [
-    { title: "وش سويت صح", body: strengths.join(" "), Icon: CheckCircle, bg: "rgba(93,190,138,0.1)" },
-    { title: "وين تعثرت", body: struggles.join(" "), Icon: Zap, bg: "rgba(245,158,11,0.1)" },
-    { title: "وش تركز عليه الجلسة الجاية", body: nextFocus, Icon: Target, bg: "rgba(255,107,107,0.1)" },
-  ];
-}
 
 const Results = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sessionIdFromUrl = useMemo(() => searchParams.get("session"), [searchParams]);
-  const { isLoggedIn, session: authSession } = useAuth();
+  const { isLoggedIn } = useAuth();
   const { latestSession, loadSessionById } = useSessionContext();
 
   const [session, setSession] = useState<SessionResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [openTooltip, setOpenTooltip] = useState<string | null>(null);
-  const [userPlan, setUserPlan] = useState<"free" | "pro">("free");
   const [shareCopied, setShareCopied] = useState(false);
 
   useEffect(() => {
@@ -203,27 +137,6 @@ const Results = () => {
   }, [session, sessionIdFromUrl, navigate]);
 
   useEffect(() => {
-    if (!authSession?.user?.id) {
-      setUserPlan("free");
-      return;
-    }
-    void supabase
-      .from("subscriptions")
-      .select("plan")
-      .eq("user_id", authSession.user.id)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (error) {
-          console.log("[MLASOON] subscriptions load error:", error.message);
-          setUserPlan("free");
-          return;
-        }
-        if (data?.plan === "pro") setUserPlan("pro");
-        else setUserPlan("free");
-      });
-  }, [authSession?.user?.id]);
-
-  useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (!openTooltip) return;
       const target = e.target as HTMLElement;
@@ -232,18 +145,6 @@ const Results = () => {
     document.addEventListener("click", handler);
     return () => document.removeEventListener("click", handler);
   }, [openTooltip]);
-
-  const coachingItems: CoachingDisplayItem[] = useMemo(() => {
-    if (userPlan === "pro" && session) {
-      return buildProCoaching(session.analysis);
-    }
-    return COACHING_ITEMS.map((item) => ({
-      title: item.title,
-      body: item.body,
-      Icon: item.Icon,
-      bg: item.bg,
-    }));
-  }, [userPlan, session]);
 
   const formatDuration = (seconds: number): string => {
     const s = Math.max(0, Math.round(safeNum(seconds)));
@@ -552,57 +453,102 @@ const Results = () => {
           </span>
         </div>
 
-        <div style={{ position: "relative", overflow: "hidden" }}>
-          <div
-            style={{
-              filter: userPlan !== "pro" ? "blur(5px)" : "none",
-              WebkitFilter: userPlan !== "pro" ? "blur(5px)" : "none",
-              pointerEvents: userPlan !== "pro" ? "none" : "auto",
-            }}
-          >
-            {coachingItems.map((item) => (
-              <div key={item.title} className="glass-card-light" style={{ borderRadius: 16, padding: 16, marginBottom: 10 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                  <div style={{ width: 30, height: 30, borderRadius: 10, background: item.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <item.Icon size={16} color="#1A1A2E" />
-                  </div>
-                  <span className="font-cairo font-bold" style={{ fontSize: 14, color: "#1A1A2E" }}>
-                    {item.title}
-                  </span>
-                </div>
-                <p className="font-cairo font-light" style={{ fontSize: 13, color: "#9090A8", margin: 0 }}>
-                  {item.body}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          {userPlan !== "pro" && (
-            <div
-              onClick={() => navigate("/subscribe")}
-              style={{
-                position: "absolute",
-                inset: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexDirection: "column",
-                background: "rgba(245,244,240,0.3)",
-                pointerEvents: "auto",
-                cursor: "pointer",
-                zIndex: 5,
-              }}
-            >
-              <Lock size={28} color="#9090A8" />
-              <span className="font-cairo font-bold" style={{ marginTop: 8, fontSize: 15, color: "#6C63FF" }}>
-                افتح التحليل الكامل
+        {session.coachingNotes ? (
+          <div>
+            {/* Score badges */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              <span
+                className="font-cairo font-bold"
+                style={{
+                  background: "rgba(108,99,255,0.12)",
+                  color: "#6C63FF",
+                  borderRadius: 999,
+                  padding: "4px 14px",
+                  fontSize: 12,
+                  border: "1px solid rgba(108,99,255,0.25)",
+                }}
+              >
+                الصلة بالسؤال {session.coachingNotes.relevancyScore}٪
               </span>
-              <span className="font-cairo font-light" style={{ marginTop: 4, fontSize: 12, color: "#9090A8" }}>
-                اشترك في برو
+              <span
+                className="font-cairo font-bold"
+                style={{
+                  background: "rgba(93,190,138,0.12)",
+                  color: "#5DBE8A",
+                  borderRadius: 999,
+                  padding: "4px 14px",
+                  fontSize: 12,
+                  border: "1px solid rgba(93,190,138,0.25)",
+                }}
+              >
+                جودة الإجابة {session.coachingNotes.answerQualityScore}٪
               </span>
             </div>
-          )}
-        </div>
+
+            {/* Overall feedback */}
+            <div className="glass-card-light" style={{ borderRadius: 16, padding: 16, marginBottom: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                <div style={{ width: 30, height: 30, borderRadius: 10, background: "rgba(108,99,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Target size={16} color="#6C63FF" />
+                </div>
+                <span className="font-cairo font-bold" style={{ fontSize: 14, color: "#1A1A2E" }}>
+                  تقييم المدرب
+                </span>
+              </div>
+              <p className="font-cairo font-light" style={{ fontSize: 13, color: "#9090A8", margin: 0, lineHeight: 1.7 }}>
+                {session.coachingNotes.coachingFeedback}
+              </p>
+            </div>
+
+            {/* Strengths */}
+            {session.coachingNotes.strengths.length > 0 && (
+              <div className="glass-card-light" style={{ borderRadius: 16, padding: 16, marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                  <div style={{ width: 30, height: 30, borderRadius: 10, background: "rgba(93,190,138,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <CheckCircle size={16} color="#5DBE8A" />
+                  </div>
+                  <span className="font-cairo font-bold" style={{ fontSize: 14, color: "#1A1A2E" }}>
+                    وش سويت صح
+                  </span>
+                </div>
+                <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
+                  {session.coachingNotes.strengths.map((s, i) => (
+                    <li key={i} className="font-cairo font-light" style={{ fontSize: 13, color: "#9090A8", paddingRight: 12, borderRight: "2px solid #5DBE8A" }}>
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Improvements */}
+            {session.coachingNotes.improvements.length > 0 && (
+              <div className="glass-card-light" style={{ borderRadius: 16, padding: 16, marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                  <div style={{ width: 30, height: 30, borderRadius: 10, background: "rgba(245,158,11,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Zap size={16} color="#F59E0B" />
+                  </div>
+                  <span className="font-cairo font-bold" style={{ fontSize: 14, color: "#1A1A2E" }}>
+                    وش تحسّن الجلسة الجاية
+                  </span>
+                </div>
+                <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
+                  {session.coachingNotes.improvements.map((s, i) => (
+                    <li key={i} className="font-cairo font-light" style={{ fontSize: 13, color: "#9090A8", paddingRight: 12, borderRight: "2px solid #F59E0B" }}>
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="glass-card-light" style={{ borderRadius: 16, padding: 20 }}>
+            <p className="font-cairo font-light" style={{ fontSize: 13, color: "#9090A8", margin: 0, textAlign: "center" }}>
+              تحليل المدرب غير متاح لهذه الجلسة
+            </p>
+          </div>
+        )}
 
         <div style={{ height: 100 }} />
         <Footer />

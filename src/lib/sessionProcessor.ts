@@ -5,7 +5,45 @@ import { supabase } from "@/lib/supabase";
 import { getAudioDuration } from "@/lib/audioRecorder";
 import { analyzeTranscript } from "@/lib/speechAnalysis";
 import { transcribeAudio } from "@/lib/whisperService";
-import type { AnalysisResult, SessionResult, StageAdvancement, XPBreakdown } from "@/types/session";
+import type { AnalysisResult, CoachingNotes, SessionResult, StageAdvancement, XPBreakdown } from "@/types/session";
+
+interface CoachingResult {
+  relevancyScore: number;
+  answerQualityScore: number;
+  coachingFeedback: string;
+  strengths: string[];
+  improvements: string[];
+}
+
+const getCoaching = async (
+  transcript: string,
+  topic: string,
+  metrics: {
+    fillerCount: number;
+    forbiddenUsed: number;
+    duration: number;
+    pace: number;
+    flowScore: number;
+  },
+): Promise<CoachingResult | null> => {
+  try {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+    const response = await fetch(`${supabaseUrl}/functions/v1/coach`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": anonKey,
+        "Authorization": `Bearer ${anonKey}`,
+      },
+      body: JSON.stringify({ transcript, topic, metrics }),
+    });
+    if (!response.ok) return null;
+    return await response.json() as CoachingResult;
+  } catch {
+    return null;
+  }
+};
 
 type ProgressRow = {
   user_id: string;
@@ -348,9 +386,49 @@ export async function processSession(
   );
   console.log("[MLASOON] Analysis complete, flow score:", analysis.flowScore);
 
+  console.log("[MLASOON] Calling coaching function");
+  const coaching = await getCoaching(
+    whisper.transcript,
+    topic,
+    {
+      fillerCount: analysis.fillerCount,
+      forbiddenUsed: analysis.forbiddenUsed.length,
+      duration: analysis.speakingDuration,
+      pace: analysis.pace,
+      flowScore: analysis.flowScore,
+    },
+  );
+  console.log("[MLASOON] Coaching received:", !!coaching, coaching?.relevancyScore);
+
+  let finalFlowScore = analysis.flowScore;
+  if (coaching && analysis.flowDimensions) {
+    const { fillerScore, durationScore, paceScore, sustainedScore, cognitiveScore } = analysis.flowDimensions;
+
+    // Normalize local dimension scores to 0-100
+    const fillerNorm = (fillerScore / 35) * 100;
+    const durationNorm = (durationScore / 25) * 100;
+    const paceNorm = (paceScore / 20) * 100;
+    const sustainedNorm = (sustainedScore / 12) * 100;
+    const cognitiveNorm = (cognitiveScore / 8) * 100;
+
+    finalFlowScore = Math.min(100, Math.max(0, Math.round(
+      (coaching.relevancyScore * 0.25) +
+      (coaching.answerQualityScore * 0.20) +
+      (fillerNorm * 0.20) +
+      (durationNorm * 0.15) +
+      (paceNorm * 0.10) +
+      (sustainedNorm * 0.07) +
+      (cognitiveNorm * 0.03),
+    )));
+    console.log("[MLASOON] AI-adjusted flowScore:", finalFlowScore);
+  }
+
+  const finalAnalysis: AnalysisResult = { ...analysis, flowScore: finalFlowScore };
+  const coachingNotes: CoachingNotes | null = coaching ?? null;
+
   const { stageAdvancement, streakCount, stage, xp, streakLost, previousStreak } = await updateProgress(
     userId,
-    analysis,
+    finalAnalysis,
   );
 
   const nowIso = new Date().toISOString();
@@ -361,18 +439,19 @@ export async function processSession(
       user_id: userId,
       topic,
       duration: Math.round(duration),
-      flow_score: analysis.flowScore,
-      filler_count: analysis.fillerCount,
-      forbidden_used: analysis.forbiddenUsed.length,
-      pace: Math.round(analysis.pace),
-      longest_pause: analysis.longestPause,
-      word_count: analysis.wordCount,
+      flow_score: finalFlowScore,
+      filler_count: finalAnalysis.fillerCount,
+      forbidden_used: finalAnalysis.forbiddenUsed.length,
+      pace: Math.round(finalAnalysis.pace),
+      longest_pause: finalAnalysis.longestPause,
+      word_count: finalAnalysis.wordCount,
       transcript: whisper.transcript,
       challenge_type: getChallengeType(stage),
-      analysis,
+      analysis: finalAnalysis,
       xp_breakdown: xp,
       stage_advancement: stageAdvancement,
       streak_count: streakCount,
+      coaching_notes: coachingNotes,
     })
     .select<SessionRow>("id")
     .single();
@@ -389,13 +468,14 @@ export async function processSession(
   return {
     sessionId,
     topic,
-    analysis,
+    analysis: finalAnalysis,
     xp,
     stageAdvancement,
     streakCount,
     streakLost,
     previousStreak,
     timestamp: nowIso,
+    coachingNotes,
   };
 }
 

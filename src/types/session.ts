@@ -21,6 +21,13 @@ export interface AnalysisResult {
   longestPause: number;
   speakingDuration: number;
   flowScore: number;
+  flowDimensions: {
+    fillerScore: number;
+    durationScore: number;
+    paceScore: number;
+    sustainedScore: number;
+    cognitiveScore: number;
+  };
 }
 
 export interface XPBreakdown {
@@ -38,6 +45,14 @@ export interface StageAdvancement {
   newStageName: string | null;
 }
 
+export interface CoachingNotes {
+  relevancyScore: number;
+  answerQualityScore: number;
+  coachingFeedback: string;
+  strengths: string[];
+  improvements: string[];
+}
+
 export interface SessionResult {
   sessionId: string;
   topic: string;
@@ -48,5 +63,5 @@ export interface SessionResult {
   streakLost: boolean;
   previousStreak: number;
   timestamp: string;
+  coachingNotes: CoachingNotes | null;
 }
-

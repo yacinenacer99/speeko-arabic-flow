@@ -33,6 +33,8 @@ const HESITATION_VARIANTS = [
   "أه",
 ] as const;
 
+// TODO: hesitation detection is unreliable due to Whisper transcription variance
+// Replace with Claude AI analysis when integrated — Claude understands Arabic dialect hesitations contextually
 /**
  * Detect hesitation sounds by regex — catches variants not in HESITATION_VARIANTS.
  * Matches repeated Arabic throat/vowel characters (≥2) or known hesitation phrases.
@@ -214,6 +216,7 @@ export function analyzeTranscript(
     longestPause: longestPause > 0 ? Number(longestPause.toFixed(1)) : 0,
     speakingDuration,
     flowScore,
+    flowDimensions: { fillerScore, durationScore, paceScore, sustainedScore, cognitiveScore },
   };
 }
 

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   CheckCircle,
+  ChevronDown,
   Clock,
   MessageSquare,
   Gauge,
@@ -75,6 +76,7 @@ const Results = () => {
   const [loadError, setLoadError] = useState(false);
   const [openTooltip, setOpenTooltip] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
+  const [showTranscript, setShowTranscript] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -312,6 +314,9 @@ const Results = () => {
             {session.topic || "جلسة تدريبية"}
           </p>
 
+          <p className="font-cairo" style={{ fontSize: 12, fontWeight: 300, color: "#9090A8", marginBottom: 6 }}>
+            معدل تدفق الكلام
+          </p>
           <div style={{ marginBottom: 8 }}>
             <span className="font-cairo" style={{ fontSize: 48, fontWeight: 700, color: getMetricColor("flowScore", flowScore), lineHeight: 1 }}>
               {flowScore}
@@ -444,6 +449,52 @@ const Results = () => {
                 ))}
               </div>
             </>
+          )}
+        </div>
+
+        <div
+          style={{
+            background: "rgba(255,255,255,0.6)",
+            backdropFilter: "blur(16px)",
+            borderRadius: 20,
+            padding: 20,
+            marginTop: 12,
+            marginBottom: 16,
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setShowTranscript((v) => !v)}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+            }}
+          >
+            <span className="font-cairo font-bold" style={{ fontSize: 14, color: "#1A1A2E" }}>
+              النص الكامل
+            </span>
+            <ChevronDown
+              size={18}
+              color="#9090A8"
+              style={{ transform: showTranscript ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s ease" }}
+            />
+          </button>
+
+          {showTranscript && (
+            <div style={{ marginTop: 16 }}>
+              <p className="font-cairo font-bold" style={{ fontSize: 14, color: "#1A1A2E", marginBottom: 12 }}>
+                {session.topic}
+              </p>
+              <p className="font-cairo font-light" style={{ fontSize: 13, color: "#9090A8", lineHeight: 1.8 }}>
+                {session.transcript || "لا يوجد نص متاح"}
+              </p>
+            </div>
           )}
         </div>
 

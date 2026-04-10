@@ -56,6 +56,7 @@ export interface CoachingNotes {
 export interface SessionResult {
   sessionId: string;
   topic: string;
+  transcript?: string;
   analysis: AnalysisResult;
   xp: XPBreakdown;
   stageAdvancement: StageAdvancement;

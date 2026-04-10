@@ -468,6 +468,7 @@ export async function processSession(
   return {
     sessionId,
     topic,
+    transcript: whisper.transcript,
     analysis: finalAnalysis,
     xp,
     stageAdvancement,

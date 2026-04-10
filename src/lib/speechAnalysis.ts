@@ -6,12 +6,17 @@ import type { AnalysisResult, WhisperWord } from "@/types/session";
 const ARABIC_DIACRITICS = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g;
 
 /**
- * Normalize Arabic/Latin text for comparison (lowercase, strip diacritics).
- * @param text Raw transcript text.
- * @returns Normalized string.
+ * Normalize Arabic/Latin text for comparison.
+ * Strips diacritics, unifies alef variants, ta marbuta, alef maqsura, lowercases.
  */
 function normalize(text: string): string {
-  return text.normalize("NFC").replace(ARABIC_DIACRITICS, "").toLowerCase();
+  return text
+    .normalize("NFC")
+    .replace(ARABIC_DIACRITICS, "")
+    .replace(/[أإآ]/g, "ا")
+    .replace(/ة/g, "ه")
+    .replace(/ى/g, "ي")
+    .toLowerCase();
 }
 
 const HESITATION_VARIANTS = [
@@ -57,18 +62,24 @@ export function analyzeTranscript(
 
   const wordCount = words.length;
 
+  console.log("[MLASOON] normalized transcript:", normalizedText.slice(0, 150));
+
   const fillerMap = new Map<string, number>();
   const normalizedFillers = CONSTANTS.FILLER_WORDS_AR.map((w) => normalize(w));
   const normalizedHesitations = HESITATION_VARIANTS.map((v) => normalize(v));
   const normalizedAAALabel = normalize("أأأأء");
 
   for (const token of words) {
+    // Hesitation sounds — exact token match after normalization
     if (normalizedHesitations.includes(token)) {
       fillerMap.set(normalizedAAALabel, (fillerMap.get(normalizedAAALabel) ?? 0) + 1);
       continue;
     }
+    // Filler words — use includes() so spelling variants still match
     for (const filler of normalizedFillers) {
-      if (token === filler) fillerMap.set(filler, (fillerMap.get(filler) ?? 0) + 1);
+      if (token.includes(filler)) {
+        fillerMap.set(filler, (fillerMap.get(filler) ?? 0) + 1);
+      }
     }
   }
 
@@ -76,6 +87,8 @@ export function analyzeTranscript(
     .filter(([, count]) => count > 0)
     .map(([word, count]) => ({ word, count }));
   const fillerCount = fillerWords.reduce((sum, f) => sum + f.count, 0);
+
+  console.log("[MLASOON] fillers found:", fillerCount);
 
   const pace = safeDuration > 0 ? Math.round((wordCount / safeDuration) * 60) : 0;
 
@@ -90,6 +103,7 @@ export function analyzeTranscript(
     const normalizedForbidden = forbiddenWords.map((w) => normalize(w));
     forbiddenUsed = normalizedForbidden.filter((w) => wordBoundaryMatch(normalizedText, w));
   }
+  console.log("[MLASOON] forbidden found:", forbiddenUsed.length);
 
   let longestPause = 0;
   let pauseSum = 0;

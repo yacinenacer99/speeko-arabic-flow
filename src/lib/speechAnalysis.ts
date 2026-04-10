@@ -6,13 +6,22 @@ import type { AnalysisResult, WhisperWord } from "@/types/session";
 const ARABIC_DIACRITICS = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g;
 
 /**
+ * Strip Arabic punctuation marks attached to tokens (e.g. "،مكالمات" → "مكالمات").
+ * Applied BEFORE normalize and stripPrefixes.
+ */
+function stripPunctuation(word: string): string {
+  return word.replace(/[،,؛;:؟?!.\u0600-\u060F\u061B\u061E-\u061F]/g, "");
+}
+
+/**
  * Normalize Arabic/Latin text for comparison.
- * Strips diacritics, unifies alef variants, ta marbuta, alef maqsura, lowercases.
+ * Strips diacritics (including tanwin), unifies alef variants, ta marbuta, alef maqsura, lowercases.
  */
 function normalize(text: string): string {
   return text
     .normalize("NFC")
     .replace(ARABIC_DIACRITICS, "")
+    .replace(/[ًٌٍ]/g, "") // strip tanwin so "حرفياً" → "حرفيا"
     .replace(/[أإآ]/g, "ا")
     .replace(/ة/g, "ه")
     .replace(/ى/g, "ي")
@@ -92,7 +101,7 @@ export function analyzeTranscript(
 
   const words = normalizedText
     .split(/\s+/)
-    .map((w) => w.trim())
+    .map((w) => stripPunctuation(w.trim()))
     .filter(Boolean);
 
   const wordCount = words.length;
@@ -101,8 +110,8 @@ export function analyzeTranscript(
   console.log("[MLASOON] word timestamps received:", wordTimestamps.length);
 
   const fillerMap = new Map<string, number>();
-  // Strip prefixes from filler words so "والحقيقة" matches filler "الحقيقة" → "حقيقه" after normalize
-  const normalizedFillers = CONSTANTS.FILLER_WORDS_AR.map((w) => stripPrefixes(normalize(w)));
+  // Strip punctuation → normalize → strip prefixes on filler words for consistent comparison
+  const normalizedFillers = CONSTANTS.FILLER_WORDS_AR.map((w) => stripPrefixes(normalize(stripPunctuation(w))));
   const normalizedHesitations = HESITATION_VARIANTS.map((v) => normalize(v));
   const normalizedAAALabel = normalize("أأأأء");
 
@@ -136,7 +145,7 @@ export function analyzeTranscript(
   // Stage gate only controls whether they count against scoring/advancement.
   // Strip prefixes from both the forbidden word and each transcript token so
   // "والمدرس" matches forbidden word "مدرس".
-  const normalizedForbidden = forbiddenWords.map((w) => stripPrefixes(normalize(w)));
+  const normalizedForbidden = forbiddenWords.map((w) => stripPrefixes(normalize(stripPunctuation(w))));
   const forbiddenUsed = normalizedForbidden.filter((fw) =>
     words.some((token) => stripPrefixes(token) === fw),
   );

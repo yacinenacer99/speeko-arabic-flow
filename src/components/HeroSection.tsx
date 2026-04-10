@@ -431,7 +431,7 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
     setProcessingDone(false);
     isProcessingRef.current = true;
 
-    const challengeForbidden = userStage >= 3 ? topic.forbiddenWords : [];
+    const challengeForbidden = topic.forbiddenWords;
     console.log("[MLASOON] processing started, topic:", topic.question);
 
     processSession(blob, topic.question, challengeForbidden, session.user.id, userStage)

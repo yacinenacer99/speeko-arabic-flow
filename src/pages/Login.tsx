@@ -1,4 +1,4 @@
-import { useState, FormEvent, useEffect } from "react";
+import { useState, FormEvent, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -25,10 +25,17 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [confirmationSent, setConfirmationSent] = useState(false);
+  const processingTrialRef = useRef(false);
+
+  // Clear any stale error on mount
+  useEffect(() => {
+    setError(null);
+  }, []);
 
   useEffect(() => {
     if (!authLoading && isLoggedIn) {
-      // Do not auto-redirect during trial flow — handleEmailSubmit owns navigation
+      // Do not auto-redirect while trial is being processed — handleEmailSubmit owns navigation
+      if (processingTrialRef.current) return;
       const hasPendingBlob = !!sessionStorage.getItem("mlasoon_pending_blob");
       if (fromTrial || hasPendingBlob) return;
       navigate("/home", { replace: true });
@@ -102,8 +109,12 @@ const Login = () => {
       return;
     }
 
+    // Lock the isLoggedIn effect so it cannot race to /home during trial processing
+    processingTrialRef.current = true;
+
     const { error: upError } = await upsertUserProfile(supabase, defaultSignupProfile(uid));
     if (upError) {
+      processingTrialRef.current = false;
       setError("تعذر حفظ الملف الشخصي، راجع الاتصال");
       return;
     }
@@ -113,9 +124,12 @@ const Login = () => {
     if (trialResult) {
       setLatestSession(trialResult);
       console.log("[MLASOON] navigating to /results");
+      processingTrialRef.current = false;
       navigate("/results");
       return;
     }
+
+    processingTrialRef.current = false;
 
     if (fromTrial) {
       console.log("[MLASOON] processPendingTrial returned false on trial flow");

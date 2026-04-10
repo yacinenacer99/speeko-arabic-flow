@@ -2,7 +2,6 @@ import { useState, FormEvent, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import AnalysisLoading from "@/components/AnalysisLoading";
 import { supabase } from "@/lib/supabase";
 import { getAuthErrorMessageAr } from "@/lib/authErrors";
 import { upsertUserProfile, defaultSignupProfile } from "@/lib/userProfile";
@@ -26,10 +25,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [confirmationSent, setConfirmationSent] = useState(false);
-  const [showAnalysisLoading, setShowAnalysisLoading] = useState(false);
-  const [processingDone, setProcessingDone] = useState(false);
   const processingTrialRef = useRef(false);
-  const trialResultRef = useRef<SessionResult | null>(null);
 
   // Clear any stale error on mount and verify blob survival across navigation
   useEffect(() => {
@@ -117,8 +113,6 @@ const Login = () => {
 
     // Lock the isLoggedIn effect so it cannot race to /home during trial processing
     processingTrialRef.current = true;
-    setShowAnalysisLoading(true);
-    setProcessingDone(false);
 
     const { error: upError } = await upsertUserProfile(supabase, defaultSignupProfile(uid));
     if (upError) {
@@ -128,15 +122,16 @@ const Login = () => {
     }
 
     console.log("[MLASOON] checking pending blob:", sessionStorage.getItem("mlasoon_pending_blob")?.slice(0, 50));
-    const trialResult = await processPendingTrial(uid, () => setProcessingDone(true));
+    const trialResult = await processPendingTrial(uid);
     if (trialResult) {
-      trialResultRef.current = trialResult;
-      console.log("[MLASOON] processSession complete, waiting for loading animation");
+      console.log("[MLASOON] processSession complete, navigating to results");
+      processingTrialRef.current = false;
+      setLatestSession(trialResult);
+      navigate("/results");
       return;
     }
 
     processingTrialRef.current = false;
-    setShowAnalysisLoading(false);
 
     if (fromTrial) {
       console.log("[MLASOON] processPendingTrial returned false on trial flow");
@@ -167,7 +162,7 @@ const Login = () => {
     }
   };
 
-  const processPendingTrial = async (userId: string, onDone?: () => void): Promise<SessionResult | false> => {
+  const processPendingTrial = async (userId: string): Promise<SessionResult | false> => {
     const base64 = sessionStorage.getItem("mlasoon_pending_blob");
     const topicRaw = sessionStorage.getItem("mlasoon_pending_topic");
     console.log("[MLASOON] base64 exists:", !!base64, "topic exists:", !!topicRaw);
@@ -184,7 +179,6 @@ const Login = () => {
       try {
         const result = await processSession(blob, topic.question, topic.forbiddenWords, userId, 1);
         console.log("[MLASOON] processSession result:", !!result);
-        onDone?.();
         return result;
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
@@ -208,21 +202,6 @@ const Login = () => {
       className="flex flex-col items-center justify-center relative"
       style={{ minHeight: "100dvh", background: "hsl(var(--background))", direction: "rtl", padding: "0 var(--page-padding-mobile)" }}
     >
-      {showAnalysisLoading && (
-        <AnalysisLoading
-          processingDone={processingDone}
-          visible={showAnalysisLoading}
-          onComplete={() => {
-            setShowAnalysisLoading(false);
-            processingTrialRef.current = false;
-            const result = trialResultRef.current;
-            if (result) {
-              setLatestSession(result);
-              navigate("/results");
-            }
-          }}
-        />
-      )}
       <Navbar />
       <div className="blob blob-violet" style={{ width: 200, height: 200, top: "20%", right: "-10%" }} />
 

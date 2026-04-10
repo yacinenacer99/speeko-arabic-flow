@@ -507,7 +507,7 @@ const Results = () => {
         {session.coachingNotes ? (
           <div>
             {/* Score badges */}
-            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+            <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
               <span
                 className="font-cairo font-bold"
                 style={{
@@ -535,6 +535,42 @@ const Results = () => {
                 جودة الإجابة {session.coachingNotes.answerQualityScore}٪
               </span>
             </div>
+
+            {/* Root cause insight */}
+            {session.coachingNotes.rootCause && (
+              <div
+                style={{
+                  background: "rgba(108,99,255,0.08)",
+                  border: "1px solid rgba(108,99,255,0.2)",
+                  borderRadius: 16,
+                  padding: 16,
+                  marginBottom: 10,
+                }}
+              >
+                <p className="font-cairo" style={{ fontSize: 11, fontWeight: 700, color: "#6C63FF", marginBottom: 6, letterSpacing: 0.5 }}>
+                  التشخيص الجذري
+                </p>
+                <p className="font-cairo font-light" style={{ fontSize: 13, color: "#1A1A2E", margin: 0, lineHeight: 1.6 }}>
+                  {session.coachingNotes.rootCause}
+                </p>
+              </div>
+            )}
+
+            {/* Evidence quote */}
+            {session.coachingNotes.evidenceQuote && (
+              <div
+                style={{
+                  borderRight: "3px solid #6C63FF",
+                  paddingRight: 14,
+                  marginBottom: 10,
+                  marginRight: 4,
+                }}
+              >
+                <p className="font-cairo font-light" style={{ fontSize: 13, color: "#9090A8", margin: 0, lineHeight: 1.7, fontStyle: "italic" }}>
+                  "{session.coachingNotes.evidenceQuote}"
+                </p>
+              </div>
+            )}
 
             {/* Overall feedback */}
             <div className="glass-card-light" style={{ borderRadius: 16, padding: 16, marginBottom: 10 }}>
@@ -590,6 +626,52 @@ const Results = () => {
                     </li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            {/* Pattern alert */}
+            {session.coachingNotes.patternAlert && session.coachingNotes.patternAlert.trim() !== "" && (
+              <div
+                style={{
+                  background: "rgba(245,158,11,0.08)",
+                  border: "1px solid rgba(245,158,11,0.3)",
+                  borderRadius: 16,
+                  padding: 16,
+                  marginBottom: 10,
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 12,
+                }}
+              >
+                <AlertCircle size={18} color="#F59E0B" style={{ flexShrink: 0, marginTop: 1 }} />
+                <div>
+                  <p className="font-cairo font-bold" style={{ fontSize: 13, color: "#F59E0B", marginBottom: 4 }}>
+                    نمط متكرر
+                  </p>
+                  <p className="font-cairo font-light" style={{ fontSize: 13, color: "#9090A8", margin: 0, lineHeight: 1.6 }}>
+                    {session.coachingNotes.patternAlert}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Next session drill */}
+            {session.coachingNotes.nextSessionDrill && (
+              <div
+                style={{
+                  background: "rgba(93,190,138,0.08)",
+                  border: "1px solid rgba(93,190,138,0.25)",
+                  borderRadius: 16,
+                  padding: 16,
+                  marginBottom: 10,
+                }}
+              >
+                <p className="font-cairo font-bold" style={{ fontSize: 12, color: "#5DBE8A", marginBottom: 8, letterSpacing: 0.5 }}>
+                  تمرين الجلسة القادمة
+                </p>
+                <p className="font-cairo font-light" style={{ fontSize: 13, color: "#1A1A2E", margin: 0, lineHeight: 1.6 }}>
+                  {session.coachingNotes.nextSessionDrill}
+                </p>
               </div>
             )}
           </div>

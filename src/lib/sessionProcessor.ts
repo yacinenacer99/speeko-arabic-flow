@@ -13,6 +13,10 @@ interface CoachingResult {
   coachingFeedback: string;
   strengths: string[];
   improvements: string[];
+  rootCause?: string;
+  evidenceQuote?: string;
+  nextSessionDrill?: string;
+  patternAlert?: string;
 }
 
 const getCoaching = async (
@@ -24,7 +28,13 @@ const getCoaching = async (
     duration: number;
     pace: number;
     flowScore: number;
+    longestPause: number;
+    wordCount: number;
   },
+  userGoal: string,
+  userStage: number,
+  sessionCount: number,
+  previousFlowScore: number | null,
 ): Promise<CoachingResult | null> => {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
@@ -36,7 +46,7 @@ const getCoaching = async (
         "apikey": anonKey,
         "Authorization": `Bearer ${anonKey}`,
       },
-      body: JSON.stringify({ transcript, topic, metrics }),
+      body: JSON.stringify({ transcript, topic, metrics, userGoal, userStage, sessionCount, previousFlowScore }),
     });
     if (!response.ok) return null;
     return await response.json() as CoachingResult;
@@ -386,6 +396,29 @@ export async function processSession(
   );
   console.log("[MLASOON] Analysis complete, flow score:", analysis.flowScore);
 
+  const { data: userData } = await supabase
+    .from("users")
+    .select("goal")
+    .eq("id", userId)
+    .maybeSingle();
+
+  const { count: sessionCount } = await supabase
+    .from("sessions")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId);
+
+  const { data: lastSession } = await supabase
+    .from("sessions")
+    .select("flow_score")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const userGoal = (userData as { goal?: string } | null)?.goal ?? "personal";
+  const prevFlowScore = (lastSession as { flow_score?: number } | null)?.flow_score ?? null;
+  console.log("[MLASOON] Coaching context — goal:", userGoal, "sessionCount:", sessionCount, "prevScore:", prevFlowScore);
+
   console.log("[MLASOON] Calling coaching function");
   const coaching = await getCoaching(
     whisper.transcript,
@@ -396,7 +429,13 @@ export async function processSession(
       duration: analysis.speakingDuration,
       pace: analysis.pace,
       flowScore: analysis.flowScore,
+      longestPause: analysis.longestPause,
+      wordCount: analysis.wordCount,
     },
+    userGoal,
+    userStage,
+    sessionCount ?? 0,
+    prevFlowScore,
   );
   console.log("[MLASOON] Coaching received:", !!coaching, coaching?.relevancyScore);
 

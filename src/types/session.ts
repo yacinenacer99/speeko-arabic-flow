@@ -51,6 +51,10 @@ export interface CoachingNotes {
   coachingFeedback: string;
   strengths: string[];
   improvements: string[];
+  rootCause?: string;
+  evidenceQuote?: string;
+  nextSessionDrill?: string;
+  patternAlert?: string;
 }
 
 export interface SessionResult {

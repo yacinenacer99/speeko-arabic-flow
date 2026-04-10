@@ -655,25 +655,6 @@ const Results = () => {
               </div>
             )}
 
-            {/* Next session drill */}
-            {session.coachingNotes.nextSessionDrill && (
-              <div
-                style={{
-                  background: "rgba(93,190,138,0.08)",
-                  border: "1px solid rgba(93,190,138,0.25)",
-                  borderRadius: 16,
-                  padding: 16,
-                  marginBottom: 10,
-                }}
-              >
-                <p className="font-cairo font-bold" style={{ fontSize: 12, color: "#5DBE8A", marginBottom: 8, letterSpacing: 0.5 }}>
-                  تمرين الجلسة القادمة
-                </p>
-                <p className="font-cairo font-light" style={{ fontSize: 13, color: "#1A1A2E", margin: 0, lineHeight: 1.6 }}>
-                  {session.coachingNotes.nextSessionDrill}
-                </p>
-              </div>
-            )}
           </div>
         ) : (
           <div className="glass-card-light" style={{ borderRadius: 16, padding: 20 }}>

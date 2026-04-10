@@ -19,6 +19,29 @@ function normalize(text: string): string {
     .toLowerCase();
 }
 
+/**
+ * Strip common Arabic conjunctive/prepositional/article prefixes for comparison.
+ * Applied AFTER normalizeArabic so both sides are on the same normalized base.
+ */
+function stripPrefixes(word: string): string {
+  return word
+    .replace(/^وال/, "")
+    .replace(/^فال/, "")
+    .replace(/^بال/, "")
+    .replace(/^كال/, "")
+    .replace(/^لل/, "")
+    .replace(/^وَ/, "")
+    .replace(/^فَ/, "")
+    .replace(/^بِ/, "")
+    .replace(/^لِ/, "")
+    .replace(/^و/, "")
+    .replace(/^ف/, "")
+    .replace(/^ب/, "")
+    .replace(/^ل/, "")
+    .replace(/^ال/, "")
+    .replace(/^ال/, ""); // double pass for compound prefixes like وال
+}
+
 const HESITATION_VARIANTS = [
   "آآآ",
   "اااا",
@@ -78,7 +101,8 @@ export function analyzeTranscript(
   console.log("[MLASOON] word timestamps received:", wordTimestamps.length);
 
   const fillerMap = new Map<string, number>();
-  const normalizedFillers = CONSTANTS.FILLER_WORDS_AR.map((w) => normalize(w));
+  // Strip prefixes from filler words so "والحقيقة" matches filler "الحقيقة" → "حقيقه" after normalize
+  const normalizedFillers = CONSTANTS.FILLER_WORDS_AR.map((w) => stripPrefixes(normalize(w)));
   const normalizedHesitations = HESITATION_VARIANTS.map((v) => normalize(v));
   const normalizedAAALabel = normalize("أأأأء");
 
@@ -89,9 +113,11 @@ export function analyzeTranscript(
       fillerMap.set(normalizedAAALabel, (fillerMap.get(normalizedAAALabel) ?? 0) + 1);
       continue;
     }
-    // Filler words — exact match after normalization (normalization handles alef/ta marbuta variants)
+    // Filler words — strip prefixes from both sides before comparing
+    // token is already normalize()'d (from normalizedText); apply stripPrefixes to match prefixed forms
+    const strippedToken = stripPrefixes(token);
     for (const filler of normalizedFillers) {
-      if (token === filler) {
+      if (strippedToken === filler) {
         fillerMap.set(filler, (fillerMap.get(filler) ?? 0) + 1);
       }
     }
@@ -106,16 +132,14 @@ export function analyzeTranscript(
 
   const pace = safeDuration > 0 ? Math.round((wordCount / safeDuration) * 60) : 0;
 
-  const wordBoundaryMatch = (text: string, word: string): boolean => {
-    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const regex = new RegExp(`(^|\\s|[،,:.!?])${escaped}($|\\s|[،,:.!?])`, "u");
-    return regex.test(text);
-  };
-
   // Always detect forbidden words regardless of stage.
   // Stage gate only controls whether they count against scoring/advancement.
-  const normalizedForbidden = forbiddenWords.map((w) => normalize(w));
-  const forbiddenUsed = normalizedForbidden.filter((w) => wordBoundaryMatch(normalizedText, w));
+  // Strip prefixes from both the forbidden word and each transcript token so
+  // "والمدرس" matches forbidden word "مدرس".
+  const normalizedForbidden = forbiddenWords.map((w) => stripPrefixes(normalize(w)));
+  const forbiddenUsed = normalizedForbidden.filter((fw) =>
+    words.some((token) => stripPrefixes(token) === fw),
+  );
   console.log("[MLASOON] forbidden found:", forbiddenUsed.length);
 
   // pauseSum uses threshold to avoid counting micro-gaps as silence (for speakingDuration accuracy)

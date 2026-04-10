@@ -63,6 +63,7 @@ export function analyzeTranscript(
   const wordCount = words.length;
 
   console.log("[MLASOON] normalized transcript:", normalizedText.slice(0, 150));
+  console.log("[MLASOON] word timestamps received:", wordTimestamps.length);
 
   const fillerMap = new Map<string, number>();
   const normalizedFillers = CONSTANTS.FILLER_WORDS_AR.map((w) => normalize(w));
@@ -75,9 +76,9 @@ export function analyzeTranscript(
       fillerMap.set(normalizedAAALabel, (fillerMap.get(normalizedAAALabel) ?? 0) + 1);
       continue;
     }
-    // Filler words — use includes() so spelling variants still match
+    // Filler words — exact match after normalization (normalization handles alef/ta marbuta variants)
     for (const filler of normalizedFillers) {
-      if (token.includes(filler)) {
+      if (token === filler) {
         fillerMap.set(filler, (fillerMap.get(filler) ?? 0) + 1);
       }
     }

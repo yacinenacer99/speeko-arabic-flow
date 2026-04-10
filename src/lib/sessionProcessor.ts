@@ -305,7 +305,20 @@ export async function processSession(
 
   const whisper = await transcribeAudio(audioBlob, forbiddenWords);
   const rawDuration = await getAudioDuration(audioBlob);
-  const duration = safeDuration(rawDuration);
+  console.log("[MLASOON] rawDuration from audio element:", rawDuration, "word timestamps:", whisper.words.length);
+
+  let duration: number;
+  if (rawDuration > 0) {
+    duration = rawDuration;
+  } else if (whisper.words.length > 0) {
+    // WebM duration metadata unavailable (Infinity→0 or timeout) — derive from Whisper timestamps
+    const lastWordEnd = whisper.words[whisper.words.length - 1].end;
+    duration = lastWordEnd > 0 ? lastWordEnd : CONSTANTS.SESSION_DURATION_SECONDS;
+    console.log("[MLASOON] getAudioDuration failed, using Whisper last word end:", duration);
+  } else {
+    duration = CONSTANTS.SESSION_DURATION_SECONDS;
+    console.log("[MLASOON] getAudioDuration failed, no Whisper timestamps, using constant:", duration);
+  }
 
   const wordCount = whisper.transcript.trim().split(/\s+/).filter(Boolean).length;
   if (wordCount < CONSTANTS.MIN_WORD_COUNT) {

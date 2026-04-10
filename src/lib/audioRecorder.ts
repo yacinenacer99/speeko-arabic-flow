@@ -11,7 +11,13 @@ export async function requestMicrophoneAccess(): Promise<MediaStream> {
   }
 
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        sampleRate: { ideal: 16000 },
+      },
+    });
     console.log("[MLASOON] Microphone access granted");
     return stream;
   } catch (err) {

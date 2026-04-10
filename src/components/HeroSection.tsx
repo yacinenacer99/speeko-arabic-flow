@@ -54,6 +54,7 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
   const micStreamRef = useRef<MediaStream | null>(null);
   const isProcessingRef = useRef(false);
   const pendingBlobRef = useRef<Blob | null>(null);
+  const recordedDurationMsRef = useRef<number>(0);
   const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null);
   const [waveHeights, setWaveHeights] = useState<number[]>(() => Array(7).fill(10));
   const [showLoading, setShowLoading] = useState(false);
@@ -368,15 +369,16 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
       if (!handle) throw new Error("EMPTY_RECORDING");
 
       console.log("[MLASOON] step 1: calling handle.stop()");
-      const blob = await handle.stop();
-      console.log("[MLASOON] step 2: blob received, size =", blob.size);
+      const { blob, durationMs } = await handle.stop();
+      console.log("[MLASOON] step 2: blob received, size =", blob.size, "durationMs =", durationMs);
 
       recordingRef.current = null;
       micStreamRef.current = null;
       setAnalyserNode(null);
+      recordedDurationMsRef.current = durationMs;
 
       const rawDuration = await getAudioDuration(blob);
-      const duration = rawDuration > 0 ? rawDuration : 60;
+      const duration = durationMs > 0 ? durationMs / 1000 : rawDuration > 0 ? rawDuration : 60;
 
       pendingBlobRef.current = blob;
       setSummaryData({ duration, topic: currentTopic });
@@ -434,7 +436,7 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
     const challengeForbidden = topic.forbiddenWords;
     console.log("[MLASOON] processing started, topic:", topic.question);
 
-    processSession(blob, topic.question, challengeForbidden, session.user.id, userStage)
+    processSession(blob, topic.question, challengeForbidden, session.user.id, userStage, recordedDurationMsRef.current || undefined)
       .then((result: SessionResult) => {
         console.log("[MLASOON] processing complete, flowScore:", result.analysis.flowScore);
         setLatestSession(result);

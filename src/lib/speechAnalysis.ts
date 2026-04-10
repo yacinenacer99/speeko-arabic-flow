@@ -34,6 +34,15 @@ const HESITATION_VARIANTS = [
 ] as const;
 
 /**
+ * Detect hesitation sounds by regex — catches variants not in HESITATION_VARIANTS.
+ * Matches repeated Arabic throat/vowel characters (≥2) or known hesitation phrases.
+ */
+function isHesitation(word: string): boolean {
+  const n = normalize(word);
+  return /^[اأإآءهى]{2,}$/.test(n) || /^(اه|اهه|آه|أه|عه)$/.test(n);
+}
+
+/**
  * Analyze a transcript and its word timings into speaking metrics.
  * @param transcript Full transcript text.
  * @param wordTimestamps Whisper word timing array.
@@ -48,6 +57,7 @@ export function analyzeTranscript(
   forbiddenWords: string[],
   totalDuration: number,
   userStage: number,
+  trailingPause?: number,
 ): AnalysisResult {
   const safeDuration =
     typeof totalDuration === "number" && Number.isFinite(totalDuration) && totalDuration > 0
@@ -71,8 +81,8 @@ export function analyzeTranscript(
   const normalizedAAALabel = normalize("أأأأء");
 
   for (const token of words) {
-    // Hesitation sounds — exact token match after normalization
-    if (normalizedHesitations.includes(token)) {
+    // Hesitation sounds — exact list match OR regex-based detection
+    if (normalizedHesitations.includes(token) || isHesitation(token)) {
       fillerMap.set(normalizedAAALabel, (fillerMap.get(normalizedAAALabel) ?? 0) + 1);
       continue;
     }
@@ -122,10 +132,11 @@ export function analyzeTranscript(
     }
     return Math.round(longest * 10) / 10;
   };
-  const longestPause = calculateLongestPause(wordTimestamps);
+  const longestWordGap = calculateLongestPause(wordTimestamps);
+  const longestPause = Math.round(Math.max(longestWordGap, trailingPause ?? 0) * 10) / 10;
 
   console.log("[MLASOON] words array length:", wordTimestamps.length);
-  console.log("[MLASOON] longest pause calculated:", longestPause);
+  console.log("[MLASOON] longestWordGap:", longestWordGap, "trailingPause:", trailingPause ?? 0, "longestPause:", longestPause);
 
   const speakingDuration = Math.max(safeDuration - pauseSum, 0);
 

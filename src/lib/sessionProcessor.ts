@@ -297,6 +297,7 @@ export async function processSession(
   forbiddenWords: string[],
   userId: string,
   userStage: number,
+  recordedDurationMs?: number,
 ): Promise<SessionResult> {
   const safeDuration = (d: number): number =>
     (typeof d === "number" && Number.isFinite(d) && d > 0)
@@ -305,11 +306,19 @@ export async function processSession(
 
   const whisper = await transcribeAudio(audioBlob, forbiddenWords);
   const rawDuration = await getAudioDuration(audioBlob);
-  console.log("[MLASOON] rawDuration from audio element:", rawDuration, "word timestamps:", whisper.words.length);
+  console.log("[MLASOON] rawDuration from audio element:", rawDuration, "recordedDurationMs:", recordedDurationMs, "word timestamps:", whisper.words.length);
 
   let duration: number;
-  if (rawDuration > 0) {
+  const realDuration = recordedDurationMs != null && recordedDurationMs > 0
+    ? recordedDurationMs / 1000
+    : 0;
+
+  if (realDuration > 0) {
+    duration = realDuration;
+    console.log("[MLASOON] using real recorder duration:", duration);
+  } else if (rawDuration > 0) {
     duration = rawDuration;
+    console.log("[MLASOON] using audio element duration:", duration);
   } else if (whisper.words.length > 0) {
     // WebM duration metadata unavailable (Infinity→0 or timeout) — derive from Whisper timestamps
     const lastWordEnd = whisper.words[whisper.words.length - 1].end;
@@ -325,12 +334,17 @@ export async function processSession(
     throw new Error("EMPTY_RECORDING");
   }
 
+  const lastWordEnd = whisper.words.length > 0 ? whisper.words[whisper.words.length - 1].end : 0;
+  const trailingPause = lastWordEnd > 0 && duration > lastWordEnd ? duration - lastWordEnd : 0;
+  console.log("[MLASOON] trailingPause:", trailingPause, "lastWordEnd:", lastWordEnd, "duration:", duration);
+
   const analysis = analyzeTranscript(
     whisper.transcript,
     whisper.words,
     forbiddenWords,
     duration,
     userStage,
+    trailingPause,
   );
   console.log("[MLASOON] Analysis complete, flow score:", analysis.flowScore);
 

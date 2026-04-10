@@ -27,7 +27,7 @@ export async function requestMicrophoneAccess(): Promise<MediaStream> {
 }
 
 export interface RecordingHandle {
-  stop: () => Promise<Blob>;
+  stop: () => Promise<{ blob: Blob; durationMs: number }>;
   mediaRecorder: MediaRecorder;
   analyserNode: AnalyserNode;
 }
@@ -50,6 +50,7 @@ export function startRecording(stream: MediaStream): RecordingHandle {
   const options: MediaRecorderOptions = mimeType ? { mimeType } : {};
   const mediaRecorder = new MediaRecorder(stream, options);
   const chunks: BlobPart[] = [];
+  const startTime = Date.now();
 
   mediaRecorder.ondataavailable = (event) => {
     if (event.data && event.data.size > 0) {
@@ -73,16 +74,19 @@ export function startRecording(stream: MediaStream): RecordingHandle {
   mediaRecorder.start(1000);
 
   const stop = () =>
-    new Promise<Blob>((resolve) => {
+    new Promise<{ blob: Blob; durationMs: number }>((resolve) => {
       const finalize = () => {
+        const durationMs = Date.now() - startTime;
         const blob = new Blob(chunks, { type: mimeType || "audio/webm" });
         console.log(
           "[MLASOON] Recording stopped, blob size:",
           blob.size,
           "bytes, mimeType:",
           blob.type,
+          "durationMs:",
+          durationMs,
         );
-        resolve(blob);
+        resolve({ blob, durationMs });
         stream.getTracks().forEach((t) => t.stop());
         audioContext.close().catch(() => {});
       };

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
-const DURATION_MS = 4000;
-const HOLD_AT_PCT = 95;
+const DURATION_MS = 15000;
+const HOLD_AT_PCT = 88;
 const FINISH_ANIMATION_MS = 500;
 const COMPLETE_DELAY_MS = 300;
 
@@ -12,16 +12,24 @@ interface AnalysisLoadingProps {
 }
 
 function getAffirmationForProgress(pct: number): string {
-  if (pct <= 20) return "نحلل أداءك...";
-  if (pct <= 40) return "كل جلسة تقرّبك من هدفك";
-  if (pct <= 60) return "نقيّم طلاقتك وانسيابيتك";
-  if (pct <= 80) return "الثقة تُبنى بالتكرار";
-  return "جاهز تشوف نتيجتك؟";
+  if (pct <= 15) return "جارٍ رفع التسجيل...";
+  if (pct <= 40) return "نحلل صوتك وكلماتك...";
+  if (pct <= 65) return "نكتشف كلمات الحشو والممنوعة...";
+  if (pct <= 85) return "نحسب معدل تدفق الكلام...";
+  return "مدربك يكتب ملاحظاته...";
+}
+
+function getStageLabel(pct: number): string {
+  if (pct <= 15) return "جارٍ رفع التسجيل";
+  if (pct <= 40) return "تحليل الصوت";
+  if (pct <= 65) return "اكتشاف كلمات الحشو";
+  if (pct <= 85) return "حساب معدل التدفق";
+  return "ملاحظات المدرب";
 }
 
 const AnalysisLoading = ({ processingDone, visible, onComplete }: AnalysisLoadingProps) => {
   const [progress, setProgress] = useState(0);
-  const [affirmation, setAffirmation] = useState("نحلل أداءك...");
+  const [affirmation, setAffirmation] = useState("جارٍ رفع التسجيل...");
   const [affirmationOpacity, setAffirmationOpacity] = useState(1);
   const progressRef = useRef(0);
   const completedRef = useRef(false);
@@ -37,7 +45,7 @@ const AnalysisLoading = ({ processingDone, visible, onComplete }: AnalysisLoadin
     completedRef.current = false;
     progressRef.current = 0;
     setProgress(0);
-    setAffirmation("نحلل أداءك...");
+    setAffirmation("جارٍ رفع التسجيل...");
     setAffirmationOpacity(1);
     console.log("[MLASOON] AnalysisLoading reset for new session");
   }, [visible]);
@@ -200,7 +208,20 @@ const AnalysisLoading = ({ processingDone, visible, onComplete }: AnalysisLoadin
       <p
         className="font-cairo font-light"
         style={{
-          marginTop: 24,
+          marginTop: 12,
+          fontSize: 13,
+          color: "rgba(255,255,255,0.5)",
+          textAlign: "center",
+          maxWidth: "min(240px, 80vw)",
+        }}
+      >
+        {getStageLabel(displayPct)}
+      </p>
+
+      <p
+        className="font-cairo font-light"
+        style={{
+          marginTop: 20,
           fontSize: 15,
           color: "#FFFFFF",
           textAlign: "center",

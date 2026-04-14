@@ -158,7 +158,7 @@ const Home = () => {
   const showError = !authLoading && loadState === "error";
   const showContent = !authLoading && loadState === "ok" && data !== null;
 
-  const welcomeLabel = data?.userName ? `هلا، ${data.userName}` : "هلا، متحدث";
+  const welcomeLabel = data?.userName ? `هلا، ${data.userName}` : "هلا";
   const stageMeta = showContent ? STAGE_NODES[data.stage - 1] : null;
   const dailyChallenge = showContent ? getDailyChallengeForStage(data.stage) : null;
 

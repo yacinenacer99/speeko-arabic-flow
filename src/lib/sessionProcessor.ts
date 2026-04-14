@@ -39,6 +39,7 @@ const getCoaching = async (
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+    console.log("[MLASOON] getCoaching: url=", supabaseUrl?.slice(0, 40), "hasKey=", !!anonKey);
     const response = await fetch(`${supabaseUrl}/functions/v1/coach`, {
       method: "POST",
       headers: {
@@ -48,9 +49,14 @@ const getCoaching = async (
       },
       body: JSON.stringify({ transcript, topic, metrics, userGoal, userStage, sessionCount, previousFlowScore }),
     });
-    if (!response.ok) return null;
+    if (!response.ok) {
+      const errText = await response.text().catch(() => "(unreadable)");
+      console.log("[MLASOON] getCoaching HTTP error:", response.status, errText);
+      return null;
+    }
     return await response.json() as CoachingResult;
-  } catch {
+  } catch (err) {
+    console.log("[MLASOON] getCoaching error:", err instanceof Error ? err.message : String(err));
     return null;
   }
 };

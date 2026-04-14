@@ -2,6 +2,7 @@ import { useState, FormEvent, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import AnalysisLoading from "@/components/AnalysisLoading";
 import { supabase } from "@/lib/supabase";
 import { getAuthErrorMessageAr } from "@/lib/authErrors";
 import { upsertUserProfile, defaultSignupProfile } from "@/lib/userProfile";
@@ -25,7 +26,10 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [confirmationSent, setConfirmationSent] = useState(false);
+  const [showAnalysisLoading, setShowAnalysisLoading] = useState(false);
+  const [processingDone, setProcessingDone] = useState(false);
   const processingTrialRef = useRef(false);
+  const trialResultRef = useRef<SessionResult | false | null>(null);
 
   // Clear any stale error on mount and verify blob survival across navigation
   useEffect(() => {
@@ -42,6 +46,15 @@ const Login = () => {
       navigate("/home", { replace: true });
     }
   }, [authLoading, isLoggedIn, navigate, fromTrial]);
+
+  const handleLoadingComplete = () => {
+    const result = trialResultRef.current;
+    processingTrialRef.current = false;
+    if (result) {
+      setLatestSession(result);
+      navigate("/results");
+    }
+  };
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
@@ -122,16 +135,22 @@ const Login = () => {
     }
 
     console.log("[MLASOON] checking pending blob:", sessionStorage.getItem("mlasoon_pending_blob")?.slice(0, 50));
+    const hasPendingBlob = !!sessionStorage.getItem("mlasoon_pending_blob");
+    if (hasPendingBlob) {
+      setShowAnalysisLoading(true);
+      setProcessingDone(false);
+      console.log("[MLASOON] showAnalysisLoading:", true);
+    }
     const trialResult = await processPendingTrial(uid);
     if (trialResult) {
-      console.log("[MLASOON] processSession complete, navigating to results");
-      processingTrialRef.current = false;
-      setLatestSession(trialResult);
-      navigate("/results");
+      console.log("[MLASOON] processSession complete, signaling loading screen to finish");
+      trialResultRef.current = trialResult;
+      setProcessingDone(true);
       return;
     }
 
     processingTrialRef.current = false;
+    setShowAnalysisLoading(false);
 
     if (fromTrial) {
       console.log("[MLASOON] processPendingTrial returned false on trial flow");
@@ -198,6 +217,12 @@ const Login = () => {
   const submitLabel = mode === "login" ? "سجل دخول" : "أنشئ الحساب";
 
   return (
+    <>
+    <AnalysisLoading
+      visible={showAnalysisLoading}
+      processingDone={processingDone}
+      onComplete={handleLoadingComplete}
+    />
     <div
       className="flex flex-col items-center justify-center relative"
       style={{ minHeight: "100dvh", background: "hsl(var(--background))", direction: "rtl", padding: "0 var(--page-padding-mobile)" }}
@@ -327,6 +352,7 @@ const Login = () => {
         }
       `}</style>
     </div>
+    </>
   );
 };
 

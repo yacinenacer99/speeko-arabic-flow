@@ -601,15 +601,15 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
         >
           <h1
             className="font-bold font-cairo text-foreground text-center hero-heading"
-            style={{ fontSize: 28, lineHeight: 1.3, marginBottom: 12, padding: "0 var(--page-padding-mobile)" }}
+            style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.3, marginBottom: 12, padding: "0 var(--page-padding-mobile)" }}
           >
-            سكوتك يضيع عليك فرص.
+            كم فرصة ضاعت بسبب سكوتك؟
           </h1>
           <p
             className="font-light font-cairo text-muted-foreground text-center"
-            style={{ fontSize: 14, marginBottom: 44, padding: "0 var(--page-padding-mobile)" }}
+            style={{ fontSize: 15, fontWeight: 300, marginBottom: 44, padding: "0 var(--page-padding-mobile)" }}
           >
-            تحدياتنا تعلمك كيف تسولف بدون توتر
+            تدرب يومياً على تحويل أفكارك لكلام واضح ومرتب — بدون توتر
           </p>
         </div>
 

@@ -566,8 +566,8 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
           flex: 1,
           width: "100%",
           maxWidth: 400,
-          justifyContent: isLanding ? "center" : "flex-start",
-          paddingTop: isLanding ? 0 : 80,
+          justifyContent: isLanding ? "flex-start" : "flex-start",
+          paddingTop: isLanding ? "18vh" : 80,
           paddingLeft: "var(--page-padding-mobile)",
           paddingRight: "var(--page-padding-mobile)",
           transition: "all 0.7s ease",
@@ -590,7 +590,7 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
 
         {/* Hero text */}
         <div
-          className="py-[14px]"
+          className="py-[6px]"
           style={{
             opacity: isLanding ? 1 : 0,
             maxHeight: isLanding ? 200 : 0,
@@ -606,8 +606,8 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
             كم فرصة ضاعت بسبب سكوتك؟
           </h1>
           <p
-            className="font-light font-cairo text-muted-foreground text-center"
-            style={{ fontSize: 15, fontWeight: 300, marginBottom: 44, padding: "0 var(--page-padding-mobile)" }}
+            className="font-cairo text-center"
+            style={{ fontSize: 15, fontWeight: 400, color: "#4A4A6A", marginBottom: 24, padding: "0 var(--page-padding-mobile)" }}
           >
             تدرب يومياً على تحويل أفكارك لكلام واضح ومرتب — بدون توتر
           </p>

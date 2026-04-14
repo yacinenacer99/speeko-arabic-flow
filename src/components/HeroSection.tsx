@@ -618,7 +618,7 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
           className={isLanding ? "hero-float" : ""}
           style={{
             display: "inline-block",
-            marginTop: 0,
+            marginTop: isLanding ? 40 : 0,
             marginBottom: 0,
             opacity: 1,
             transform: "scale(1)",

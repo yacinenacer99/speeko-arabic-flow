@@ -37,9 +37,11 @@ const getCoaching = async (
   previousFlowScore: number | null,
 ): Promise<CoachingResult | null> => {
   try {
+    console.log("[MLASOON] getCoaching called, transcript length:", transcript.length);
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-    console.log("[MLASOON] getCoaching: url=", supabaseUrl?.slice(0, 40), "hasKey=", !!anonKey);
+    console.log("[MLASOON] getCoaching url:", `${supabaseUrl}/functions/v1/coach`);
+    console.log("[MLASOON] getCoaching anonKey exists:", !!anonKey);
     const response = await fetch(`${supabaseUrl}/functions/v1/coach`, {
       method: "POST",
       headers: {
@@ -49,12 +51,15 @@ const getCoaching = async (
       },
       body: JSON.stringify({ transcript, topic, metrics, userGoal, userStage, sessionCount, previousFlowScore }),
     });
+    console.log("[MLASOON] getCoaching response status:", response.status);
     if (!response.ok) {
-      const errText = await response.text().catch(() => "(unreadable)");
-      console.log("[MLASOON] getCoaching HTTP error:", response.status, errText);
+      const body = await response.text().catch(() => "(unreadable)");
+      console.log("[MLASOON] getCoaching error body:", body);
       return null;
     }
-    return await response.json() as CoachingResult;
+    const result = await response.json() as CoachingResult;
+    console.log("[MLASOON] getCoaching result:", JSON.stringify(result).slice(0, 200));
+    return result;
   } catch (err) {
     console.log("[MLASOON] getCoaching error:", err instanceof Error ? err.message : String(err));
     return null;

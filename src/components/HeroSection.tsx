@@ -939,11 +939,13 @@ const HeroSection = ({ autoStart = false }: HeroSectionProps) => {
           </div>
         )}
 
-        <AnalysisLoading
-          processingDone={processingDone}
-          visible={showLoading}
-          onComplete={handleNavigateToResults}
-        />
+        {!!session?.user?.id && (
+          <AnalysisLoading
+            processingDone={processingDone}
+            visible={showLoading}
+            onComplete={handleNavigateToResults}
+          />
+        )}
 
         {micErrorMessage && (
           <div

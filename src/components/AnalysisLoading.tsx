@@ -41,19 +41,19 @@ const AnalysisLoading = ({ processingDone, visible, onComplete }: AnalysisLoadin
   }, [processingDone]);
 
   useEffect(() => {
-    if (!visible) return;
+    if (!visible) {
+      completedRef.current = false;
+      hasStartedRef.current = false;
+      progressRef.current = 0;
+      setProgress(0);
+      return;
+    }
     completedRef.current = false;
     progressRef.current = 0;
     setProgress(0);
     setAffirmation("جارٍ رفع التسجيل...");
     setAffirmationOpacity(1);
     console.log("[MLASOON] AnalysisLoading reset for new session");
-  }, [visible]);
-
-  useEffect(() => {
-    if (!visible) {
-      hasStartedRef.current = false;
-    }
   }, [visible]);
 
   useEffect(() => {
